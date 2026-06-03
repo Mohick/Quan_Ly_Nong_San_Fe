@@ -37,18 +37,18 @@ export default function FarmListPage() {
         const responseData = res.data;
         const dataList = Array.isArray(responseData.data) ? responseData.data : [];
         const mapped = dataList.map((f: any) => ({
-          id: f.id,
-          name: f.farm_name || "Nông trại thành viên",
-          avatar: f.image_url || "https://images.unsplash.com/photo-1595974482597-4b8da8879bc5?auto=format&fit=crop&q=80&w=150",
-          coverImage: f.image_url || "https://images.unsplash.com/photo-1500937386664-56d1dfef3854?auto=format&fit=crop&q=80&w=1000",
-          location: f.address || "Việt Nam",
+          id: f.id || f.ID,
+          name: f.farm_name || f.FarmName || "Nông trại thành viên",
+          avatar: f.image_url || f.ImageURL || "https://images.unsplash.com/photo-1595974482597-4b8da8879bc5?auto=format&fit=crop&q=80&w=150",
+          coverImage: f.image_url || f.ImageURL || "https://images.unsplash.com/photo-1500937386664-56d1dfef3854?auto=format&fit=crop&q=80&w=1000",
+          location: f.address || f.Address || "Việt Nam",
           specialty: "Nông sản sạch, Rau củ quả",
           experience: "5 năm",
           landArea: "1.2 Hécta",
           rating: 4.9,
           badge: "VietGAP",
           likes: 88,
-          description: f.description || "Trang trại của gia đình liên kết sản xuất nông nghiệp sạch chuẩn an toàn vệ sinh thực phẩm.",
+          description: f.description || f.Description || "Trang trại của gia đình liên kết sản xuất nông nghiệp sạch chuẩn an toàn vệ sinh thực phẩm.",
         }));
         setFarms(mapped);
         console.log("Danh sách trang trại:", mapped);
