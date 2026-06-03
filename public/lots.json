@@ -1,0 +1,38 @@
+[
+  {
+    "farm_id": "550e8400-e29b-41d4-a716-446655440000",
+    "id": "lot-1",
+    "name": "Lô Rau Xà Lách 1",
+    "area": 1000,
+    "area_unit": "M2",
+    "tree_count": 200,
+    "start_date": "2026-06-01T00:00:00Z",
+    "expected_harvest_date": "2026-09-01T00:00:00Z",
+    "status": "PLANNING",
+    "note": "Sử dụng giống xà lách sạch VietGAP nhập khẩu."
+  },
+  {
+    "farm_id": "550e8400-e29b-41d4-a716-446655440000",
+    "id": "lot-2",
+    "name": "Lô Dâu Tây Mỹ Đá A",
+    "area": 1500,
+    "area_unit": "M2",
+    "tree_count": 450,
+    "start_date": "2026-05-10T00:00:00Z",
+    "expected_harvest_date": "2026-08-10T00:00:00Z",
+    "status": "PLANTED",
+    "note": "Tưới nước sạch nhỏ giọt tự động công nghệ Israel."
+  },
+  {
+    "farm_id": "550e8400-e29b-41d4-a716-446655440000",
+    "id": "lot-3",
+    "name": "Lô Sầu Riêng Ri6 Thử Nghiệm",
+    "area": 3000,
+    "area_unit": "M2",
+    "tree_count": 80,
+    "start_date": "2026-03-01T00:00:00Z",
+    "expected_harvest_date": "2026-07-15T00:00:00Z",
+    "status": "HARVESTING",
+    "note": "Đang tiến hành cắt tỉa trái chín đợt đầu tiên."
+  }
+]
