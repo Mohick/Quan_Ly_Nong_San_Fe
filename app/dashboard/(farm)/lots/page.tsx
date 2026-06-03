@@ -160,7 +160,7 @@ export default function CropLotsDashboard() {
       axios.post("/api/farms/new-crop-lot/", newLotPayload)
         .then((response) => {
           if (response.data && response.data.valid === false) {
-            showToast("Khởi tạo lô canh tác thất bại: " + (response.data.message || "Lỗi hệ thống"), "error");
+            showToast("Khởi tạo lô canh tác thất bại: " + (response.data.message || "Lỗi hệ thống"));
             return;
           }
           axios.get(`/api/crop-lot/get-crop-lot/${farmId}/`).then((res) => {
