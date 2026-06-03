@@ -106,8 +106,8 @@ export default function CropLotsDashboard() {
     setFormArea(lot.area.toString());
     setFormAreaUnit(lot.area_unit);
     setFormTreeCount(lot.tree_count.toString());
-    setFormStartDate(lot.start_date.split("T")[0]);
-    setFormHarvestDate(lot.expected_harvest_date.split("T")[0]);
+    setFormStartDate(lot.start_date ? lot.start_date.split("T")[0] : "");
+    setFormHarvestDate(lot.expected_harvest_date ? lot.expected_harvest_date.split("T")[0] : "");
     setFormStatus(lot.status);
     setFormNote(lot.note);
     setIsModalOpen(true);
