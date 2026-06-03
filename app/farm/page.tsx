@@ -6,10 +6,10 @@ import {
   Layers, BadgeCheck, ShieldAlert, ArrowRight, UserCheck, Star
 } from "lucide-react";
 import Link from "next/link";
-import { FarmAPI } from "@/lib/_api/farm";
+import { getAllFarmAPI } from "@/lib/_api/get_all_farm";
 
 interface Farm {
-  id: number;
+  id: string;
   name: string;
   avatar: string;
   coverImage: string;
@@ -33,14 +33,28 @@ export default function FarmListPage() {
   useEffect(() => {
     const fetchFarms = async () => {
       try {
-        const res = await FarmAPI();
-        const data = Array.isArray(res.data) ? res.data : [];
-        setFarms(data);
-        console.log("Danh sách trang trại:", data);
+        const res = await getAllFarmAPI();
+        const responseData = res.data;
+        const dataList = Array.isArray(responseData.data) ? responseData.data : [];
+        const mapped = dataList.map((f: any) => ({
+          id: f.id,
+          name: f.farm_name || "Nông trại thành viên",
+          avatar: f.image_url || "https://images.unsplash.com/photo-1595974482597-4b8da8879bc5?auto=format&fit=crop&q=80&w=150",
+          coverImage: f.image_url || "https://images.unsplash.com/photo-1500937386664-56d1dfef3854?auto=format&fit=crop&q=80&w=1000",
+          location: f.address || "Việt Nam",
+          specialty: "Nông sản sạch, Rau củ quả",
+          experience: "5 năm",
+          landArea: "1.2 Hécta",
+          rating: 4.9,
+          badge: "VietGAP",
+          likes: 88,
+          description: f.description || "Trang trại của gia đình liên kết sản xuất nông nghiệp sạch chuẩn an toàn vệ sinh thực phẩm.",
+        }));
+        setFarms(mapped);
+        console.log("Danh sách trang trại:", mapped);
       } catch (error) {
         console.error("Error fetching farms:", error);
       } finally {
-
         setIsLoading(false);
       }
     };
@@ -56,15 +70,15 @@ export default function FarmListPage() {
   // Dynamic filter logic
   const filteredFarms = useMemo(() => {
     return farms.filter(farm => {
-      const matchesSearch = farm.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        farm.specialty.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        farm.location.toLowerCase().includes(searchQuery.toLowerCase());
+      const matchesSearch = (farm.name || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (farm.specialty || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (farm.location || "").toLowerCase().includes(searchQuery.toLowerCase());
       const matchesStandard = selectedStandard === "all" || farm.badge === selectedStandard;
       return matchesSearch && matchesStandard;
     });
   }, [searchQuery, selectedStandard, farms]);
 
-  const handleLike = (id: number) => {
+  const handleLike = (id: string) => {
     setFarms(prev => prev.map(f => f.id === id ? { ...f, likes: f.likes + 1 } : f));
   };
 
