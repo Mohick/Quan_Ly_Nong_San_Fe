@@ -45,7 +45,7 @@ const ProductCard = ({ product, viewMode = "grid" }: ProductCardProps) => {
                 {/* Clickable Image Container on Left */}
                 <Link
                     href={`/products/${product.id}`}
-                    className="relative w-full sm:w-48 h-48 sm:h-auto aspect-square sm:aspect-square rounded-md overflow-hidden bg-gray-55/30 flex-shrink-0 block cursor-pointer"
+                    className="relative w-full sm:w-48 h-48 sm:h-auto aspect-square sm:aspect-square rounded-md overflow-hidden bg-gray-50/30 flex-shrink-0 block cursor-pointer"
                 >
                     {/* Badges */}
                     <div className="absolute top-2 left-2 z-20 flex flex-col gap-1">
@@ -139,7 +139,7 @@ const ProductCard = ({ product, viewMode = "grid" }: ProductCardProps) => {
             {/* Clickable Image Container */}
             <Link
                 href={`/products/${product.id}`}
-                className="relative aspect-square w-full overflow-hidden bg-gray-55/30 block cursor-pointer"
+                className="relative aspect-square w-full overflow-hidden bg-gray-50/30 block cursor-pointer"
             >
                 {/* Badges */}
                 <div className="absolute top-3 left-3 z-20 flex flex-col gap-1.5">

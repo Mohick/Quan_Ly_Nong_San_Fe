@@ -22,7 +22,7 @@ const TopFarmer = () => {
             try {
                 const res = await topFarmerAPI();
                 console.log(res);
-                setTopFarmers(res.data);
+                setTopFarmers(Array.isArray(res.data) ? res.data : []);
             } catch (error) {
                 console.error("Error fetching top farmer:", error);
             }

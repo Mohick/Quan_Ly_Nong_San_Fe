@@ -97,72 +97,72 @@ export default function RevenuePage() {
         {/* Total Revenue */}
         <div className="bg-white border border-gray-200/80 rounded-xl p-5 shadow-sm hover:shadow-md transition-all">
           <div className="flex items-center justify-between mb-3.5">
-            <span className="text-2xs font-extrabold text-gray-450 uppercase tracking-wide">Tổng doanh thu</span>
+            <span className="text-[10px] font-extrabold text-gray-450 uppercase tracking-wide">Tổng doanh thu</span>
             <div className="w-8 h-8 rounded-lg bg-emerald-50 border border-emerald-100 flex items-center justify-center text-emerald-600">
               <DollarSign className="w-4.5 h-4.5" />
             </div>
           </div>
           <h2 className="text-xl font-black text-gray-800 tracking-tight">{formatVND(revenueStats.totalRevenue)}</h2>
           <div className="flex items-center gap-1 mt-2.5">
-            <span className="inline-flex items-center gap-0.5 text-3xs font-black bg-emerald-50 text-emerald-700 px-1 rounded-sm">
+            <span className="inline-flex items-center gap-0.5 text-[9px] font-black bg-emerald-50 text-emerald-700 px-1 rounded-sm">
               <ArrowUpRight className="w-2.5 h-2.5" />
               +{revenueStats.growthRate}%
             </span>
-            <span className="text-3xs text-gray-400 font-semibold">so với tháng trước</span>
+            <span className="text-[9px] text-gray-400 font-semibold">so với tháng trước</span>
           </div>
         </div>
 
         {/* Avg Order Value */}
         <div className="bg-white border border-gray-200/80 rounded-xl p-5 shadow-sm hover:shadow-md transition-all">
           <div className="flex items-center justify-between mb-3.5">
-            <span className="text-2xs font-extrabold text-gray-450 uppercase tracking-wide">Giá trị đơn TB</span>
+            <span className="text-[10px] font-extrabold text-gray-450 uppercase tracking-wide">Giá trị đơn TB</span>
             <div className="w-8 h-8 rounded-lg bg-blue-50 border border-blue-100 flex items-center justify-center text-blue-600">
               <ShoppingBag className="w-4.5 h-4.5" />
             </div>
           </div>
           <h2 className="text-xl font-black text-gray-800 tracking-tight">{formatVND(revenueStats.averageOrderValue)}</h2>
           <div className="flex items-center gap-1 mt-2.5">
-            <span className="inline-flex items-center gap-0.5 text-3xs font-black bg-emerald-50 text-emerald-700 px-1 rounded-sm">
+            <span className="inline-flex items-center gap-0.5 text-[9px] font-black bg-emerald-50 text-emerald-700 px-1 rounded-sm">
               <ArrowUpRight className="w-2.5 h-2.5" />
               +4.2%
             </span>
-            <span className="text-3xs text-gray-400 font-semibold">so với tháng trước</span>
+            <span className="text-[9px] text-gray-400 font-semibold">so với tháng trước</span>
           </div>
         </div>
 
         {/* Sales count */}
         <div className="bg-white border border-gray-200/80 rounded-xl p-5 shadow-sm hover:shadow-md transition-all">
           <div className="flex items-center justify-between mb-3.5">
-            <span className="text-2xs font-extrabold text-gray-450 uppercase tracking-wide">Số lượng đơn hàng</span>
+            <span className="text-[10px] font-extrabold text-gray-450 uppercase tracking-wide">Số lượng đơn hàng</span>
             <div className="w-8 h-8 rounded-lg bg-purple-50 border border-purple-100 flex items-center justify-center text-purple-600">
               <Tag className="w-4.5 h-4.5" />
             </div>
           </div>
           <h2 className="text-xl font-black text-gray-800 tracking-tight">{revenueStats.salesCount} đơn</h2>
           <div className="flex items-center gap-1 mt-2.5">
-            <span className="inline-flex items-center gap-0.5 text-3xs font-black bg-emerald-50 text-emerald-700 px-1 rounded-sm">
+            <span className="inline-flex items-center gap-0.5 text-[9px] font-black bg-emerald-50 text-emerald-700 px-1 rounded-sm">
               <ArrowUpRight className="w-2.5 h-2.5" />
               +15.3%
             </span>
-            <span className="text-3xs text-gray-400 font-semibold">so với tháng trước</span>
+            <span className="text-[9px] text-gray-400 font-semibold">so với tháng trước</span>
           </div>
         </div>
 
         {/* Tăng trưởng */}
         <div className="bg-white border border-gray-200/80 rounded-xl p-5 shadow-sm hover:shadow-md transition-all">
           <div className="flex items-center justify-between mb-3.5">
-            <span className="text-2xs font-extrabold text-gray-450 uppercase tracking-wide">Hiệu suất mục tiêu</span>
+            <span className="text-[10px] font-extrabold text-gray-450 uppercase tracking-wide">Hiệu suất mục tiêu</span>
             <div className="w-8 h-8 rounded-lg bg-amber-50 border border-amber-100 flex items-center justify-center text-amber-600">
               <TrendingUp className="w-4.5 h-4.5" />
             </div>
           </div>
           <h2 className="text-xl font-black text-gray-800 tracking-tight">92.5%</h2>
           <div className="flex items-center gap-1 mt-2.5">
-            <span className="inline-flex items-center gap-0.5 text-3xs font-black bg-red-50 text-red-700 px-1 rounded-sm">
+            <span className="inline-flex items-center gap-0.5 text-[9px] font-black bg-red-50 text-red-700 px-1 rounded-sm">
               <ArrowDownRight className="w-2.5 h-2.5" />
               -1.2%
             </span>
-            <span className="text-3xs text-gray-400 font-semibold">so với chỉ tiêu</span>
+            <span className="text-[9px] text-gray-400 font-semibold">so với chỉ tiêu</span>
           </div>
         </div>
       </div>
@@ -200,11 +200,11 @@ export default function RevenuePage() {
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="border-b border-gray-100">
-                <th className="pb-3 text-2xs font-extrabold text-gray-400 uppercase tracking-wider">Mã GD</th>
-                <th className="pb-3 text-2xs font-extrabold text-gray-400 uppercase tracking-wider">Người mua</th>
-                <th className="pb-3 text-2xs font-extrabold text-gray-400 uppercase tracking-wider">Sản phẩm chi tiết</th>
-                <th className="pb-3 text-2xs font-extrabold text-gray-400 uppercase tracking-wider">Ngày bán</th>
-                <th className="pb-3 text-2xs font-extrabold text-gray-400 uppercase tracking-wider text-right">Tổng thanh toán</th>
+                <th className="pb-3 text-[10px] font-extrabold text-gray-400 uppercase tracking-wider">Mã GD</th>
+                <th className="pb-3 text-[10px] font-extrabold text-gray-400 uppercase tracking-wider">Người mua</th>
+                <th className="pb-3 text-[10px] font-extrabold text-gray-400 uppercase tracking-wider">Sản phẩm chi tiết</th>
+                <th className="pb-3 text-[10px] font-extrabold text-gray-400 uppercase tracking-wider">Ngày bán</th>
+                <th className="pb-3 text-[10px] font-extrabold text-gray-400 uppercase tracking-wider text-right">Tổng thanh toán</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-50/50">

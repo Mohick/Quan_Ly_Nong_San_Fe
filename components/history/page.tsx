@@ -8,6 +8,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import axios from "axios";
+import { HistoryAPI } from "@/lib/_api/histoy";
 
 interface OrderItem {
   id: string;
@@ -44,13 +45,17 @@ export default function PurchaseHistoryComponent() {
   useEffect(() => {
     const fetchOrders = async () => {
       try {
-        const response = await axios.get("/history.json");
+        let token = "";
+        if (typeof window !== "undefined") {
+          const match = document.cookie.match(/(^|;)\s*access_token\s*=\s*([^;]+)/);
+          if (match) token = match[2];
+        }
+        const response = await HistoryAPI(token);
         if (response.data && Array.isArray(response.data)) {
           setOrders(response.data);
         }
       } catch (error) {
-
-        console.error("Lỗi khi tải lịch sử đơn hàng từ JSON:", error);
+        console.error("Lỗi khi tải lịch sử đơn hàng:", error);
       } finally {
         setLoading(false);
       }

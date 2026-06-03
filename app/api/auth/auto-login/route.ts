@@ -5,8 +5,7 @@ import { autoLoginAPI } from "@/lib/_api/auto_login";
 export async function POST(request: Request) {
   try {
     // 1. Lấy Authorization Header từ request client gửi lên
-    let authHeader = request.headers.get("Authorization");
-    console.log(authHeader, 1);
+    const authHeader = request.headers.get("Authorization");
 
     let rawToken = "";
     if (authHeader && authHeader.startsWith("Bearer ")) {

@@ -56,7 +56,7 @@ export default function ProfileTab({
                             type="email"
                             readOnly
                             value={email || ""}
-                            className="w-full bg-gray-55 border border-gray-200 rounded-lg py-2.5 px-3 pl-10 text-xs sm:text-sm text-gray-400 focus:outline-none cursor-not-allowed font-medium"
+                            className="w-full bg-gray-50 border border-gray-200 rounded-lg py-2.5 px-3 pl-10 text-xs sm:text-sm text-gray-400 focus:outline-none cursor-not-allowed font-medium"
                         />
                         <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                     </div>

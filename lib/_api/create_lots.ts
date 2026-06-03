@@ -8,7 +8,7 @@ async function createLotAPI(payload: any, token?: string) {
         headers["Authorization"] = token.startsWith("Bearer ") ? token : `Bearer ${token}`;
     }
     console.log(payload)
-    return await axiosInstance.post(`/farms/new-crop-lot`, payload, { headers });
+    return await axiosInstance.post(`/crop-lot/create`, payload, { headers });
 }
 
 export { createLotAPI };

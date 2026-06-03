@@ -6,7 +6,6 @@ import {
   Calendar, Layers, Trees, CheckCircle2,
   Clock, AlertCircle, X, ChevronRight, Sparkles, Loader2
 } from "lucide-react";
-import { lotsAPI } from "@/lib/_api/lots";
 import axios from "axios";
 
 export interface CropLot {
@@ -18,7 +17,7 @@ export interface CropLot {
   tree_count: number;
   start_date: string;
   expected_harvest_date: string;
-  status: "PROCESS" | "HARVESTING";
+  status: "PROCESS" | "HARVESTED";
   note: string;
 }
 
@@ -27,14 +26,37 @@ export default function CropLotsDashboard() {
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
+  const [farmId, setFarmId] = useState("550e8400-e29b-41d4-a716-446655440000");
 
-  // Fetch lots from dynamic JSON API
+  // Fetch lots from Next.js API proxies
   useEffect(() => {
     const fetchLotsData = async () => {
       try {
-        const res = await lotsAPI();
-        const data = Array.isArray(res.data) ? res.data : [];
-        setLots(data);
+        let activeFarmId = "";
+
+        // 1. Gọi API Proxy lấy thông tin trang trại của user và trích xuất farmId
+        try {
+          const farmRes = await axios.get("/api/farms/get-one/");
+          if (farmRes.data && farmRes.data.data) {
+            const farmData = farmRes.data.data;
+            const id = farmData.id || farmData.ID || "";
+            if (id) {
+              activeFarmId = id;
+              setFarmId(id);
+            }
+          }
+        } catch (e) {
+          console.error("Lỗi khi tải thông tin trang trại qua proxy để lấy farmId:", e);
+        }
+
+        // 2. Gọi API Proxy lấy danh sách lô đất với farmId
+        if (activeFarmId) {
+          const res = await axios.get(`/api/crop-lot/get-crop-lot/${activeFarmId}/`);
+          const data = Array.isArray(res.data?.data) ? res.data.data : [];
+          setLots(data);
+        } else {
+          setLots([]);
+        }
       } catch (error) {
         console.error("Error loading crop lots:", error);
       } finally {
@@ -55,7 +77,7 @@ export default function CropLotsDashboard() {
   const [formTreeCount, setFormTreeCount] = useState("");
   const [formStartDate, setFormStartDate] = useState("");
   const [formHarvestDate, setFormHarvestDate] = useState("");
-  const [formStatus, setFormStatus] = useState<"PROCESS" | "HARVESTING">("PROCESS");
+  const [formStatus, setFormStatus] = useState<"PROCESS" | "HARVESTED">("PROCESS");
   const [formNote, setFormNote] = useState("");
 
   const [toastMessage, setToastMessage] = useState<string | null>(null);
@@ -135,17 +157,21 @@ export default function CropLotsDashboard() {
         note: formNote,
       };
 
-      axios.post("/api/farms/new-crop-lot", newLotPayload)
+      axios.post("/api/farms/new-crop-lot/", newLotPayload)
         .then((response) => {
-          const createdLot = response.data;
-          setLots((prev) => [createdLot || { ...newLotPayload, id: `lot-${Date.now()}` }, ...prev]);
+          if (response.data && response.data.valid === false) {
+            showToast("Khởi tạo lô canh tác thất bại: " + (response.data.message || "Lỗi hệ thống"), "error");
+            return;
+          }
+          axios.get(`/api/crop-lot/get-crop-lot/${farmId}/`).then((res) => {
+            setLots(Array.isArray(res.data?.data) ? res.data.data : []);
+          });
           showToast("Đã khởi tạo lô canh tác mới thành công!");
         })
         .catch((error) => {
           console.error("Lỗi khi gửi yêu cầu khởi tạo lô đất canh tác mới:", error);
-          // Fallback offline mode
-          setLots((prev) => [{ ...newLotPayload, id: `lot-${Date.now()}` }, ...prev]);
-          showToast("Đã khởi tạo lô canh tác mới (chế độ dự phòng offline)!");
+          const errMsg = error.response?.data?.message || error.message || "Lỗi kết nối Backend";
+          alert("Lỗi: " + errMsg);
         });
     }
 
@@ -171,7 +197,7 @@ export default function CropLotsDashboard() {
     switch (status) {
       case "PROCESS":
         return <span className="px-2.5 py-1 text-[10px] font-extrabold text-[#13a855] bg-[#e8f8f0] border border-[#cbeed7] rounded-md">ĐANG NUÔI TRỒNG</span>;
-      case "HARVESTING":
+      case "HARVESTED":
         return <span className="px-2.5 py-1 text-[10px] font-extrabold text-amber-600 bg-amber-50 border border-amber-100 rounded-md">ĐANG THU HOẠCH</span>;
       default:
         return null;
@@ -188,7 +214,7 @@ export default function CropLotsDashboard() {
   // Calculate statistics
   const totalArea = lots.reduce((sum, l) => sum + (l.area || 0), 0);
   const totalTrees = lots.reduce((sum, l) => sum + (l.tree_count || 0), 0);
-  const activeLots = lots.filter(l => l.status === "PROCESS" || l.status === "HARVESTING").length;
+  const activeLots = lots.filter(l => l.status === "PROCESS" || l.status === "HARVESTED").length;
 
   if (isLoading) {
     return (
@@ -286,7 +312,7 @@ export default function CropLotsDashboard() {
           >
             <option value="all">Tất cả trạng thái</option>
             <option value="PROCESS">Đang nuôi trồng (PROCESS)</option>
-            <option value="HARVESTING">Đang thu hoạch (HARVESTING)</option>
+            <option value="HARVESTED">Đang thu hoạch (HARVESTED)</option>
           </select>
         </div>
       </div>
@@ -401,7 +427,7 @@ export default function CropLotsDashboard() {
                 <input
                   type="text"
                   readOnly
-                  value="550e8400-e29b-41d4-a716-446655440000"
+                  value={farmId}
                   className="w-full bg-gray-50 border border-gray-200 rounded-lg py-2.5 px-3 text-xs sm:text-sm text-gray-400 cursor-not-allowed font-medium"
                 />
               </div>
@@ -504,7 +530,7 @@ export default function CropLotsDashboard() {
                   className="w-full bg-white border border-gray-300 rounded-lg py-2.5 px-3 text-xs sm:text-sm text-gray-705 font-bold focus:outline-none focus:border-[#13a855] cursor-pointer"
                 >
                   <option value="PROCESS">Đang nuôi trồng (PROCESS)</option>
-                  <option value="HARVESTING">Đang thu hoạch (HARVESTING)</option>
+                  <option value="HARVESTED">Đang thu hoạch (HARVESTED)</option>
                 </select>
               </div>
 

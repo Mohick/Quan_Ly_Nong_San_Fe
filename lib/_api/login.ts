@@ -7,7 +7,7 @@ interface LoginInput {
 }
 
 async function loginAPI({ full_name, email, avatar_url }: LoginInput) {
-    return await axios.post(`/api/auth/login`, {
+    return await axios.post(`/api/auth/login/`, {
         full_name,
         email,
         avatar_url,

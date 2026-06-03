@@ -37,7 +37,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
     try {
       set({ loading: true });
-      const response = await axios.post("/api/auth/auto-login");
+      const response = await axios.post("/api/auth/auto-login/");
 
       if (response.data && response.data.valid && response.data.data) {
         const userData = response.data.data;

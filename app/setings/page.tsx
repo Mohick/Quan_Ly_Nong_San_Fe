@@ -91,7 +91,7 @@ export default function ProfileSettings() {
             formData.append("image", farmImage);
 
             // Gửi lên Next.js API Proxy, kèm theo Header Authorization
-            const response = await axios.post("/api/farms/new-farm", formData);
+            const response = await axios.post("/api/farms/new-farm/", formData);
 
             if (response.status === 200 || response.status === 201) {
                 showToast("Đăng ký & Khởi tạo Trang trại mới thành công!", "success");

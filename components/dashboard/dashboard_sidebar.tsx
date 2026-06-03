@@ -26,9 +26,9 @@ const DashboardSidebar: React.FC<DashboardSidebarProps> = ({
 }) => {
   return (
     <aside 
-      className={`col-span-12 md:col-span-3 bg-white border-r border-gray-200/80 flex flex-col justify-between transition-all duration-300 ${
-        isCollapsed ? "md:max-w-[70px]" : "w-full"
-      } min-h-screen sticky top-0`}
+      className={`bg-white border-r border-gray-200/80 flex flex-col justify-between transition-all duration-300 ${
+        isCollapsed ? "w-full md:w-[70px]" : "w-full md:w-64"
+      } min-h-screen sticky top-0 z-40`}
     >
       <div>
         {/* Logo Brand area */}
