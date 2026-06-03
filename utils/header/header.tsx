@@ -110,7 +110,7 @@ const Header = () => {
                   </div>
 
                   <Link
-                    href="/setings"
+                    href="/settings"
                     className="flex items-center gap-2.5 px-4 py-2 text-[13px] font-bold text-gray-600 hover:text-[#13a855] hover:bg-[#f0f9f4] transition-colors"
                   >
                     <Settings className="w-4 h-4" />
