@@ -6,7 +6,9 @@ import {
   Calendar, Layers, Trees, CheckCircle2,
   Clock, AlertCircle, X, ChevronRight, Sparkles, Loader2
 } from "lucide-react";
-import axios from "axios";
+import { FarmAPI } from "@/lib/_api/farm";
+import { lotsAPI } from "@/lib/_api/lots";
+import { createLotAPI } from "@/lib/_api/create_lots";
 
 export interface CropLot {
   farm_id?: string;
@@ -21,6 +23,14 @@ export interface CropLot {
   note: string;
 }
 
+function getCookie(name: string): string | undefined {
+  if (typeof document === "undefined") return undefined;
+  const value = `; ${document.cookie}`;
+  const parts = value.split(`; ${name}=`);
+  if (parts.length === 2) return parts.pop()?.split(";").shift();
+  return undefined;
+}
+
 export default function CropLotsDashboard() {
   const [lots, setLots] = useState<CropLot[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -28,17 +38,18 @@ export default function CropLotsDashboard() {
   const [statusFilter, setStatusFilter] = useState("all");
   const [farmId, setFarmId] = useState("550e8400-e29b-41d4-a716-446655440000");
 
-  // Fetch lots from Next.js API proxies
+  // Fetch lots from Backend APIs directly
   useEffect(() => {
     const fetchLotsData = async () => {
       try {
         let activeFarmId = "";
+        const token = getCookie("access_token");
 
-        // 1. Gọi API Proxy lấy thông tin trang trại của user và trích xuất farmId
+        // 1. Gọi Backend API lấy thông tin trang trại của user và trích xuất farmId
         try {
-          const farmRes = await axios.get("/api/farms/get-one/");
-          if (farmRes.data && farmRes.data.data) {
-            const farmData = farmRes.data.data;
+          const farmRes = await FarmAPI(token);
+          if (farmRes && farmRes.data) {
+            const farmData = farmRes.data;
             const id = farmData.id || farmData.ID || "";
             if (id) {
               activeFarmId = id;
@@ -46,13 +57,13 @@ export default function CropLotsDashboard() {
             }
           }
         } catch (e) {
-          console.error("Lỗi khi tải thông tin trang trại qua proxy để lấy farmId:", e);
+          console.error("Lỗi khi tải thông tin trang trại để lấy farmId:", e);
         }
 
-        // 2. Gọi API Proxy lấy danh sách lô đất với farmId
+        // 2. Gọi Backend API lấy danh sách lô đất với farmId
         if (activeFarmId) {
-          const res = await axios.get(`/api/crop-lot/get-crop-lot/${activeFarmId}/`);
-          const data = Array.isArray(res.data?.data) ? res.data.data : [];
+          const res = await lotsAPI(activeFarmId, token);
+          const data = Array.isArray(res?.data) ? res.data : [];
           setLots(data);
         } else {
           setLots([]);
@@ -157,14 +168,15 @@ export default function CropLotsDashboard() {
         note: formNote,
       };
 
-      axios.post("/api/farms/new-crop-lot/", newLotPayload)
+      const token = getCookie("access_token");
+      createLotAPI(newLotPayload, token)
         .then((response) => {
           if (response.data && response.data.valid === false) {
-            showToast("Khởi tạo lô canh tác thất bại: " + (response.data.message || "Lỗi hệ thống"), "error");
+            showToast("Khởi tạo lô canh tác thất bại: " + (response.data.message || "Lỗi hệ thống"));
             return;
           }
-          axios.get(`/api/crop-lot/get-crop-lot/${farmId}/`).then((res) => {
-            setLots(Array.isArray(res.data?.data) ? res.data.data : []);
+          lotsAPI(farmId, token).then((res) => {
+            setLots(Array.isArray(res?.data) ? res.data : []);
           });
           showToast("Đã khởi tạo lô canh tác mới thành công!");
         })
@@ -239,7 +251,7 @@ export default function CropLotsDashboard() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-xl sm:text-2xl font-black text-gray-905 tracking-tight flex items-center gap-2">
+          <h1 className="text-xl sm:text-2xl font-black text-gray-950 tracking-tight flex items-center gap-2">
             <Landmark className="w-6 h-6 text-[#13a855]" />
             <span>Quản Lý Lô Đất Canh Tác</span>
           </h1>
@@ -404,7 +416,7 @@ export default function CropLotsDashboard() {
             {/* Modal Header */}
             <div className="px-6 py-5 border-b border-gray-100 bg-[#fbfdfc] flex items-center justify-between">
               <div>
-                <h3 className="text-base sm:text-lg font-black text-gray-905">
+                <h3 className="text-base sm:text-lg font-black text-gray-955">
                   {editingLot ? "Cập Nhật Lô Đất Canh Tác" : "Thiết Lập Lô Canh Tác Mới"}
                 </h3>
                 <p className="text-[11px] sm:text-xs text-gray-500 font-medium">
@@ -466,7 +478,7 @@ export default function CropLotsDashboard() {
                     <select
                       value={formAreaUnit}
                       onChange={(e) => setFormAreaUnit(e.target.value)}
-                      className="bg-white border border-gray-300 rounded-lg py-2 px-3 text-xs sm:text-sm text-gray-700 font-bold focus:outline-none cursor-pointer"
+                      className="bg-white border border-gray-300 rounded-lg py-2 px-3 text-xs sm:text-sm text-gray-750 font-bold focus:outline-none cursor-pointer"
                     >
                       <option value="M2">M²</option>
                       <option value="HA">Hécta</option>

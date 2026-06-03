@@ -2,14 +2,22 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import axios from "axios";
 import {
     User, Shield, Landmark, Camera, ArrowLeft, CheckCircle
 } from "lucide-react";
 import { useAuthStore, useAutoLogin } from "@/hooks/useAutoLogin";
+import { createFarmAPI } from "@/lib/_api/create_farm";
 import ProfileTab from "@/components/setings/ProfileTab";
 import FarmTab from "@/components/setings/FarmTab";
 import SecurityTab from "@/components/setings/SecurityTab";
+
+function getCookie(name: string): string | undefined {
+  if (typeof document === "undefined") return undefined;
+  const value = `; ${document.cookie}`;
+  const parts = value.split(`; ${name}=`);
+  if (parts.length === 2) return parts.pop()?.split(";").shift();
+  return undefined;
+}
 
 export default function ProfileSettings() {
     const [activeTab, setActiveTab] = useState<"profile" | "farm" | "security">("profile");
@@ -90,8 +98,8 @@ export default function ProfileSettings() {
             formData.append("description", farmDescription);
             formData.append("image", farmImage);
 
-            // Gửi lên Next.js API Proxy, kèm theo Header Authorization
-            const response = await axios.post("/api/farms/new-farm/", formData);
+            const token = getCookie("access_token");
+            const response = await createFarmAPI(formData, token);
 
             if (response.status === 200 || response.status === 201) {
                 showToast("Đăng ký & Khởi tạo Trang trại mới thành công!", "success");

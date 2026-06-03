@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { create } from "zustand";
-import axios from "axios";
+import { autoLoginAPI } from "@/lib/_api/auto_login";
 
 export interface User {
   id: string;
@@ -24,6 +24,14 @@ interface AuthState {
   logout: () => void;
 }
 
+function getCookie(name: string): string | undefined {
+  if (typeof document === "undefined") return undefined;
+  const value = `; ${document.cookie}`;
+  const parts = value.split(`; ${name}=`);
+  if (parts.length === 2) return parts.pop()?.split(";").shift();
+  return undefined;
+}
+
 // 1. Khởi tạo Zustand Store lưu trữ trạng thái đăng nhập toàn cục (Global State)
 export const useAuthStore = create<AuthState>((set, get) => ({
   user: null,
@@ -37,7 +45,14 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
     try {
       set({ loading: true });
-      const response = await axios.post("/api/auth/auto-login/");
+      const token = getCookie("access_token");
+      if (!token) {
+        set({ user: null, initialized: true });
+        localStorage.removeItem("user");
+        return;
+      }
+
+      const response = await autoLoginAPI(token);
 
       if (response.data && response.data.valid && response.data.data) {
         const userData = response.data.data;
