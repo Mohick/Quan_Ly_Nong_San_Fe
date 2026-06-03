@@ -25,7 +25,7 @@ export function decodeJWT(token: string): any {
       atob(base64)
         .split("")
         .map((c) => "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2))
-        .join("")
+        .join(""),
     );
     return JSON.parse(jsonPayload);
   } catch (error) {
@@ -41,14 +41,18 @@ export function decodeJWT(token: string): any {
  * 3. Email (Địa chỉ email chủ sở hữu)
  * @param token Chuỗi Google JWT credential
  */
-export async function extractGoogleUserProfile(token: string): Promise<UserProfile | null> {
+export async function extractGoogleUserProfile(
+  token: string,
+): Promise<UserProfile | null> {
   const payload = decodeJWT(token);
   if (!payload) return null;
-  await loginAPI({
+  const result = await loginAPI({
     full_name: payload.name || payload.given_name || "Người dùng PIONE",
     email: payload.email || "",
     avatar_url: payload.picture || "",
   });
+  document.cookie = `access_token=${result.data.data.access_token}; path=/; SameSite=Lax`;
+
   return {
     username: payload.name || payload.given_name || "Người dùng PIONE",
     image: payload.picture || "",
@@ -61,5 +65,7 @@ export async function extractGoogleUserProfile(token: string): Promise<UserProfi
  */
 export const googleOAuthConfig = {
   clientId: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || "",
-  redirectUri: process.env.NEXT_PUBLIC_GOOGLE_REDIRECT_URI || "http://localhost:3000/login",
+  redirectUri:
+    process.env.NEXT_PUBLIC_GOOGLE_REDIRECT_URI ||
+    "http://localhost:3000/login",
 };

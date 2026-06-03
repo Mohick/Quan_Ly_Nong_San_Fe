@@ -4,9 +4,11 @@ import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { ShieldCheck, ArrowLeft } from "lucide-react";
 import { extractGoogleUserProfile } from "./service";
+import axios from "axios";
 
 const Login = () => {
   const [isLoading, setIsLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
 
   useEffect(() => {
     const handleCallback = async () => {
@@ -18,6 +20,7 @@ const Login = () => {
 
       if (idToken) {
         setIsLoading(true);
+        setErrorMessage("");
         try {
           const profile = await extractGoogleUserProfile(idToken);
           if (profile) {
@@ -29,10 +32,14 @@ const Login = () => {
             alert("Đăng nhập thất bại. Không thể lấy hồ sơ người dùng.");
           }
         } catch (error) {
-          console.error("Lỗi khi đăng nhập Google:", error);
-          alert("Lỗi hệ thống trong quá trình đăng nhập.");
-        } finally {
-          setIsLoading(false);
+          console.error("Login error:", error);
+          const message = axios.isAxiosError(error)
+            ? error.response?.data?.message || error.message
+            : error instanceof Error
+              ? error.message
+              : "Loi he thong trong qua trinh dang nhap.";
+          setErrorMessage(message);
+        } finally {          setIsLoading(false);
         }
       }
     };
@@ -42,6 +49,7 @@ const Login = () => {
 
   const handleGoogleLogin = () => {
     setIsLoading(true);
+    setErrorMessage("");
 
     // Read from client-side config or defaults
     const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || "your_google_client_id_here.apps.googleusercontent.com";

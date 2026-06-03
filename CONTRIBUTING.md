@@ -69,8 +69,8 @@ Tránh tuyệt đối việc tạo `new QueryClient()` ở phạm vi toàn cục
   import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
   
   export default function Providers({ children }) {
-    const [queyryClient] = useState(() => new QueryClient());
-    return <QueryClientProvider client={queyryClient}>{children}</QueryClientProvider>;
+    const [queryClient] = useState(() => new QueryClient());
+    return <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>;
   }
   ```
 

@@ -142,7 +142,7 @@ export default function Products() {
   const paginatedProducts = filteredProducts.slice(startIndex, startIndex + ITEMS_PER_PAGE);
 
   return (
-    <div className="w-full bg-gray-55/30 min-h-screen">
+    <div className="w-full bg-gray-50/30 min-h-screen">
       <HeaderProduct
         searchVal={searchVal}
         setSearchVal={setSearchVal}

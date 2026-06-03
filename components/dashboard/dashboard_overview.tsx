@@ -94,7 +94,7 @@ const DashboardOverview: React.FC = () => {
                 <span className="text-lg font-bold text-gray-800 tracking-tight">
                   {stat.value}
                 </span>
-                <span className={`inline-flex items-center gap-0.5 text-2xs font-extrabold px-1.5 py-0.5 rounded-md ${
+                <span className={`inline-flex items-center gap-0.5 text-[10px] font-extrabold px-1.5 py-0.5 rounded-md ${
                   stat.isPositive 
                     ? "bg-emerald-50 text-emerald-700" 
                     : "bg-red-50 text-red-700"
@@ -122,11 +122,11 @@ const DashboardOverview: React.FC = () => {
             <table className="w-full text-left border-collapse">
               <thead>
                 <tr className="border-b border-gray-100">
-                  <th className="pb-3 text-2xs font-extrabold text-gray-400 uppercase tracking-wider">Mã đơn</th>
-                  <th className="pb-3 text-2xs font-extrabold text-gray-400 uppercase tracking-wider">Khách hàng</th>
-                  <th className="pb-3 text-2xs font-extrabold text-gray-400 uppercase tracking-wider">Sản phẩm</th>
-                  <th className="pb-3 text-2xs font-extrabold text-gray-400 uppercase tracking-wider">Doanh thu</th>
-                  <th className="pb-3 text-2xs font-extrabold text-gray-400 uppercase tracking-wider text-right">Trạng thái</th>
+                  <th className="pb-3 text-[10px] font-extrabold text-gray-400 uppercase tracking-wider">Mã đơn</th>
+                  <th className="pb-3 text-[10px] font-extrabold text-gray-400 uppercase tracking-wider">Khách hàng</th>
+                  <th className="pb-3 text-[10px] font-extrabold text-gray-400 uppercase tracking-wider">Sản phẩm</th>
+                  <th className="pb-3 text-[10px] font-extrabold text-gray-400 uppercase tracking-wider">Doanh thu</th>
+                  <th className="pb-3 text-[10px] font-extrabold text-gray-400 uppercase tracking-wider text-right">Trạng thái</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-50/50">
@@ -137,7 +137,7 @@ const DashboardOverview: React.FC = () => {
                     <td className="py-3 text-xs text-gray-500">{order.product}</td>
                     <td className="py-3 text-xs font-bold text-gray-800">{order.amount}</td>
                     <td className="py-3 text-xs text-right">
-                      <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-2xs font-bold ${
+                      <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold ${
                         order.status === "Hoàn thành" 
                           ? "bg-emerald-50 text-emerald-700"
                           : order.status === "Đang xử lý"
@@ -167,7 +167,7 @@ const DashboardOverview: React.FC = () => {
               <AlertCircle className="w-4.5 h-4.5 text-amber-600 shrink-0 mt-0.5" />
               <div>
                 <p className="text-xs font-bold text-amber-800">Thời tiết nắng nóng kéo dài</p>
-                <p className="text-2xs text-amber-700 mt-1 leading-relaxed">
+                <p className="text-[10px] text-amber-700 mt-1 leading-relaxed">
                   Dự kiến nhiệt độ tuần này tăng cao, khuyến nghị tăng tần suất tưới tiêu sầu riêng Ri6 thêm 15% vào sáng sớm.
                 </p>
               </div>
@@ -177,7 +177,7 @@ const DashboardOverview: React.FC = () => {
               <CheckCircle2 className="w-4.5 h-4.5 text-emerald-600 shrink-0 mt-0.5" />
               <div>
                 <p className="text-xs font-bold text-emerald-800">Nhu cầu ST25 tăng vọt</p>
-                <p className="text-2xs text-emerald-700 mt-1 leading-relaxed">
+                <p className="text-[10px] text-emerald-700 mt-1 leading-relaxed">
                   Lượng tìm kiếm gạo ST25 tăng 30% trên sàn thương mại điện tử. Hãy chuẩn bị các chương trình khuyến mãi.
                 </p>
               </div>

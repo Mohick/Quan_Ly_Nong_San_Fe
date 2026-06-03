@@ -490,9 +490,9 @@ export default function DashboardProducts() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-5 gap-4">
                 {/* Sale Price */}
-                <div className="space-y-1 sm:col-span-1.5">
+                <div className="space-y-1 sm:col-span-2">
                   <label className="text-xs font-bold text-gray-500 uppercase tracking-wide">
                     Giá bán khuyến mãi <span className="text-red-500">*</span>
                   </label>
@@ -508,7 +508,7 @@ export default function DashboardProducts() {
                 </div>
 
                 {/* Original Price */}
-                <div className="space-y-1 sm:col-span-1.5">
+                <div className="space-y-1 sm:col-span-2">
                   <label className="text-xs font-bold text-gray-500 uppercase tracking-wide">
                     Giá gốc niêm yết <span className="text-red-500">*</span>
                   </label>
@@ -524,7 +524,7 @@ export default function DashboardProducts() {
                 </div>
 
                 {/* Discount percent */}
-                <div className="space-y-1">
+                <div className="space-y-1 sm:col-span-1">
                   <label className="text-xs font-bold text-gray-500 uppercase tracking-wide">Chiết khấu (%)</label>
                   <input
                     type="number"
