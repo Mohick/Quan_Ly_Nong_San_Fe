@@ -9,7 +9,7 @@ import Link from "next/link";
 import { FarmAPI } from "@/lib/_api/farm";
 
 interface Farm {
-  id: number;
+  id: string;
   name: string;
   avatar: string;
   coverImage: string;
@@ -35,12 +35,25 @@ export default function FarmListPage() {
       try {
         const res = await FarmAPI();
         const data = Array.isArray(res.data) ? res.data : [];
-        setFarms(data);
-        console.log("Danh sách trang trại:", data);
+        const mapped = data.map((f: any) => ({
+          id: f.id || f.ID,
+          name: f.farm_name || f.FarmName || "Nông trại thành viên",
+          avatar: f.image_url || f.ImageURL || "https://images.unsplash.com/photo-1595974482597-4b8da8879bc5?auto=format&fit=crop&q=80&w=150",
+          coverImage: f.image_url || f.ImageURL || "https://images.unsplash.com/photo-1500937386664-56d1dfef3854?auto=format&fit=crop&q=80&w=1000",
+          location: f.address || f.Address || "Việt Nam",
+          specialty: f.specialty || "Nông sản sạch, Rau củ quả",
+          experience: f.experience || "5 năm",
+          landArea: f.landArea || "1.2 Hécta",
+          rating: f.rating || 4.9,
+          badge: f.badge || "VietGAP",
+          likes: f.likes || 88,
+          description: f.description || f.Description || "Trang trại của gia đình liên kết sản xuất nông nghiệp sạch chuẩn an toàn vệ sinh thực phẩm.",
+        }));
+        setFarms(mapped);
+        console.log("Danh sách trang trại:", mapped);
       } catch (error) {
         console.error("Error fetching farms:", error);
       } finally {
-
         setIsLoading(false);
       }
     };
@@ -56,15 +69,15 @@ export default function FarmListPage() {
   // Dynamic filter logic
   const filteredFarms = useMemo(() => {
     return farms.filter(farm => {
-      const matchesSearch = farm.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        farm.specialty.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        farm.location.toLowerCase().includes(searchQuery.toLowerCase());
+      const matchesSearch = (farm.name || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (farm.specialty || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (farm.location || "").toLowerCase().includes(searchQuery.toLowerCase());
       const matchesStandard = selectedStandard === "all" || farm.badge === selectedStandard;
       return matchesSearch && matchesStandard;
     });
   }, [searchQuery, selectedStandard, farms]);
 
-  const handleLike = (id: number) => {
+  const handleLike = (id: string) => {
     setFarms(prev => prev.map(f => f.id === id ? { ...f, likes: f.likes + 1 } : f));
   };
 
