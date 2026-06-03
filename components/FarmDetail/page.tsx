@@ -8,11 +8,11 @@ import {
     Award, Heart, Star, BadgeCheck, Play, Volume2, Maximize,
     Search, ShieldAlert, Sparkles, MessageSquare, Plus, CheckCircle, ExternalLink, Landmark
 } from "lucide-react";
-import { FarmAPI } from "@/lib/_api/farm";
+import { getAllFarmAPI } from "@/lib/_api/get_all_farm";
 import { productAPI } from "@/lib/_api/product";
 
 interface Farm {
-    id: number;
+    id: string;
     name: string;
     avatar: string;
     coverImage: string;
@@ -46,13 +46,28 @@ export default function FarmDetailClient({ id }: { id: string }) {
 
         const fetchDetailData = async () => {
             try {
-                // Fetch Farm info
-                const farmRes = await FarmAPI();
-                const farmData = Array.isArray(farmRes.data) ? farmRes.data : [];
-                const foundFarm = farmData.find((f: any) => f.id === Number(id));
+                // Fetch Farm info from backend
+                const farmRes = await getAllFarmAPI();
+                const responseData = farmRes.data;
+                const farmData = Array.isArray(responseData.data) ? responseData.data : [];
+                const foundFarm = farmData.find((f: any) => (f.id || f.ID) === id);
                 if (foundFarm) {
-                    setFarm(foundFarm);
-                    setLikesCount(foundFarm.likes);
+                    const mappedFarm: Farm = {
+                        id: foundFarm.id || foundFarm.ID,
+                        name: foundFarm.farm_name || foundFarm.FarmName || "Nông trại thành viên",
+                        avatar: foundFarm.image_url || foundFarm.ImageURL || "https://images.unsplash.com/photo-1595974482597-4b8da8879bc5?auto=format&fit=crop&q=80&w=150",
+                        coverImage: foundFarm.image_url || foundFarm.ImageURL || "https://images.unsplash.com/photo-1500937386664-56d1dfef3854?auto=format&fit=crop&q=80&w=1000",
+                        location: foundFarm.address || foundFarm.Address || "Việt Nam",
+                        specialty: "Nông sản sạch, Rau củ quả",
+                        experience: "5 năm",
+                        landArea: "1.2 Hécta",
+                        rating: 4.9,
+                        badge: "VietGAP",
+                        likes: 88,
+                        description: foundFarm.description || foundFarm.Description || "Trang trại của gia đình liên kết sản xuất nông nghiệp sạch chuẩn an toàn vệ sinh thực phẩm.",
+                    };
+                    setFarm(mappedFarm);
+                    setLikesCount(mappedFarm.likes);
                 }
 
                 // Fetch Products list
