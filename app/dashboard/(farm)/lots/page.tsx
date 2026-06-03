@@ -410,22 +410,27 @@ export default function CropLotsDashboard() {
 
       {/* Premium Create/Edit Modal */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-[2px] animate-fade-in">
-          <div className="bg-white w-full max-w-lg rounded-2xl shadow-2xl border border-gray-150 overflow-hidden transform scale-100 animate-zoom-in">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-[4px] transition-all animate-fade-in">
+          <div className="bg-white w-full max-w-lg rounded-2xl shadow-2xl border border-gray-100 overflow-hidden transform scale-100 animate-zoom-in">
 
             {/* Modal Header */}
-            <div className="px-6 py-5 border-b border-gray-100 bg-[#fbfdfc] flex items-center justify-between">
-              <div>
-                <h3 className="text-base sm:text-lg font-black text-gray-955">
-                  {editingLot ? "Cập Nhật Lô Đất Canh Tác" : "Thiết Lập Lô Canh Tác Mới"}
-                </h3>
-                <p className="text-[11px] sm:text-xs text-gray-500 font-medium">
-                  Cấu hình chi tiết diện tích, số cây, ngày gieo giống và ngày dự kiến thu hoạch.
-                </p>
+            <div className="px-6 py-5 border-b border-gray-100 bg-gradient-to-r from-[#fbfdfc] to-[#f4fbf7] flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-[#e8f8f0] text-[#13a855] rounded-xl">
+                  <Layers className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-base sm:text-lg font-black text-gray-900 leading-tight">
+                    {editingLot ? "Cập Nhật Lô Đất Canh Tác" : "Thiết Lập Lô Canh Tác Mới"}
+                  </h3>
+                  <p className="text-[11px] sm:text-xs text-gray-500 font-medium mt-0.5">
+                    Cấu hình chi tiết diện tích, số cây và lịch trình gieo trồng.
+                  </p>
+                </div>
               </div>
               <button
                 onClick={() => setIsModalOpen(false)}
-                className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full cursor-pointer transition-colors"
+                className="p-2 text-gray-400 hover:text-gray-700 hover:bg-gray-100 rounded-full cursor-pointer transition-colors"
               >
                 <X className="w-4 h-4 stroke-[2.5]" />
               </button>
@@ -435,18 +440,18 @@ export default function CropLotsDashboard() {
             <form onSubmit={handleSubmit} className="p-6 space-y-4 max-h-[75vh] overflow-y-auto">
               {/* farm_id display */}
               <div className="space-y-1">
-                <label className="text-xs font-bold text-gray-400 uppercase tracking-wide">ID Trang trại liên kết</label>
+                <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">ID Trang trại liên kết</label>
                 <input
                   type="text"
                   readOnly
                   value={farmId}
-                  className="w-full bg-gray-50 border border-gray-200 rounded-lg py-2.5 px-3 text-xs sm:text-sm text-gray-400 cursor-not-allowed font-medium"
+                  className="w-full bg-gray-50 border border-gray-200 rounded-lg py-2.5 px-3 text-xs sm:text-sm text-gray-500 cursor-not-allowed font-mono tracking-tight font-medium"
                 />
               </div>
 
               {/* name */}
               <div className="space-y-1">
-                <label className="text-xs font-bold text-gray-500 uppercase tracking-wide">
+                <label className="text-[10px] font-bold text-gray-500 uppercase tracking-wider block">
                   Tên lô canh tác <span className="text-red-500">*</span>
                 </label>
                 <input
@@ -455,14 +460,14 @@ export default function CropLotsDashboard() {
                   value={formName}
                   onChange={(e) => setFormName(e.target.value)}
                   placeholder="Ví dụ: Lô Xà Lách Hữu Cơ 2..."
-                  className="w-full bg-white border border-gray-300 rounded-lg py-2.5 px-3 text-xs sm:text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:border-[#13a855] focus:ring-1 focus:ring-[#13a855] transition-all font-medium"
+                  className="w-full bg-white border border-gray-300 rounded-lg py-2.5 px-3 text-xs sm:text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#13a855]/20 focus:border-[#13a855] transition-all font-medium"
                 />
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {/* area */}
                 <div className="space-y-1">
-                  <label className="text-xs font-bold text-gray-500 uppercase tracking-wide">
+                  <label className="text-[10px] font-bold text-gray-500 uppercase tracking-wider block">
                     Diện tích lô đất <span className="text-red-500">*</span>
                   </label>
                   <div className="flex gap-2">
@@ -473,12 +478,12 @@ export default function CropLotsDashboard() {
                       value={formArea}
                       onChange={(e) => setFormArea(e.target.value)}
                       placeholder="Diện tích..."
-                      className="flex-1 bg-white border border-gray-300 rounded-lg py-2.5 px-3 text-xs sm:text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:border-[#13a855] transition-all font-medium"
+                      className="flex-1 min-w-0 bg-white border border-gray-300 rounded-lg py-2.5 px-3 text-xs sm:text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#13a855]/20 focus:border-[#13a855] transition-all font-medium"
                     />
                     <select
                       value={formAreaUnit}
                       onChange={(e) => setFormAreaUnit(e.target.value)}
-                      className="bg-white border border-gray-300 rounded-lg py-2 px-3 text-xs sm:text-sm text-gray-750 font-bold focus:outline-none cursor-pointer"
+                      className="w-24 flex-shrink-0 bg-white border border-gray-300 rounded-lg py-2 px-3 text-xs sm:text-sm text-gray-750 font-bold focus:outline-none focus:ring-2 focus:ring-[#13a855]/20 focus:border-[#13a855] cursor-pointer"
                     >
                       <option value="M2">M²</option>
                       <option value="HA">Hécta</option>
@@ -488,7 +493,7 @@ export default function CropLotsDashboard() {
 
                 {/* tree_count */}
                 <div className="space-y-1">
-                  <label className="text-xs font-bold text-gray-500 uppercase tracking-wide">
+                  <label className="text-[10px] font-bold text-gray-500 uppercase tracking-wider block">
                     Số lượng gốc cây trồng <span className="text-red-500">*</span>
                   </label>
                   <input
@@ -498,7 +503,7 @@ export default function CropLotsDashboard() {
                     value={formTreeCount}
                     onChange={(e) => setFormTreeCount(e.target.value)}
                     placeholder="Số lượng cây..."
-                    className="w-full bg-white border border-gray-300 rounded-lg py-2.5 px-3 text-xs sm:text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:border-[#13a855] focus:ring-1 focus:ring-[#13a855] transition-all font-medium"
+                    className="w-full bg-white border border-gray-300 rounded-lg py-2.5 px-3 text-xs sm:text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#13a855]/20 focus:border-[#13a855] transition-all font-medium"
                   />
                 </div>
               </div>
@@ -506,7 +511,7 @@ export default function CropLotsDashboard() {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {/* start_date */}
                 <div className="space-y-1">
-                  <label className="text-xs font-bold text-gray-500 uppercase tracking-wide">
+                  <label className="text-[10px] font-bold text-gray-500 uppercase tracking-wider block">
                     Ngày xuống giống gieo hạt <span className="text-red-500">*</span>
                   </label>
                   <input
@@ -514,13 +519,13 @@ export default function CropLotsDashboard() {
                     required
                     value={formStartDate}
                     onChange={(e) => setFormStartDate(e.target.value)}
-                    className="w-full bg-white border border-gray-300 rounded-lg py-2.5 px-3 text-xs sm:text-sm text-gray-700 font-bold focus:outline-none focus:border-[#13a855] transition-all"
+                    className="w-full bg-white border border-gray-300 rounded-lg py-2.5 px-3 text-xs sm:text-sm text-gray-700 font-bold focus:outline-none focus:ring-2 focus:ring-[#13a855]/20 focus:border-[#13a855] transition-all"
                   />
                 </div>
 
                 {/* expected_harvest_date */}
                 <div className="space-y-1">
-                  <label className="text-xs font-bold text-gray-500 uppercase tracking-wide">
+                  <label className="text-[10px] font-bold text-gray-500 uppercase tracking-wider block">
                     Ngày dự kiến thu hoạch <span className="text-red-500">*</span>
                   </label>
                   <input
@@ -528,18 +533,18 @@ export default function CropLotsDashboard() {
                     required
                     value={formHarvestDate}
                     onChange={(e) => setFormHarvestDate(e.target.value)}
-                    className="w-full bg-white border border-gray-300 rounded-lg py-2.5 px-3 text-xs sm:text-sm text-gray-700 font-bold focus:outline-none focus:border-[#13a855] transition-all"
+                    className="w-full bg-white border border-gray-300 rounded-lg py-2.5 px-3 text-xs sm:text-sm text-gray-700 font-bold focus:outline-none focus:ring-2 focus:ring-[#13a855]/20 focus:border-[#13a855] transition-all"
                   />
                 </div>
               </div>
 
               {/* status */}
               <div className="space-y-1">
-                <label className="text-xs font-bold text-gray-500 uppercase tracking-wide">Trạng thái lô canh tác</label>
+                <label className="text-[10px] font-bold text-gray-500 uppercase tracking-wider block">Trạng thái lô canh tác</label>
                 <select
                   value={formStatus}
                   onChange={(e) => setFormStatus(e.target.value as any)}
-                  className="w-full bg-white border border-gray-300 rounded-lg py-2.5 px-3 text-xs sm:text-sm text-gray-705 font-bold focus:outline-none focus:border-[#13a855] cursor-pointer"
+                  className="w-full bg-white border border-gray-300 rounded-lg py-2.5 px-3 text-xs sm:text-sm text-gray-705 font-bold focus:outline-none focus:ring-2 focus:ring-[#13a855]/20 focus:border-[#13a855] cursor-pointer"
                 >
                   <option value="PROCESS">Đang nuôi trồng (PROCESS)</option>
                   <option value="HARVESTED">Đang thu hoạch (HARVESTED)</option>
@@ -548,13 +553,13 @@ export default function CropLotsDashboard() {
 
               {/* note */}
               <div className="space-y-1">
-                <label className="text-xs font-bold text-gray-500 uppercase tracking-wide">Ghi chú canh tác</label>
+                <label className="text-[10px] font-bold text-gray-500 uppercase tracking-wider block">Ghi chú canh tác</label>
                 <textarea
                   value={formNote}
                   onChange={(e) => setFormNote(e.target.value)}
                   placeholder="Ghi chú về phân bón hữu cơ, lượng nước hoặc kỹ thuật canh tác đặc biệt..."
                   rows={2}
-                  className="w-full bg-white border border-gray-300 rounded-lg py-2 px-3 text-xs sm:text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:border-[#13a855] transition-all font-medium placeholder-gray-400 resize-none"
+                  className="w-full bg-white border border-gray-300 rounded-lg py-2 px-3 text-xs sm:text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#13a855]/20 focus:border-[#13a855] transition-all font-medium placeholder-gray-400 resize-none"
                 />
               </div>
 
@@ -563,13 +568,13 @@ export default function CropLotsDashboard() {
                 <button
                   type="button"
                   onClick={() => setIsModalOpen(false)}
-                  className="px-5 py-2.5 bg-white border border-gray-300 text-gray-650 hover:bg-gray-50 font-bold rounded-lg text-xs sm:text-sm transition-all cursor-pointer"
+                  className="px-5 py-2.5 bg-white border border-gray-300 text-gray-650 hover:bg-gray-50 hover:text-gray-800 font-bold rounded-lg text-xs sm:text-sm transition-all cursor-pointer"
                 >
                   Hủy bỏ
                 </button>
                 <button
                   type="submit"
-                  className="px-6 py-2.5 bg-[#13a855] hover:bg-[#0f8b44] text-white font-bold rounded-lg text-xs sm:text-sm shadow-md transition-all cursor-pointer active:scale-97"
+                  className="px-6 py-2.5 bg-[#13a855] hover:bg-[#0f8b44] text-white font-bold rounded-lg text-xs sm:text-sm shadow-md hover:shadow-lg transition-all cursor-pointer active:scale-95"
                 >
                   {editingLot ? "Lưu thay đổi" : "Khởi tạo lô đất"}
                 </button>
