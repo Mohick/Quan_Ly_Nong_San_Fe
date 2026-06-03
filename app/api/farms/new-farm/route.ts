@@ -29,10 +29,10 @@ export async function POST(request: Request) {
 
     return NextResponse.json(res.data, { status: res.status });
   } catch (error: any) {
-    console.error("Lỗi Route Handler /api/farms/new-farm:", error.message);
+    console.error("Lỗi chi tiết Route Handler /api/farms/new-farm:", error.response?.data || error.message || error);
     return NextResponse.json(
-      { message: error.message || "Lỗi tạo mới trang trại" },
-      { status: 500 }
+      { message: error.response?.data?.message || error.message || "Lỗi tạo mới trang trại" },
+      { status: error.response?.status || 500 }
     );
   }
 }

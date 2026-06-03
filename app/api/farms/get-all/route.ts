@@ -4,13 +4,12 @@ import axiosInstance from "@/lib/axios";
 export async function GET() {
   try {
     let url = "/farms/get-all";
-    const baseURL = axiosInstance.defaults.baseURL || "";
+    let baseURL = axiosInstance.defaults.baseURL || process.env.NEXT_PUBLIC_BASE_URL || "http://127.0.0.1:8080/api/v1";
     if (baseURL.includes("localhost")) {
-      const ipv4BaseURL = baseURL.replace("localhost", "127.0.0.1");
-      const res = await axiosInstance.get(url, { baseURL: ipv4BaseURL });
-      return NextResponse.json(res.data, { status: res.status });
+      baseURL = baseURL.replace("localhost", "127.0.0.1");
     }
-    const res = await axiosInstance.get(url);
+    console.log("Calling backend GET at:", baseURL + url);
+    const res = await axiosInstance.get(url, { baseURL });
     return NextResponse.json(res.data, { status: res.status });
   } catch (error: any) {
     console.error("Lỗi chi tiết Route Handler /api/farms/get-all:", error.response?.data || error.message || error);
