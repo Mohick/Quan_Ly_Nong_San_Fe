@@ -1,7 +1,7 @@
-import axios from "axios";
+import axiosInstance from "../axios";
 
 async function getAllFarmAPI() {
-    return await axios.get(`/api/farms/get-all`);
+    return await axiosInstance.get(`/farms/get-all`);
 }
 
 export { getAllFarmAPI };
