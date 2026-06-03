@@ -1,11 +1,15 @@
 import axiosInstance from "../axios";
 
-async function lotsAPI(farmId?: string) {
+async function lotsAPI(farmId?: string, token?: string) {
     if (!farmId) {
         return { data: [] };
     }
     try {
-        const res = await axiosInstance.get(`/crop-lot/get-crop-lot/${farmId}`);
+        const headers: Record<string, string> = {};
+        if (token) {
+            headers["Authorization"] = token.startsWith("Bearer ") ? token : `Bearer ${token}`;
+        }
+        const res = await axiosInstance.get(`/crop-lot/get-crop-lot/${farmId}`, { headers });
         if (res.data && res.data.valid && Array.isArray(res.data.data)) {
             return { data: res.data.data };
         }

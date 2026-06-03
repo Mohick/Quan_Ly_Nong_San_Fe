@@ -62,7 +62,7 @@ export default function CropLotsDashboard() {
 
         // 2. Gọi Backend API lấy danh sách lô đất với farmId
         if (activeFarmId) {
-          const res = await lotsAPI(activeFarmId);
+          const res = await lotsAPI(activeFarmId, token);
           const data = Array.isArray(res?.data) ? res.data : [];
           setLots(data);
         } else {
@@ -175,7 +175,7 @@ export default function CropLotsDashboard() {
             showToast("Khởi tạo lô canh tác thất bại: " + (response.data.message || "Lỗi hệ thống"));
             return;
           }
-          lotsAPI(farmId).then((res) => {
+          lotsAPI(farmId, token).then((res) => {
             setLots(Array.isArray(res?.data) ? res.data : []);
           });
           showToast("Đã khởi tạo lô canh tác mới thành công!");
