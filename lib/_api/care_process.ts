@@ -33,4 +33,18 @@ async function getCareProcessesAPI(cropLotId: string, token?: string) {
     return { data: [], isLocal: true };
 }
 
-export { createCareProcessAPI, getCareProcessesAPI };
+interface CareProcessUpdatePayload extends CareProcessPayload {
+    id: string;
+}
+
+async function updateCareProcessAPI(payload: CareProcessUpdatePayload, token?: string) {
+    const headers: Record<string, string> = {
+        "Content-Type": "application/json",
+    };
+    if (token) {
+        headers["Authorization"] = token.startsWith("Bearer ") ? token : `Bearer ${token}`;
+    }
+    return await axiosInstance.put(`/care-process/update`, payload, { headers });
+}
+
+export { createCareProcessAPI, getCareProcessesAPI, updateCareProcessAPI };
