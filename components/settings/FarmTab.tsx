@@ -197,7 +197,7 @@ export default function FarmTab({
                         </div>
 
                         {showAddDiary && (
-                            <form onSubmit={handleAddDiary} className="bg-gray-55 p-4 rounded-xl border border-gray-250/60 space-y-4 animate-slide-in">
+                            <form onSubmit={handleAddDiary} className="bg-gray-50 p-4 rounded-xl border border-gray-250/60 space-y-4 animate-slide-in">
                                 <div className="flex items-center justify-between border-b border-gray-200 pb-2">
                                     <span className="text-xs font-extrabold text-gray-800">Thêm nhật ký canh tác mới</span>
                                     <button 

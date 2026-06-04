@@ -14,9 +14,9 @@ import {
 import { useAuthStore, useAutoLogin } from "@/hooks/useAutoLogin";
 import { createFarmAPI } from "@/lib/_api/create_farm";
 import { FarmAPI } from "@/lib/_api/farm";
-import ProfileTab from "@/components/setings/ProfileTab";
-import FarmTab from "@/components/setings/FarmTab";
-import SecurityTab from "@/components/setings/SecurityTab";
+import ProfileTab from "@/components/settings/ProfileTab";
+import FarmTab from "@/components/settings/FarmTab";
+import SecurityTab from "@/components/settings/SecurityTab";
 
 function getCookie(name: string): string | undefined {
   if (typeof document === "undefined") return undefined;
