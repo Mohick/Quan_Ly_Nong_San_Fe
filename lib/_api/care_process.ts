@@ -20,27 +20,14 @@ async function createCareProcessAPI(payload: CareProcessPayload, token?: string)
 }
 
 async function getCareProcessesAPI(cropLotId: string, token?: string) {
-    try {
-        const headers: Record<string, string> = {};
-        if (token) {
-            headers["Authorization"] = token.startsWith("Bearer ") ? token : `Bearer ${token}`;
-        }
-        // Giả sử API GET có dạng /care-process/get-by-crop-lot/:id hoặc /care-process/get-all
-        const res = await axiosInstance.get(`/care-process/get-by-crop-lot/${cropLotId}`, { headers });
-        if (res.data && res.data.valid && Array.isArray(res.data.data)) {
-            return { data: res.data.data, isLocal: false };
-        }
-    } catch (error) {
-        console.error("Lỗi khi lấy danh sách nhật ký chăm sóc từ backend (sẽ tự động chuyển sang lưu cục bộ):", error);
-    }
-
-    // Fallback: Đọc từ LocalStorage nếu Backend API chưa hỗ trợ / chưa định nghĩa
+    // Vì Backend hiện tại chưa định nghĩa API GET cho care-process (chỉ có POST /create và PUT /update),
+    // chúng ta sẽ đọc trực tiếp từ bộ nhớ trình duyệt (LocalStorage) để tránh gây ra lỗi đỏ 404 trên Console.
     if (typeof window !== "undefined") {
         const localData = localStorage.getItem(`diaries_${cropLotId}`);
         if (localData) {
             try {
                 return { data: JSON.parse(localData), isLocal: true };
-            } catch (_) {}
+            } catch (_) { }
         }
     }
     return { data: [], isLocal: true };
