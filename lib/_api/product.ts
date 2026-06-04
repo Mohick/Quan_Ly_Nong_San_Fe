@@ -54,6 +54,45 @@ async function productAPI(token?: string, page: number = 1) {
             const cleanUrl = rawImg.startsWith("/") ? rawImg : `/${rawImg}`;
             return `${baseUrl}${cleanUrl}`;
         })(),
+        images: (() => {
+            const list: string[] = [];
+            const rawList = item.ImageProducts || item.image_products || [];
+            if (Array.isArray(rawList)) {
+                rawList.forEach((imgObj: any) => {
+                    const url = imgObj?.ImageURL || imgObj?.image_url;
+                    if (url && typeof url === "string" && url.trim() !== "") {
+                        if (url.startsWith("http://") || url.startsWith("https://") || url.startsWith("data:")) {
+                            list.push(url);
+                        } else {
+                            let baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:8080";
+                            if (baseUrl.includes("/api/v1")) {
+                                baseUrl = baseUrl.replace("/api/v1", "");
+                            }
+                            const cleanUrl = url.startsWith("/") ? url : `/${url}`;
+                            list.push(`${baseUrl}${cleanUrl}`);
+                        }
+                    }
+                });
+            }
+            if (list.length === 0) {
+                const mainImg = item.ImageURL || item.image_url || item.image;
+                if (mainImg && typeof mainImg === "string" && mainImg.trim() !== "") {
+                    if (mainImg.startsWith("http://") || mainImg.startsWith("https://") || mainImg.startsWith("data:")) {
+                        list.push(mainImg);
+                    } else {
+                        let baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:8080";
+                        if (baseUrl.includes("/api/v1")) {
+                            baseUrl = baseUrl.replace("/api/v1", "");
+                        }
+                        const cleanUrl = mainImg.startsWith("/") ? mainImg : `/${mainImg}`;
+                        list.push(`${baseUrl}${cleanUrl}`);
+                    }
+                } else {
+                    list.push("https://images.unsplash.com/photo-1610348725531-843dff10902c?q=80&w=600&auto=format&fit=crop");
+                }
+            }
+            return list;
+        })(),
         isBestSeller: item.IsBestSeller || false,
         unit: item.Unit || "sp"
     }));

@@ -20,6 +20,7 @@ export interface Product {
   salePrice: number;
   discountPercent: number;
   image: string;
+  images?: string[];
   isBestSeller?: boolean;
   unit: string;
 }
@@ -31,6 +32,7 @@ interface ProductDetailViewProps {
 export default function ProductDetailView({ product }: ProductDetailViewProps) {
   const [quantity, setQuantity] = useState(1);
   const [isLiked, setIsLiked] = useState(false);
+  const [activeImageIndex, setActiveImageIndex] = useState(0);
   
   // 2 main tabs: info (All product info + reviews), process (Planting/Farming process)
   const [activeTab, setActiveTab] = useState<"info" | "process">("info");
@@ -152,37 +154,90 @@ export default function ProductDetailView({ product }: ProductDetailViewProps) {
             <div className="space-y-8 animate-fade-in">
               {/* Main Product Card */}
               <div className="bg-white rounded-2xl border border-gray-200 shadow-md overflow-hidden grid grid-cols-1 md:grid-cols-12 gap-8 p-6 sm:p-8 lg:p-10">
-                {/* Left: Image */}
-                <div className="md:col-span-6 flex flex-col items-center justify-center bg-gray-50 rounded-xl overflow-hidden relative border border-gray-100 aspect-square group">
-                  {/* Badges */}
-                  <div className="absolute top-4 left-4 z-20 flex flex-col gap-2">
-                    {product.isBestSeller && (
-                      <span className="px-3 py-1.5 text-[9px] font-extrabold text-white bg-gradient-to-r from-red-500 to-orange-500 rounded shadow-md tracking-wider uppercase">
-                        Bán chạy nhất
+                {/* Left: Image Carousel & Thumbnails */}
+                <div className="md:col-span-6 flex flex-col gap-4">
+                  <div className="w-full bg-gray-50 rounded-xl overflow-hidden relative border border-gray-100 aspect-square group">
+                    {/* Badges */}
+                    <div className="absolute top-4 left-4 z-20 flex flex-col gap-2">
+                      {product.isBestSeller && (
+                        <span className="px-3 py-1.5 text-[9px] font-extrabold text-white bg-gradient-to-r from-red-500 to-orange-500 rounded shadow-md tracking-wider uppercase">
+                          Bán chạy nhất
+                        </span>
+                      )}
+                      <span className="w-fit px-2.5 py-1 text-[9px] font-extrabold text-white bg-[#13a855] rounded shadow-md">
+                        -{product.discountPercent}% OFF
                       </span>
+                    </div>
+
+                    {/* Favorite */}
+                    <button
+                      onClick={() => setIsLiked(!isLiked)}
+                      className={`absolute top-4 right-4 z-20 p-2.5 rounded-full border shadow-md active:scale-90 transition-all cursor-pointer ${
+                        isLiked 
+                          ? "bg-red-50 border-red-200 text-red-500" 
+                          : "bg-white border-gray-200 text-gray-400 hover:text-gray-650"
+                      }`}
+                    >
+                      <Heart className={`w-4.5 h-4.5 ${isLiked ? "fill-red-500" : ""}`} />
+                    </button>
+
+                    {/* Carousel Controls (only if multiple images exist) */}
+                    {product.images && product.images.length > 1 && (
+                      <>
+                        <button
+                          type="button"
+                          onClick={() => setActiveImageIndex((prev) => (prev > 0 ? prev - 1 : product.images!.length - 1))}
+                          className="absolute left-3 top-1/2 -translate-y-1/2 z-20 p-2 bg-white/80 hover:bg-white text-gray-700 rounded-full shadow hover:scale-105 active:scale-95 transition-all opacity-0 group-hover:opacity-100 cursor-pointer flex items-center justify-center"
+                        >
+                          <ChevronLeft className="w-4 h-4 stroke-[2.5]" />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setActiveImageIndex((prev) => (prev < product.images!.length - 1 ? prev + 1 : 0))}
+                          className="absolute right-3 top-1/2 -translate-y-1/2 z-20 p-2 bg-white/80 hover:bg-white text-gray-700 rounded-full shadow hover:scale-105 active:scale-95 transition-all opacity-0 group-hover:opacity-100 cursor-pointer flex items-center justify-center"
+                        >
+                          <ChevronRight className="w-4 h-4 stroke-[2.5]" />
+                        </button>
+
+                        {/* Dots Indicators */}
+                        <div className="absolute bottom-3 left-1/2 -translate-x-1/2 z-20 flex gap-1.5">
+                          {product.images.map((_, idx) => (
+                            <span
+                              key={idx}
+                              className={`h-1.5 rounded-full transition-all ${
+                                idx === activeImageIndex ? "w-4 bg-[#13a855]" : "w-1.5 bg-gray-300/80"
+                              }`}
+                            />
+                          ))}
+                        </div>
+                      </>
                     )}
-                    <span className="w-fit px-2.5 py-1 text-[9px] font-extrabold text-white bg-[#13a855] rounded shadow-md">
-                      -{product.discountPercent}% OFF
-                    </span>
+
+                    {/* Active Image */}
+                    <img
+                      src={product.images && product.images.length > 0 ? product.images[activeImageIndex] : product.image}
+                      alt={product.name}
+                      className="w-full h-full object-cover transform group-hover:scale-102 transition-transform duration-500"
+                    />
                   </div>
 
-                  {/* Favorite */}
-                  <button
-                    onClick={() => setIsLiked(!isLiked)}
-                    className={`absolute top-4 right-4 z-20 p-2.5 rounded-full border shadow-md active:scale-90 transition-all cursor-pointer ${
-                      isLiked 
-                        ? "bg-red-50 border-red-200 text-red-500" 
-                        : "bg-white border-gray-200 text-gray-400 hover:text-gray-650"
-                    }`}
-                  >
-                    <Heart className={`w-4.5 h-4.5 ${isLiked ? "fill-red-500" : ""}`} />
-                  </button>
-
-                  <img
-                    src={product.image}
-                    alt={product.name}
-                    className="w-full h-full object-cover transform group-hover:scale-102 transition-transform duration-500"
-                  />
+                  {/* Thumbnail Row */}
+                  {product.images && product.images.length > 1 && (
+                    <div className="flex gap-2.5 overflow-x-auto py-1 scrollbar-none justify-center">
+                      {product.images.map((imgUrl, idx) => (
+                        <button
+                          key={idx}
+                          type="button"
+                          onClick={() => setActiveImageIndex(idx)}
+                          className={`relative w-14 h-14 rounded-lg overflow-hidden border-2 transition-all flex-shrink-0 cursor-pointer ${
+                            idx === activeImageIndex ? "border-[#13a855] scale-102" : "border-gray-250 opacity-70 hover:opacity-100"
+                          }`}
+                        >
+                          <img src={imgUrl} alt={`${product.name} thumbnail ${idx + 1}`} className="w-full h-full object-cover" />
+                        </button>
+                      ))}
+                    </div>
+                  )}
                 </div>
 
                 {/* Right: Info Panel */}
