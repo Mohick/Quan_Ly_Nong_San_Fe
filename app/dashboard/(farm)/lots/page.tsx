@@ -38,6 +38,20 @@ export default function CropLotsDashboard() {
   const [statusFilter, setStatusFilter] = useState("all");
   const [farmId, setFarmId] = useState("550e8400-e29b-41d4-a716-446655440000");
 
+  // State for Crop Lot Detail UI as requested by user
+  const [selectedLot, setSelectedLot] = useState<CropLot | null>(null);
+  const [detailTab, setDetailTab] = useState<"tt" | "sp">("tt");
+  const [lotDiaries, setLotDiaries] = useState<Record<string, { id: number; month: string; description: string }[]>>({
+    // Pre-populate some crop lot diaries for dynamic presentation
+    "1": [
+      { id: 1, month: "Tháng 1", description: "Cày bừa, cấy hạt giống rau ăn lá đợt đầu. Sử dụng phân bón hữu cơ sinh học." },
+      { id: 2, month: "Tháng 2", description: "Cây con cao khoảng 5-7cm, hệ thống tưới tự động ổn định, chưa phát hiện sâu bệnh gây hại." }
+    ]
+  });
+  const [showAddDiary, setShowAddDiary] = useState(false);
+  const [newDiaryMonth, setNewDiaryMonth] = useState("");
+  const [newDiaryDesc, setNewDiaryDesc] = useState("");
+
   // Fetch lots from Backend APIs directly
   useEffect(() => {
     const fetchLotsData = async () => {
@@ -237,6 +251,234 @@ export default function CropLotsDashboard() {
     );
   }
 
+  if (selectedLot) {
+    const currentDiaries = lotDiaries[selectedLot.id] || [];
+
+    return (
+      <div className="space-y-6 font-sans antialiased text-gray-800 animate-fade-in select-none">
+        {/* Back header */}
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-gray-150/60 pb-4">
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => setSelectedLot(null)}
+              className="p-2 text-gray-500 hover:text-gray-900 bg-gray-150/80 hover:bg-gray-200 rounded-lg cursor-pointer transition-all flex items-center justify-center"
+            >
+              <X className="w-4 h-4" />
+            </button>
+            <div>
+              <h1 className="text-lg sm:text-xl font-black text-gray-950 tracking-tight">
+                Chi tiết Lô: {selectedLot.name}
+              </h1>
+              <p className="text-[11px] sm:text-xs text-gray-500 font-semibold mt-0.5">
+                Mã lô: #{selectedLot.id} | Nông trại: {farmId}
+              </p>
+            </div>
+          </div>
+
+          {/* Sub tabs: tt (Thông tin) and sp (Nhật ký) */}
+          <div className="flex bg-gray-150/60 p-1 rounded-xl w-fit border border-gray-250/60">
+            <button
+              type="button"
+              onClick={() => setDetailTab("tt")}
+              className={`px-4 py-2 text-xs font-black rounded-lg transition-all cursor-pointer ${
+                detailTab === "tt"
+                  ? "bg-white text-gray-900 shadow-sm"
+                  : "text-gray-500 hover:text-gray-900"
+              }`}
+            >
+              Thông Tin (TT)
+            </button>
+            <button
+              type="button"
+              onClick={() => setDetailTab("sp")}
+              className={`px-4 py-2 text-xs font-black rounded-lg transition-all cursor-pointer ${
+                detailTab === "sp"
+                  ? "bg-white text-gray-900 shadow-sm"
+                  : "text-gray-555 hover:text-gray-900"
+              }`}
+            >
+              Nhật Ký (SP)
+            </button>
+          </div>
+        </div>
+
+        {detailTab === "tt" ? (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {/* Info grid */}
+            <div className="md:col-span-2 bg-white border border-gray-200 rounded-2xl p-6 shadow-sm space-y-6">
+              <h3 className="text-sm font-black text-gray-900 border-b border-gray-100 pb-2">Thông tin chi tiết</h3>
+              
+              <div className="grid grid-cols-2 gap-6 text-xs font-bold text-gray-500">
+                <div className="space-y-1">
+                  <span className="text-[10px] text-gray-400 uppercase block">Diện tích canh tác</span>
+                  <span className="text-gray-800 text-sm font-extrabold">{selectedLot.area.toLocaleString()} {selectedLot.area_unit}</span>
+                </div>
+                <div className="space-y-1">
+                  <span className="text-[10px] text-gray-400 uppercase block">Quy mô gieo trồng</span>
+                  <span className="text-gray-800 text-sm font-extrabold">{selectedLot.tree_count.toLocaleString()} gốc cây</span>
+                </div>
+                <div className="space-y-1">
+                  <span className="text-[10px] text-gray-400 uppercase block">Ngày gieo hạt</span>
+                  <span className="text-gray-800 text-sm font-extrabold">{formatDate(selectedLot.start_date)}</span>
+                </div>
+                <div className="space-y-1">
+                  <span className="text-[10px] text-gray-400 uppercase block">Dự kiến thu hoạch</span>
+                  <span className="text-gray-800 text-sm font-extrabold">{formatDate(selectedLot.expected_harvest_date)}</span>
+                </div>
+              </div>
+
+              {selectedLot.note && (
+                <div className="space-y-1.5 pt-4 border-t border-gray-100">
+                  <span className="text-[10px] text-gray-400 uppercase block">Ghi chú kỹ thuật</span>
+                  <p className="text-xs text-gray-655 font-medium leading-relaxed bg-[#f4fbf7]/40 border border-[#e8f8f0] p-3 rounded-xl italic">
+                    {selectedLot.note}
+                  </p>
+                </div>
+              )}
+            </div>
+
+            {/* Status card */}
+            <div className="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm flex flex-col justify-between">
+              <div className="space-y-4">
+                <h3 className="text-sm font-black text-gray-900 border-b border-gray-100 pb-2">Trạng thái</h3>
+                <div className="flex items-center gap-2">
+                  {getStatusBadge(selectedLot.status)}
+                </div>
+                <p className="text-[11px] text-gray-500 leading-relaxed font-semibold">
+                  {selectedLot.status === "PROCESS" 
+                    ? "Lô đất hiện đang được nuôi trồng tích cực. Hãy theo dõi độ ẩm đất và chu kỳ tưới tiêu."
+                    : "Lô đất đã thu hoạch thành công vụ mùa. Hãy tiến hành cải tạo lại đất cho chu kỳ mới."}
+                </p>
+              </div>
+
+              <div className="pt-6 border-t border-gray-100">
+                <button
+                  onClick={() => handleOpenEditModal(selectedLot)}
+                  className="w-full py-2.5 border border-gray-300 text-gray-700 hover:bg-gray-50 text-xs font-bold rounded-xl transition-all cursor-pointer text-center"
+                >
+                  Chỉnh sửa thông số lô
+                </button>
+              </div>
+            </div>
+          </div>
+        ) : (
+          <div className="space-y-6">
+            <div className="flex items-center justify-between">
+              <h4 className="text-xs sm:text-sm font-extrabold text-gray-800">Nhật ký sinh trưởng hàng tháng</h4>
+              <button
+                type="button"
+                onClick={() => setShowAddDiary(true)}
+                className="flex items-center gap-1.5 px-3 py-2 bg-[#13a855] hover:bg-[#0f8b44] text-white text-[11px] font-bold rounded-lg shadow transition-all active:scale-95 cursor-pointer"
+              >
+                <Plus className="w-3.5 h-3.5" />
+                <span>Tạo nhật ký</span>
+              </button>
+            </div>
+
+            {showAddDiary && (
+              <form 
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  if (!newDiaryMonth || !newDiaryDesc) return;
+                  const newDiary = {
+                    id: Date.now(),
+                    month: newDiaryMonth,
+                    description: newDiaryDesc
+                  };
+                  setLotDiaries({
+                    ...lotDiaries,
+                    [selectedLot.id]: [newDiary, ...currentDiaries]
+                  });
+                  setNewDiaryMonth("");
+                  setNewDiaryDesc("");
+                  setShowAddDiary(false);
+                }} 
+                className="bg-gray-55 p-4 rounded-xl border border-gray-250/60 space-y-4 animate-slide-in"
+              >
+                <div className="flex items-center justify-between border-b border-gray-200 pb-2">
+                  <span className="text-xs font-extrabold text-gray-800">Thêm nhật ký tháng mới</span>
+                  <button 
+                    type="button" 
+                    onClick={() => setShowAddDiary(false)}
+                    className="text-gray-400 hover:text-gray-600 text-xs font-bold cursor-pointer"
+                  >
+                    Hủy
+                  </button>
+                </div>
+
+                <div className="space-y-3">
+                  <div className="space-y-1">
+                    <label className="text-[10px] font-bold text-gray-500 uppercase tracking-wide">Thời gian (Tháng) <span className="text-red-500">*</span></label>
+                    <input
+                      type="text"
+                      required
+                      value={newDiaryMonth}
+                      onChange={(e) => setNewDiaryMonth(e.target.value)}
+                      placeholder="Ví dụ: Tháng 1, Tháng 2..."
+                      className="w-full bg-white border border-gray-300 rounded-lg py-2 px-3 text-xs text-gray-800 focus:outline-none focus:border-[#13a855] focus:ring-1 focus:ring-[#13a855] transition-all font-semibold"
+                    />
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="text-[10px] font-bold text-gray-500 uppercase tracking-wide">Nội dung nhật ký (Description) <span className="text-red-500">*</span></label>
+                    <textarea
+                      required
+                      value={newDiaryDesc}
+                      onChange={(e) => setNewDiaryDesc(e.target.value)}
+                      placeholder="Nhập chi tiết các hoạt động, bón phân, tưới tiêu trong tháng..."
+                      rows={4}
+                      className="w-full bg-white border border-gray-300 rounded-lg py-2 px-3 text-xs text-gray-800 focus:outline-none focus:border-[#13a855] focus:ring-1 focus:ring-[#13a855] transition-all font-medium resize-none"
+                    />
+                  </div>
+                </div>
+
+                <div className="flex justify-end gap-2">
+                  <button
+                    type="submit"
+                    className="px-4 py-2 bg-[#13a855] hover:bg-[#0f8b44] text-white text-xs font-bold rounded-lg shadow-sm cursor-pointer"
+                  >
+                    Lưu nhật ký
+                  </button>
+                </div>
+              </form>
+            )}
+
+            {currentDiaries.length === 0 ? (
+              <div className="text-center py-12 bg-white border border-gray-200 rounded-2xl text-gray-400 font-semibold text-xs">
+                Chưa có nhật ký nào được ghi nhận cho lô canh tác này.
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {currentDiaries.map((diary) => (
+                  <div key={diary.id} className="bg-white border border-gray-200 rounded-xl p-4 shadow-sm hover:shadow transition-shadow relative group">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="px-2.5 py-1 bg-emerald-50 text-emerald-700 text-[10px] font-black uppercase tracking-wider rounded-md border border-emerald-100">
+                        📅 {diary.month}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setLotDiaries({
+                            ...lotDiaries,
+                            [selectedLot.id]: currentDiaries.filter(d => d.id !== diary.id)
+                          });
+                        }}
+                        className="opacity-0 group-hover:opacity-100 transition-opacity text-red-500 hover:text-red-750 text-[10px] font-bold cursor-pointer"
+                      >
+                        Xóa
+                      </button>
+                    </div>
+                    <p className="text-xs text-gray-600 font-semibold leading-relaxed">{diary.description}</p>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6 font-sans antialiased text-gray-800 animate-fade-in select-none">
 
@@ -382,21 +624,33 @@ export default function CropLotsDashboard() {
               </div>
 
               {/* Actions Footer */}
-              <div className="bg-gray-50/60 border-t border-gray-150/60 p-4 flex items-center justify-end gap-2">
+              <div className="bg-gray-50/60 border-t border-gray-150/60 p-4 flex items-center justify-between gap-2">
                 <button
-                  onClick={() => handleOpenEditModal(lot)}
+                  onClick={() => {
+                    setSelectedLot(lot);
+                    setDetailTab("tt");
+                  }}
                   className="p-2 text-gray-500 hover:text-[#13a855] hover:bg-[#e8f8f0] border border-gray-200 hover:border-[#13a855]/30 rounded-lg cursor-pointer transition-all active:scale-95 text-xs font-bold flex items-center gap-1.5"
                 >
-                  <Edit2 className="w-3.5 h-3.5" />
-                  <span>Sửa</span>
+                  <ChevronRight className="w-3.5 h-3.5" />
+                  <span>Chi tiết</span>
                 </button>
-                <button
-                  onClick={() => handleDelete(lot.id)}
-                  className="p-2 text-gray-500 hover:text-red-600 hover:bg-red-50 border border-gray-200 hover:border-red-100 rounded-lg cursor-pointer transition-all active:scale-95 text-xs font-bold flex items-center gap-1.5"
-                >
-                  <Trash2 className="w-3.5 h-3.5" />
-                  <span>Xóa</span>
-                </button>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => handleOpenEditModal(lot)}
+                    className="p-2 text-gray-500 hover:text-[#13a855] hover:bg-[#e8f8f0] border border-[#d3ecd8] hover:border-[#13a855]/30 rounded-lg cursor-pointer transition-all active:scale-95 text-xs font-bold flex items-center gap-1.5"
+                  >
+                    <Edit2 className="w-3.5 h-3.5" />
+                    <span>Sửa</span>
+                  </button>
+                  <button
+                    onClick={() => handleDelete(lot.id)}
+                    className="p-2 text-gray-500 hover:text-red-600 hover:bg-red-50 border border-gray-200 hover:border-red-100 rounded-lg cursor-pointer transition-all active:scale-95 text-xs font-bold flex items-center gap-1.5"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                    <span>Xóa</span>
+                  </button>
+                </div>
               </div>
             </div>
           ))
