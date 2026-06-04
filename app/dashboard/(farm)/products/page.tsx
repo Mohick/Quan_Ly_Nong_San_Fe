@@ -58,7 +58,7 @@ export default function DashboardProducts() {
   const [formCropLotId, setFormCropLotId] = useState("");
   const [formDescription, setFormDescription] = useState("");
   const [formStock, setFormStock] = useState("10");
-  const [formImageFile, setFormImageFile] = useState<File | null>(null);
+  const [formImageFiles, setFormImageFiles] = useState<File[]>([]);
 
   // Status message
   const [notification, setNotification] = useState<{ message: string; type: "success" | "error" } | null>(null);
@@ -120,7 +120,7 @@ export default function DashboardProducts() {
     setFormIsBestSeller(false);
     setFormDescription("");
     setFormStock("10");
-    setFormImageFile(null);
+    setFormImageFiles([]);
     if (lots.length > 0) {
       setFormCropLotId(lots[0].id || lots[0].ID);
     }
@@ -189,9 +189,10 @@ export default function DashboardProducts() {
       formData.append("description", formDescription);
       formData.append("price", formSalePrice);
       formData.append("stock", formStock);
-      if (formImageFile) {
-        formData.append("image", formImageFile);
-      }
+      
+      formImageFiles.forEach((file) => {
+        formData.append("image", file);
+      });
 
       createProductAPI(formData, token)
         .then((res) => {
@@ -207,7 +208,7 @@ export default function DashboardProducts() {
             originalPrice: originalPriceNum,
             discountPercent: discountNum,
             unit: formUnit,
-            image: formImageFile ? URL.createObjectURL(formImageFile) : formImage || "https://images.unsplash.com/photo-1610348725531-843dff10902c?q=80&w=600&auto=format&fit=crop",
+            image: formImageFiles.length > 0 ? URL.createObjectURL(formImageFiles[0]) : formImage || "https://images.unsplash.com/photo-1610348725531-843dff10902c?q=80&w=600&auto=format&fit=crop",
             isBestSeller: formIsBestSeller,
           };
           setProducts((prev) => [newProduct, ...prev]);
@@ -228,7 +229,7 @@ export default function DashboardProducts() {
             originalPrice: originalPriceNum,
             discountPercent: discountNum,
             unit: formUnit,
-            image: formImageFile ? URL.createObjectURL(formImageFile) : formImage || "https://images.unsplash.com/photo-1610348725531-843dff10902c?q=80&w=600&auto=format&fit=crop",
+            image: formImageFiles.length > 0 ? URL.createObjectURL(formImageFiles[0]) : formImage || "https://images.unsplash.com/photo-1610348725531-843dff10902c?q=80&w=600&auto=format&fit=crop",
             isBestSeller: formIsBestSeller,
           };
           setProducts((prev) => [newProduct, ...prev]);
@@ -594,19 +595,46 @@ export default function DashboardProducts() {
                     </div>
                   ) : (
                     <div className="border-2 border-dashed border-gray-300 rounded-xl p-6 text-center hover:border-[#13a855] transition-all bg-gray-50 flex flex-col items-center justify-center relative">
-                      {formImageFile ? (
-                        <div className="space-y-3 flex flex-col items-center">
-                          <div className="relative w-28 h-28 border border-gray-200 rounded-lg overflow-hidden shadow-sm">
-                            <img src={URL.createObjectURL(formImageFile)} alt="Preview" className="w-full h-full object-cover" />
+                      {formImageFiles.length > 0 ? (
+                        <div className="space-y-4 w-full">
+                          <div className="grid grid-cols-3 gap-3">
+                            {formImageFiles.map((file, idx) => (
+                              <div key={idx} className="relative aspect-square border border-gray-200 rounded-lg overflow-hidden shadow-xs group">
+                                <img src={URL.createObjectURL(file)} alt="Preview" className="w-full h-full object-cover" />
+                                <button
+                                  type="button"
+                                  onClick={() => setFormImageFiles(prev => prev.filter((_, i) => i !== idx))}
+                                  className="absolute top-1 right-1 bg-black/60 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-500 cursor-pointer flex items-center justify-center"
+                                >
+                                  <X className="w-3 h-3" />
+                                </button>
+                              </div>
+                            ))}
                           </div>
-                          <p className="text-[11px] font-bold text-[#13a855]">{formImageFile.name}</p>
-                          <button
-                            type="button"
-                            onClick={() => setFormImageFile(null)}
-                            className="text-[10px] text-red-500 hover:underline font-bold"
-                          >
-                            Hủy bỏ và chọn ảnh khác
-                          </button>
+                          <div className="flex justify-between items-center pt-2 border-t border-gray-200">
+                            <label className="px-2.5 py-1.5 bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 text-[10px] font-extrabold rounded-lg shadow-sm cursor-pointer transition-all active:scale-95">
+                              Thêm ảnh khác
+                              <input
+                                type="file"
+                                multiple
+                                accept="image/*"
+                                onChange={(e) => {
+                                  if (e.target.files) {
+                                    const newFiles = Array.from(e.target.files);
+                                    setFormImageFiles(prev => [...prev, ...newFiles]);
+                                  }
+                                }}
+                                className="hidden"
+                              />
+                            </label>
+                            <button
+                              type="button"
+                              onClick={() => setFormImageFiles([])}
+                              className="text-[10px] text-red-500 hover:underline font-bold"
+                            >
+                              Xóa tất cả
+                            </button>
+                          </div>
                         </div>
                       ) : (
                         <div className="space-y-2">
@@ -615,16 +643,21 @@ export default function DashboardProducts() {
                           </div>
                           <div className="flex flex-col items-center gap-1.5">
                             <label className="px-3 py-1.5 bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 text-xs font-extrabold rounded-lg shadow-sm cursor-pointer transition-all active:scale-95">
-                              Upload new
+                              Chọn ảnh sản phẩm
                               <input
                                 type="file"
                                 required
+                                multiple
                                 accept="image/*"
-                                onChange={(e) => setFormImageFile(e.target.files?.[0] || null)}
+                                onChange={(e) => {
+                                  if (e.target.files) {
+                                    setFormImageFiles(Array.from(e.target.files));
+                                  }
+                                }}
                                 className="hidden"
                               />
                             </label>
-                            <span className="text-[10px] text-gray-400 font-semibold">Accepts images, videos, or 3D models</span>
+                            <span className="text-[10px] text-gray-400 font-semibold">Có thể chọn nhiều hình ảnh cùng lúc</span>
                           </div>
                         </div>
                       )}
