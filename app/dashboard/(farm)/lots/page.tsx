@@ -311,11 +311,11 @@ export default function CropLotsDashboard() {
               <div className="grid grid-cols-2 gap-6 text-xs font-bold text-gray-500">
                 <div className="space-y-1">
                   <span className="text-[10px] text-gray-400 uppercase block">Diện tích canh tác</span>
-                  <span className="text-gray-800 text-sm font-extrabold">{selectedLot.area.toLocaleString()} {selectedLot.area_unit}</span>
+                  <span className="text-gray-800 text-sm font-extrabold">{(selectedLot.area ?? 0).toLocaleString()} {selectedLot.area_unit || "M2"}</span>
                 </div>
                 <div className="space-y-1">
                   <span className="text-[10px] text-gray-400 uppercase block">Quy mô gieo trồng</span>
-                  <span className="text-gray-800 text-sm font-extrabold">{selectedLot.tree_count.toLocaleString()} gốc cây</span>
+                  <span className="text-gray-800 text-sm font-extrabold">{(selectedLot.tree_count ?? 0).toLocaleString()} gốc cây</span>
                 </div>
                 <div className="space-y-1">
                   <span className="text-[10px] text-gray-400 uppercase block">Ngày gieo hạt</span>
