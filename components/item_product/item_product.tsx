@@ -15,6 +15,7 @@ export interface Product {
     salePrice: number;
     discountPercent: number;
     image: string;
+    images?: string[];
     isBestSeller?: boolean;
     unit: string;
 }
