@@ -430,8 +430,26 @@ export default function CropLotsDashboard() {
                       alert("Không thể lưu nhật ký. Vui lòng thử lại!");
                     }
                   } catch (error: any) {
-                    console.error("Lỗi khi tạo nhật ký chăm sóc:", error);
-                    alert("Lỗi: " + (error.response?.data?.message || error.message));
+                    console.error("Lỗi khi tạo nhật ký chăm sóc (Chuyển sang LocalStorage cục bộ):", error);
+                    const localKey = `diaries_${lotId}`;
+                    let list = [];
+                    if (typeof window !== "undefined") {
+                      const existing = localStorage.getItem(localKey);
+                      if (existing) {
+                        try { list = JSON.parse(existing); } catch (_) {}
+                      }
+                      const simulatedDiary = {
+                        id: Date.now(),
+                        ...payload
+                      };
+                      list.unshift(simulatedDiary);
+                      localStorage.setItem(localKey, JSON.stringify(list));
+                    }
+                    setLotDiaries((prev) => ({
+                      ...prev,
+                      [lotId]: list
+                    }));
+                    showToast("Đã lưu nhật ký vào Bộ nhớ trình duyệt (LocalStorage)!");
                   }
 
                   setNewDiaryTitle("");
@@ -555,9 +573,13 @@ export default function CropLotsDashboard() {
                         onClick={() => {
                           const lotId = selectedLot.id || (selectedLot as any).ID;
                           if (!lotId) return;
+                          const updated = currentDiaries.filter(d => d.id !== diary.id);
+                          if (typeof window !== "undefined") {
+                            localStorage.setItem(`diaries_${lotId}`, JSON.stringify(updated));
+                          }
                           setLotDiaries({
                             ...lotDiaries,
-                            [lotId]: currentDiaries.filter(d => d.id !== diary.id)
+                            [lotId]: updated
                           });
                         }}
                         className="opacity-0 group-hover:opacity-100 transition-opacity text-red-500 hover:text-red-750 text-[10px] font-bold cursor-pointer"
