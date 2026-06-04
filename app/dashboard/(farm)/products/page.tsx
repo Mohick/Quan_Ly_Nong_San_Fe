@@ -9,6 +9,9 @@ import {
 import { productAPI, createProductAPI } from "@/lib/_api/product";
 import { FarmAPI } from "@/lib/_api/farm";
 import { lotsAPI } from "@/lib/_api/lots";
+import dynamic from 'next/dynamic';
+const ReactQuill = dynamic(() => import('react-quill'), { ssr: false });
+import 'react-quill/dist/quill.snow.css';
 
 function getCookie(name: string): string | undefined {
   if (typeof document === "undefined") return undefined;
@@ -545,31 +548,13 @@ export default function DashboardProducts() {
 
                   <div className="space-y-1.5">
                     <label className="text-xs font-bold text-gray-700">Mô tả (Description) <span className="text-red-500">*</span></label>
-                    {/* Rich text formatting bar mockup matching the Shopify design */}
-                    <div className="border border-gray-300 rounded-lg overflow-hidden focus-within:border-[#13a855] focus-within:ring-1 focus-within:ring-[#13a855] transition-all bg-white">
-                      <div className="flex flex-wrap items-center gap-1 bg-gray-50 border-b border-gray-200 p-2 text-gray-500 text-xs font-medium">
-                        <button type="button" className="p-1 hover:bg-gray-200 rounded cursor-pointer">✨</button>
-                        <select className="bg-transparent hover:bg-gray-200 p-1 rounded text-[11px] font-bold cursor-pointer outline-none">
-                          <option>Paragraph</option>
-                          <option>Heading 1</option>
-                          <option>Heading 2</option>
-                        </select>
-                        <span className="h-4 w-[1px] bg-gray-300 mx-1"></span>
-                        <button type="button" className="p-1 font-bold hover:bg-gray-200 rounded w-6 cursor-pointer">B</button>
-                        <button type="button" className="p-1 italic hover:bg-gray-200 rounded w-6 cursor-pointer">I</button>
-                        <button type="button" className="p-1 underline hover:bg-gray-200 rounded w-6 cursor-pointer">U</button>
-                        <span className="h-4 w-[1px] bg-gray-300 mx-1"></span>
-                        <button type="button" className="p-1 hover:bg-gray-200 rounded cursor-pointer">🔗</button>
-                        <button type="button" className="p-1 hover:bg-gray-200 rounded cursor-pointer">🖼️</button>
-                        <button type="button" className="p-1 hover:bg-gray-200 rounded cursor-pointer">🎥</button>
-                      </div>
-                      <textarea
-                        required
-                        value={formDescription}
-                        onChange={(e) => setFormDescription(e.target.value)}
+                    <div className="bg-white rounded-lg overflow-hidden border border-gray-300 focus-within:border-[#13a855] focus-within:ring-1 focus-within:ring-[#13a855] transition-all">
+                      <ReactQuill 
+                        theme="snow" 
+                        value={formDescription} 
+                        onChange={setFormDescription} 
                         placeholder="Mô tả chi tiết sản phẩm, nguồn gốc xuất xứ..."
-                        rows={5}
-                        className="w-full border-none p-3 text-xs sm:text-sm text-gray-800 placeholder-gray-400 focus:outline-none resize-none font-medium"
+                        className="quill-product-desc"
                       />
                     </div>
                   </div>
