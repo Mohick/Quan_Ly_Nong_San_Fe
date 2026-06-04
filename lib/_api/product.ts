@@ -36,10 +36,24 @@ async function productAPI(token?: string, page: number = 1) {
         originalPrice: item.Price || item.originalPrice || 0,
         salePrice: item.Price || item.salePrice || 0,
         discountPercent: item.DiscountPercent || 0,
-        image: (item.ImageProducts && item.ImageProducts[0]?.ImageURL) || 
-               (item.ImageProducts && item.ImageProducts[0]?.image_url) || 
-               (item.image_products && item.image_products[0]?.image_url) || 
-               item.ImageURL || item.image || "https://images.unsplash.com/photo-1610348725531-843dff10902c?q=80&w=600&auto=format&fit=crop",
+        image: (() => {
+            const rawImg = (item.ImageProducts && item.ImageProducts[0]?.ImageURL) || 
+                           (item.ImageProducts && item.ImageProducts[0]?.image_url) || 
+                           (item.image_products && item.image_products[0]?.image_url) || 
+                           item.ImageURL || item.image_url || item.image;
+            if (!rawImg || typeof rawImg !== "string" || rawImg.trim() === "") {
+                return "https://images.unsplash.com/photo-1610348725531-843dff10902c?q=80&w=600&auto=format&fit=crop";
+            }
+            if (rawImg.startsWith("http://") || rawImg.startsWith("https://") || rawImg.startsWith("data:")) {
+                return rawImg;
+            }
+            let baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:8080";
+            if (baseUrl.includes("/api/v1")) {
+                baseUrl = baseUrl.replace("/api/v1", "");
+            }
+            const cleanUrl = rawImg.startsWith("/") ? rawImg : `/${rawImg}`;
+            return `${baseUrl}${cleanUrl}`;
+        })(),
         isBestSeller: item.IsBestSeller || false,
         unit: item.Unit || "sp"
     }));
