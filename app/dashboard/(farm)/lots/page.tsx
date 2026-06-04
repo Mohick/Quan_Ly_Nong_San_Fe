@@ -41,16 +41,33 @@ export default function CropLotsDashboard() {
   // State for Crop Lot Detail UI as requested by user
   const [selectedLot, setSelectedLot] = useState<CropLot | null>(null);
   const [detailTab, setDetailTab] = useState<"tt" | "sp">("tt");
-  const [lotDiaries, setLotDiaries] = useState<Record<string, { id: number; month: string; description: string }[]>>({
+  const [lotDiaries, setLotDiaries] = useState<Record<string, any[]>>({
     // Pre-populate some crop lot diaries for dynamic presentation
     "1": [
-      { id: 1, month: "Tháng 1", description: "Cày bừa, cấy hạt giống rau ăn lá đợt đầu. Sử dụng phân bón hữu cơ sinh học." },
-      { id: 2, month: "Tháng 2", description: "Cây con cao khoảng 5-7cm, hệ thống tưới tự động ổn định, chưa phát hiện sâu bệnh gây hại." }
+      { 
+        id: 1, 
+        title: "Cham soc thang 1", 
+        description: "Cày bừa, cấy hạt giống rau ăn lá đợt đầu. Sử dụng phân bón hữu cơ sinh học.",
+        month: 1,
+        started_date: "2026-06-01T00:00:00Z",
+        finished_dat: "2026-06-30T00:00:00Z"
+      },
+      { 
+        id: 2, 
+        title: "Cham soc thang 2", 
+        description: "Cây con cao khoảng 5-7cm, hệ thống tưới tự động ổn định, chưa phát hiện sâu bệnh gây hại.",
+        month: 2,
+        started_date: "2026-07-01T00:00:00Z",
+        finished_dat: "2026-07-31T00:00:00Z"
+      }
     ]
   });
   const [showAddDiary, setShowAddDiary] = useState(false);
-  const [newDiaryMonth, setNewDiaryMonth] = useState("");
+  const [newDiaryTitle, setNewDiaryTitle] = useState("");
   const [newDiaryDesc, setNewDiaryDesc] = useState("");
+  const [newDiaryMonth, setNewDiaryMonth] = useState<number>(1);
+  const [newDiaryStartDate, setNewDiaryStartDate] = useState("");
+  const [newDiaryFinishedDate, setNewDiaryFinishedDate] = useState("");
 
   // Fetch lots from Backend APIs directly
   useEffect(() => {
@@ -379,21 +396,38 @@ export default function CropLotsDashboard() {
               <form 
                 onSubmit={(e) => {
                   e.preventDefault();
-                  if (!newDiaryMonth || !newDiaryDesc) return;
-                  const newDiary = {
-                    id: Date.now(),
-                    month: newDiaryMonth,
-                    description: newDiaryDesc
+                  if (!newDiaryTitle.trim() || !newDiaryDesc.trim() || !newDiaryStartDate || !newDiaryFinishedDate) {
+                    alert("Vui lòng điền đầy đủ các thông tin bắt buộc!");
+                    return;
+                  }
+                  
+                  const payload = {
+                    crop_lot_id: selectedLot.id,
+                    title: newDiaryTitle,
+                    description: newDiaryDesc,
+                    month: Number(newDiaryMonth),
+                    started_date: new Date(newDiaryStartDate).toISOString().split(".")[0] + "Z",
+                    finished_dat: new Date(newDiaryFinishedDate).toISOString().split(".")[0] + "Z"
                   };
+
+                  const simulatedDiary = {
+                    id: Date.now(),
+                    ...payload
+                  };
+
                   setLotDiaries({
                     ...lotDiaries,
-                    [selectedLot.id]: [newDiary, ...currentDiaries]
+                    [selectedLot.id]: [simulatedDiary, ...currentDiaries]
                   });
-                  setNewDiaryMonth("");
+
+                  setNewDiaryTitle("");
                   setNewDiaryDesc("");
+                  setNewDiaryMonth(1);
+                  setNewDiaryStartDate("");
+                  setNewDiaryFinishedDate("");
                   setShowAddDiary(false);
                 }} 
-                className="bg-gray-55 p-4 rounded-xl border border-gray-250/60 space-y-4 animate-slide-in"
+                className="bg-gray-50 p-5 rounded-xl border border-gray-250/60 space-y-4 animate-slide-in"
               >
                 <div className="flex items-center justify-between border-b border-gray-200 pb-2">
                   <span className="text-xs font-extrabold text-gray-800">Thêm nhật ký tháng mới</span>
@@ -407,25 +441,69 @@ export default function CropLotsDashboard() {
                 </div>
 
                 <div className="space-y-3">
+                  {/* title */}
                   <div className="space-y-1">
-                    <label className="text-[10px] font-bold text-gray-500 uppercase tracking-wide">Thời gian (Tháng) <span className="text-red-500">*</span></label>
+                    <label className="text-[10px] font-bold text-gray-500 uppercase tracking-wide">Tiêu đề nhật ký <span className="text-red-500">*</span></label>
                     <input
                       type="text"
                       required
-                      value={newDiaryMonth}
-                      onChange={(e) => setNewDiaryMonth(e.target.value)}
-                      placeholder="Ví dụ: Tháng 1, Tháng 2..."
+                      value={newDiaryTitle}
+                      onChange={(e) => setNewDiaryTitle(e.target.value)}
+                      placeholder="Ví dụ: Chăm sóc tháng 1..."
                       className="w-full bg-white border border-gray-300 rounded-lg py-2 px-3 text-xs text-gray-800 focus:outline-none focus:border-[#13a855] focus:ring-1 focus:ring-[#13a855] transition-all font-semibold"
                     />
                   </div>
 
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    {/* month */}
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-bold text-gray-500 uppercase tracking-wide">Chỉ số Tháng (1 - 12) <span className="text-red-500">*</span></label>
+                      <input
+                        type="number"
+                        required
+                        min="1"
+                        max="12"
+                        value={newDiaryMonth}
+                        onChange={(e) => setNewDiaryMonth(Number(e.target.value))}
+                        className="w-full bg-white border border-gray-300 rounded-lg py-2 px-3 text-xs text-gray-800 focus:outline-none focus:border-[#13a855] focus:ring-1 focus:ring-[#13a855] transition-all font-semibold"
+                      />
+                    </div>
+
+                    {/* started_date */}
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-bold text-gray-500 uppercase tracking-wide">Ngày bắt đầu (started_date) <span className="text-red-500">*</span></label>
+                      <input
+                        type="date"
+                        required
+                        value={newDiaryStartDate}
+                        onChange={(e) => setNewDiaryStartDate(e.target.value)}
+                        className="w-full bg-white border border-gray-300 rounded-lg py-2 px-3 text-xs text-gray-800 focus:outline-none focus:border-[#13a855] focus:ring-1 focus:ring-[#13a855] transition-all font-semibold"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    {/* finished_dat */}
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-bold text-gray-500 uppercase tracking-wide">Ngày kết thúc (finished_dat) <span className="text-red-500">*</span></label>
+                      <input
+                        type="date"
+                        required
+                        value={newDiaryFinishedDate}
+                        onChange={(e) => setNewDiaryFinishedDate(e.target.value)}
+                        className="w-full bg-white border border-gray-300 rounded-lg py-2 px-3 text-xs text-gray-800 focus:outline-none focus:border-[#13a855] focus:ring-1 focus:ring-[#13a855] transition-all font-semibold"
+                      />
+                    </div>
+                  </div>
+
+                  {/* description */}
                   <div className="space-y-1">
                     <label className="text-[10px] font-bold text-gray-500 uppercase tracking-wide">Nội dung nhật ký (Description) <span className="text-red-500">*</span></label>
                     <textarea
                       required
                       value={newDiaryDesc}
                       onChange={(e) => setNewDiaryDesc(e.target.value)}
-                      placeholder="Nhập chi tiết các hoạt động, bón phân, tưới tiêu trong tháng..."
+                      placeholder="Nhập chi tiết các hoạt động, bón phân, tưới tiêu..."
                       rows={4}
                       className="w-full bg-white border border-gray-300 rounded-lg py-2 px-3 text-xs text-gray-800 focus:outline-none focus:border-[#13a855] focus:ring-1 focus:ring-[#13a855] transition-all font-medium resize-none"
                     />
@@ -452,9 +530,12 @@ export default function CropLotsDashboard() {
                 {currentDiaries.map((diary) => (
                   <div key={diary.id} className="bg-white border border-gray-200 rounded-xl p-4 shadow-sm hover:shadow transition-shadow relative group">
                     <div className="flex items-center justify-between mb-2">
-                      <span className="px-2.5 py-1 bg-emerald-50 text-emerald-700 text-[10px] font-black uppercase tracking-wider rounded-md border border-emerald-100">
-                        📅 {diary.month}
-                      </span>
+                      <div className="flex items-center gap-2">
+                        <span className="px-2.5 py-1 bg-emerald-50 text-emerald-700 text-[10px] font-black uppercase tracking-wider rounded-md border border-emerald-100">
+                          📅 Tháng {diary.month}
+                        </span>
+                        <span className="text-gray-800 font-black text-xs">{diary.title}</span>
+                      </div>
                       <button
                         type="button"
                         onClick={() => {
@@ -468,6 +549,13 @@ export default function CropLotsDashboard() {
                         Xóa
                       </button>
                     </div>
+                    
+                    {diary.started_date && diary.finished_dat && (
+                      <div className="text-[10px] text-gray-450 font-bold mb-1">
+                        Thời gian: {formatDate(diary.started_date)} - {formatDate(diary.finished_dat)}
+                      </div>
+                    )}
+                    
                     <p className="text-xs text-gray-600 font-semibold leading-relaxed">{diary.description}</p>
                   </div>
                 ))}
