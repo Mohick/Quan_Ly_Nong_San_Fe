@@ -164,22 +164,12 @@ export default function ProductDetailView({ product }: ProductDetailViewProps) {
                           Bán chạy nhất
                         </span>
                       )}
-                      <span className="w-fit px-2.5 py-1 text-[9px] font-extrabold text-white bg-[#13a855] rounded shadow-md">
+                      <span className="w-fit px-2.5 py-1 text-[9px] font-extrabold text-white bg-[#ff424e] rounded shadow-md">
                         -{product.discountPercent}% OFF
                       </span>
                     </div>
 
-                    {/* Favorite */}
-                    <button
-                      onClick={() => setIsLiked(!isLiked)}
-                      className={`absolute top-4 right-4 z-20 p-2.5 rounded-full border shadow-md active:scale-90 transition-all cursor-pointer ${
-                        isLiked 
-                          ? "bg-red-50 border-red-200 text-red-500" 
-                          : "bg-white border-gray-200 text-gray-400 hover:text-gray-650"
-                      }`}
-                    >
-                      <Heart className={`w-4.5 h-4.5 ${isLiked ? "fill-red-500" : ""}`} />
-                    </button>
+                    {/* Favorite button removed to match Shopee UI layout */}
 
                     {/* Carousel Controls (only if multiple images exist) */}
                     {product.images && product.images.length > 1 && (
@@ -205,7 +195,7 @@ export default function ProductDetailView({ product }: ProductDetailViewProps) {
                             <span
                               key={idx}
                               className={`h-1.5 rounded-full transition-all ${
-                                idx === activeImageIndex ? "w-4 bg-[#13a855]" : "w-1.5 bg-gray-300/80"
+                                idx === activeImageIndex ? "w-4 bg-[#ff424e]" : "w-1.5 bg-gray-300/80"
                               }`}
                             />
                           ))}
@@ -230,7 +220,7 @@ export default function ProductDetailView({ product }: ProductDetailViewProps) {
                           type="button"
                           onClick={() => setActiveImageIndex(idx)}
                           className={`relative w-14 h-14 rounded-lg overflow-hidden border-2 transition-all flex-shrink-0 cursor-pointer ${
-                            idx === activeImageIndex ? "border-[#13a855] scale-102" : "border-gray-250 opacity-70 hover:opacity-100"
+                            idx === activeImageIndex ? "border-[#ff424e] scale-102" : "border-gray-250 opacity-70 hover:opacity-100"
                           }`}
                         >
                           <img src={imgUrl} alt={`${product.name} thumbnail ${idx + 1}`} className="w-full h-full object-cover" />
@@ -240,89 +230,142 @@ export default function ProductDetailView({ product }: ProductDetailViewProps) {
                   )}
                 </div>
 
+                  {/* Social Share & Likes */}
+                  <div className="flex items-center justify-center gap-8 pt-2">
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm text-gray-600">Chia sẻ:</span>
+                      <div className="flex gap-1">
+                        <div className="w-6 h-6 rounded-full bg-blue-500 text-white flex items-center justify-center cursor-pointer">
+                          <span className="text-xs font-bold">f</span>
+                        </div>
+                        <div className="w-6 h-6 rounded-full bg-blue-400 text-white flex items-center justify-center cursor-pointer">
+                          <span className="text-xs font-bold">m</span>
+                        </div>
+                        <div className="w-6 h-6 rounded-full bg-red-600 text-white flex items-center justify-center cursor-pointer">
+                          <span className="text-xs font-bold">p</span>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="w-px h-5 bg-gray-200"></div>
+                    <button
+                      onClick={() => setIsLiked(!isLiked)}
+                      className={`flex items-center gap-2 cursor-pointer transition-colors ${
+                        isLiked ? "text-red-500" : "text-gray-500 hover:text-red-500"
+                      }`}
+                    >
+                      <Heart className={`w-5 h-5 ${isLiked ? "fill-red-500" : ""}`} />
+                      <span className="text-sm">Đã thích ({isLiked ? "723" : "722"})</span>
+                    </button>
+                  </div>
+                </div>
+
                 {/* Right: Info Panel */}
                 <div className="md:col-span-6 flex flex-col justify-between space-y-6">
                   <div className="space-y-4">
-                    <span className="inline-block px-3 py-1 bg-[#e8f8f0] text-[#13a855] border border-[#cbeed7] rounded-md text-xs font-bold uppercase tracking-wider">
+                    <span className="inline-block px-2.5 py-1 bg-[#ff424e] text-white rounded-sm text-[10px] font-bold uppercase tracking-wider">
+                      Yêu thích+
+                    </span>
+                    <span className="inline-block px-3 py-1 bg-red-50 text-[#ff424e] border border-red-200 rounded-sm text-xs font-medium uppercase tracking-wider">
                       {product.category}
                     </span>
 
-                    <h1 className="text-xl sm:text-2xl lg:text-3xl font-extrabold text-gray-905 leading-tight">
+                    <h1 className="text-xl font-medium text-gray-800 leading-tight">
                       {product.name}
                     </h1>
 
                     {/* Rating and sales */}
-                    <div className="flex items-center gap-2 text-xs sm:text-sm">
-                      <div className="flex items-center text-amber-500 gap-0.5 font-bold">
-                        <Star className="w-4 h-4 fill-amber-500 text-amber-500" />
-                        <span>{product.rating}</span>
+                    <div className="flex items-center gap-2 text-sm">
+                      <div className="flex items-center text-red-500 gap-0.5 border-b border-red-500 cursor-pointer">
+                        <span className="font-medium">{product.rating}</span>
+                        <div className="flex ml-1">
+                          <Star className="w-3.5 h-3.5 fill-red-500 text-red-500" />
+                          <Star className="w-3.5 h-3.5 fill-red-500 text-red-500" />
+                          <Star className="w-3.5 h-3.5 fill-red-500 text-red-500" />
+                          <Star className="w-3.5 h-3.5 fill-red-500 text-red-500" />
+                          <Star className="w-3.5 h-3.5 fill-red-500 text-red-500" />
+                        </div>
                       </div>
                       <span className="text-gray-300">|</span>
-                      <span className="text-gray-500 font-bold">{mockReviews.length} Đánh giá</span>
+                      <div className="flex items-center gap-1 cursor-pointer border-b border-transparent hover:border-gray-800">
+                        <span className="font-medium text-gray-800">{mockReviews.length}</span>
+                        <span className="text-gray-500">Đánh giá</span>
+                      </div>
                       <span className="text-gray-300">|</span>
-                      <span className="text-gray-500 font-bold">Đã bán {product.soldQuantity}</span>
-                    </div>
-
-                    {/* Price */}
-                    <div className="py-3 border-y border-gray-100 flex flex-wrap items-baseline gap-3.5">
-                      <span className="text-2xl sm:text-3xl font-black text-[#13a855]">
-                        {formatPrice(product.salePrice)}
-                        <span className="text-xs sm:text-sm text-gray-400 font-normal"> / {product.unit}</span>
-                      </span>
-                      <span className="text-sm sm:text-base text-gray-400 line-through font-medium">
-                        {formatPrice(product.originalPrice)}
-                      </span>
-                    </div>
-
-                    {/* Quantity selector */}
-                    <div className="flex items-center flex-wrap gap-4 py-2">
-                      <div className="flex items-center border border-gray-300 rounded-lg p-1 bg-white shadow-sm">
-                        <button
-                          onClick={handleDecrease}
-                          className="p-2 text-gray-500 hover:text-[#13a855] hover:bg-[#e8f8f0] rounded-md transition-colors cursor-pointer active:scale-95"
-                        >
-                          <Minus className="w-4.5 h-4.5" />
-                        </button>
-                        <span className="w-12 text-center font-extrabold text-sm sm:text-base text-gray-800">
-                          {quantity}
-                        </span>
-                        <button
-                          onClick={handleIncrease}
-                          className="p-2 text-gray-500 hover:text-[#13a855] hover:bg-[#e8f8f0] rounded-md transition-colors cursor-pointer active:scale-95"
-                        >
-                          <Plus className="w-4.5 h-4.5" />
-                        </button>
-                      </div>
-                      <div className="text-xs sm:text-sm text-gray-500 font-bold">
-                        Tạm tính: <span className="text-base font-extrabold text-gray-800">{formatPrice(subtotal)}</span>
+                      <div className="flex items-center gap-1">
+                        <span className="font-medium text-gray-800">{product.soldQuantity}</span>
+                        <span className="text-gray-500">Đã bán</span>
                       </div>
                     </div>
 
-                    {/* Quick features */}
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 pt-2 text-[11px] text-gray-650 font-bold">
-                      <div className="flex items-center gap-2 p-2 bg-[#f4fbf7] border border-[#d5f3e0] rounded-lg">
-                        <ShieldCheck className="w-4 h-4 text-[#13a855] shrink-0" />
-                        <span>100% Hữu cơ sạch</span>
-                      </div>
-                      <div className="flex items-center gap-2 p-2 bg-[#f4fbf7] border border-[#d5f3e0] rounded-lg">
-                        <Truck className="w-4 h-4 text-[#13a855] shrink-0" />
-                        <span>Giao hàng nhanh 2H</span>
-                      </div>
-                      <div className="flex items-center gap-2 p-2 bg-[#f4fbf7] border border-[#d5f3e0] rounded-lg">
-                        <RefreshCw className="w-4 h-4 text-[#13a855] shrink-0" />
-                        <span>Đổi trả thuận tiện</span>
-                      </div>
+                    {/* Price - Shopee Style */}
+                    <div className="bg-gray-50 flex flex-col rounded-sm overflow-hidden border border-gray-100">
+                        <div className="bg-[#ff424e] text-white px-4 py-1.5 text-sm font-medium w-full flex items-center gap-2">
+                           <Sparkles className="w-4 h-4 fill-white" />
+                           Giá dành riêng cho bạn
+                        </div>
+                        <div className="p-4 flex flex-wrap items-center gap-3.5">
+                            <span className="text-3xl sm:text-4xl font-medium text-[#ff424e]">
+                                {formatPrice(product.salePrice)}
+                            </span>
+                            <span className="text-sm sm:text-base text-gray-400 line-through ml-2">
+                                {formatPrice(product.originalPrice)}
+                            </span>
+                            <span className="bg-red-100 text-[#ff424e] px-1.5 py-0.5 rounded text-xs font-bold uppercase ml-2">
+                                Giảm {product.discountPercent}%
+                            </span>
+                        </div>
+                    </div>
+
+                    {/* Shipping and Quantity */}
+                    <div className="space-y-6 pt-4">
+                        <div className="grid grid-cols-12 gap-4 items-center">
+                            <div className="col-span-3 sm:col-span-2 text-sm text-gray-500">
+                                Vận Chuyển
+                            </div>
+                            <div className="col-span-9 sm:col-span-10 text-sm text-gray-800 flex items-center gap-2">
+                                <Truck className="w-5 h-5 text-gray-600" />
+                                <span>Miễn phí vận chuyển</span>
+                            </div>
+                        </div>
+
+                        <div className="grid grid-cols-12 gap-4 items-center">
+                            <div className="col-span-3 sm:col-span-2 text-sm text-gray-500">
+                                Số Lượng
+                            </div>
+                            <div className="col-span-9 sm:col-span-10 flex items-center gap-4">
+                                <div className="flex items-center border border-gray-300 rounded-sm bg-white overflow-hidden">
+                                  <button
+                                    onClick={handleDecrease}
+                                    className="px-3 py-1.5 text-gray-500 hover:bg-gray-50 transition-colors border-r border-gray-300 outline-none"
+                                  >
+                                    <Minus className="w-4 h-4" />
+                                  </button>
+                                  <span className="w-12 text-center font-medium text-sm sm:text-base text-gray-800">
+                                    {quantity}
+                                  </span>
+                                  <button
+                                    onClick={handleIncrease}
+                                    className="px-3 py-1.5 text-gray-500 hover:bg-gray-50 transition-colors border-l border-gray-300 outline-none"
+                                  >
+                                    <Plus className="w-4 h-4" />
+                                  </button>
+                                </div>
+                                <span className="text-sm text-gray-500">
+                                    Còn {Math.floor(Math.random() * 500) + 50} sản phẩm
+                                </span>
+                            </div>
+                        </div>
                     </div>
                   </div>
 
                   {/* CTA Buttons */}
-                  <div className="pt-4 flex flex-col sm:flex-row gap-3">
-                    <button className="flex-1 flex items-center justify-center gap-2 px-6 py-3.5 bg-[#13a855] hover:bg-[#0f8b44] text-white font-extrabold rounded-xl active:scale-97 shadow-md transition-all cursor-pointer text-sm">
-                      <ShoppingCart className="w-4.5 h-4.5" />
-                      <span>Thêm vào giỏ hàng</span>
+                  <div className="pt-6 flex flex-col sm:flex-row gap-4 w-full">
+                    <button className="flex items-center justify-center gap-2 px-6 py-3.5 bg-red-50 text-[#ff424e] border border-[#ff424e] font-medium rounded-sm active:scale-97 transition-all cursor-pointer text-base md:w-56">
+                      <ShoppingCart className="w-5 h-5" />
+                      <span>Thêm Vào Giỏ Hàng</span>
                     </button>
-                    <button className="flex-1 flex items-center justify-center px-6 py-3.5 bg-white hover:bg-gray-50 text-[#13a855] hover:text-[#0f8b44] border-2 border-[#13a855] font-extrabold rounded-xl active:scale-97 transition-all cursor-pointer text-sm">
-                      <span>Mua ngay</span>
+                    <button className="flex items-center justify-center px-6 py-3.5 bg-[#ff424e] hover:bg-red-600 text-white font-medium rounded-sm active:scale-97 transition-all cursor-pointer text-base md:w-40">
+                      <span>Mua Ngay</span>
                     </button>
                   </div>
                 </div>
