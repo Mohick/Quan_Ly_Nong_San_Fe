@@ -266,7 +266,7 @@ export default function ProfileSettings() {
                 }`}
               >
                 <Landmark className="h-4.5 w-4.5" />
-                <span>Đăng ký mở Trang trại</span>
+                <span>{myFarm ? "Quản lý trang trại" : "Đăng ký mở Trang trại"}</span>
               </button>
 
               <button
