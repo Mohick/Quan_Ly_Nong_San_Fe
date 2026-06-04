@@ -2,11 +2,11 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
-import {
-  Star, ShoppingCart, ArrowLeft, ShieldCheck,
-  Truck, RefreshCw, Heart, Plus, Minus,
+import { 
+  Star, ShoppingCart, ArrowLeft, ShieldCheck, 
+  Truck, RefreshCw, Heart, Plus, Minus, 
   Sparkles, Sprout, MessageSquare, ChevronLeft, ChevronRight,
-  Droplet, Calendar, Award, X, Maximize2
+  Droplet, Calendar, Award
 } from "lucide-react";
 
 export interface Product {
@@ -20,7 +20,6 @@ export interface Product {
   salePrice: number;
   discountPercent: number;
   image: string;
-  images?: string[];
   isBestSeller?: boolean;
   unit: string;
 }
@@ -32,38 +31,10 @@ interface ProductDetailViewProps {
 export default function ProductDetailView({ product }: ProductDetailViewProps) {
   const [quantity, setQuantity] = useState(1);
   const [isLiked, setIsLiked] = useState(false);
-  const [activeImageIndex, setActiveImageIndex] = useState(0);
-
+  
   // 2 main tabs: info (All product info + reviews), process (Planting/Farming process)
   const [activeTab, setActiveTab] = useState<"info" | "process">("info");
   const [isTabTransitioning, setIsTabTransitioning] = useState(false);
-  const [isGalleryModalOpen, setIsGalleryModalOpen] = useState(false);
-  const thumbnailContainerRef = React.useRef<HTMLDivElement>(null);
-  const modalThumbnailContainerRef = React.useRef<HTMLDivElement>(null);
-
-  const scrollThumbnailsLeft = () => {
-    if (thumbnailContainerRef.current) {
-      thumbnailContainerRef.current.scrollBy({ left: -120, behavior: "smooth" });
-    }
-  };
-
-  const scrollThumbnailsRight = () => {
-    if (thumbnailContainerRef.current) {
-      thumbnailContainerRef.current.scrollBy({ left: 120, behavior: "smooth" });
-    }
-  };
-
-  const scrollModalThumbnailsLeft = () => {
-    if (modalThumbnailContainerRef.current) {
-      modalThumbnailContainerRef.current.scrollBy({ left: -200, behavior: "smooth" });
-    }
-  };
-
-  const scrollModalThumbnailsRight = () => {
-    if (modalThumbnailContainerRef.current) {
-      modalThumbnailContainerRef.current.scrollBy({ left: 200, behavior: "smooth" });
-    }
-  };
 
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat("vi-VN", {
@@ -111,7 +82,7 @@ export default function ProductDetailView({ product }: ProductDetailViewProps) {
   return (
     <div className="w-full bg-[#f8faf9] min-h-screen py-10 font-sans select-none animate-fade-in">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-
+        
         {/* Navigation Breadcrumbs & Dynamic Prev/Next Page Switcher */}
         <div className="flex items-center justify-between mb-6 pb-4 border-b border-gray-150/60">
           <Link
@@ -121,7 +92,7 @@ export default function ProductDetailView({ product }: ProductDetailViewProps) {
             <ArrowLeft className="w-4 h-4 transform group-hover:-translate-x-1 transition-transform" />
             <span>Quay lại Cửa hàng Nông sản</span>
           </Link>
-
+          
           {/* Dynamic Prev/Next Navigation Switcher */}
           <div className="flex items-center gap-2.5 font-sans">
             <Link
@@ -148,21 +119,23 @@ export default function ProductDetailView({ product }: ProductDetailViewProps) {
         <div className="flex border-b border-gray-200 gap-4 sm:gap-8 text-xs sm:text-sm font-bold pb-3.5 mb-6 relative">
           <button
             onClick={() => handleTabChange("info")}
-            className={`flex items-center gap-2 transition-all pb-3 -mb-[16px] z-10 cursor-pointer relative ${activeTab === "info"
-                ? "text-[#13a855] border-b-3 border-[#13a855]"
+            className={`flex items-center gap-2 transition-all pb-3 -mb-[16px] z-10 cursor-pointer relative ${
+              activeTab === "info" 
+                ? "text-[#13a855] border-b-3 border-[#13a855]" 
                 : "text-gray-400 hover:text-gray-650"
-              }`}
+            }`}
           >
             <Sparkles className="w-4.5 h-4.5" />
             <span>Thông tin & Bình luận</span>
           </button>
-
+          
           <button
             onClick={() => handleTabChange("process")}
-            className={`flex items-center gap-2 transition-all pb-3 -mb-[16px] z-10 cursor-pointer relative ${activeTab === "process"
-                ? "text-[#13a855] border-b-3 border-[#13a855]"
+            className={`flex items-center gap-2 transition-all pb-3 -mb-[16px] z-10 cursor-pointer relative ${
+              activeTab === "process" 
+                ? "text-[#13a855] border-b-3 border-[#13a855]" 
                 : "text-gray-400 hover:text-gray-650"
-              }`}
+            }`}
           >
             <Sprout className="w-4.5 h-4.5" />
             <span>Quy trình trồng trọt</span>
@@ -170,256 +143,131 @@ export default function ProductDetailView({ product }: ProductDetailViewProps) {
         </div>
 
         {/* DYNAMIC CONTENT SWITCHER */}
-        <div className={`transition-all duration-200 ${isTabTransitioning ? "opacity-0 translate-y-1" : "opacity-100 translate-y-0"
-          }`}>
-
+        <div className={`transition-all duration-200 ${
+          isTabTransitioning ? "opacity-0 translate-y-1" : "opacity-100 translate-y-0"
+        }`}>
+          
           {/* TAB 1: ALL PRODUCT INFO & COMMENTS CONSOLIDATED */}
           {activeTab === "info" && (
             <div className="space-y-8 animate-fade-in">
               {/* Main Product Card */}
               <div className="bg-white rounded-2xl border border-gray-200 shadow-md overflow-hidden grid grid-cols-1 md:grid-cols-12 gap-8 p-6 sm:p-8 lg:p-10">
-                {/* Left: Image Carousel & Thumbnails */}
-                <div className="md:col-span-6 flex flex-col gap-4">
-                  <div className="w-full bg-gray-50 rounded-xl overflow-hidden relative border border-gray-100 aspect-square group">
-                    {/* Badges */}
-                    <div className="absolute top-4 left-4 z-20 flex flex-col gap-2">
-                      {product.isBestSeller && (
-                        <span className="px-3 py-1.5 text-[9px] font-extrabold text-white bg-gradient-to-r from-red-500 to-orange-500 rounded shadow-md tracking-wider uppercase">
-                          Bán chạy nhất
-                        </span>
-                      )}
-                      <span className="w-fit px-2.5 py-1 text-[9px] font-extrabold text-white bg-[#ff424e] rounded shadow-md">
-                        -{product.discountPercent}% OFF
+                {/* Left: Image */}
+                <div className="md:col-span-6 flex flex-col items-center justify-center bg-gray-50 rounded-xl overflow-hidden relative border border-gray-100 aspect-square group">
+                  {/* Badges */}
+                  <div className="absolute top-4 left-4 z-20 flex flex-col gap-2">
+                    {product.isBestSeller && (
+                      <span className="px-3 py-1.5 text-[9px] font-extrabold text-white bg-gradient-to-r from-red-500 to-orange-500 rounded shadow-md tracking-wider uppercase">
+                        Bán chạy nhất
                       </span>
-                    </div>
-
-                    {/* Favorite button removed to match Shopee UI layout */}
-
-                    {/* Carousel Controls (only if multiple images exist) */}
-                    {product.images && product.images.length > 1 && (
-                      <>
-                        <button
-                          type="button"
-                          onClick={() => setActiveImageIndex((prev) => (prev > 0 ? prev - 1 : product.images!.length - 1))}
-                          className="absolute left-0 top-1/2 -translate-y-1/2 z-20 w-10 h-14 bg-gray-300/60 hover:bg-gray-300 text-white rounded-r-full shadow hover:scale-105 active:scale-95 transition-all opacity-0 group-hover:opacity-100 cursor-pointer flex items-center justify-center backdrop-blur-sm"
-                        >
-                          <ChevronLeft className="w-6 h-6 stroke-[2]" />
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => setActiveImageIndex((prev) => (prev < product.images!.length - 1 ? prev + 1 : 0))}
-                          className="absolute right-0 top-1/2 -translate-y-1/2 z-20 w-10 h-14 bg-gray-300/60 hover:bg-gray-300 text-white rounded-l-full shadow hover:scale-105 active:scale-95 transition-all opacity-0 group-hover:opacity-100 cursor-pointer flex items-center justify-center backdrop-blur-sm"
-                        >
-                          <ChevronRight className="w-6 h-6 stroke-[2]" />
-                        </button>
-
-                        {/* Dots Indicators */}
-                        <div className="absolute bottom-3 left-1/2 -translate-x-1/2 z-20 flex gap-1.5">
-                          {product.images.map((_, idx) => (
-                            <span
-                              key={idx}
-                              className={`h-1.5 rounded-full transition-all ${idx === activeImageIndex ? "w-4 bg-[#13a855]" : "w-1.5 bg-gray-300/80"
-                                }`}
-                            />
-                          ))}
-                        </div>
-                      </>
                     )}
-
-                    {/* Active Image */}
-                    <div className="w-full h-full cursor-zoom-in group/img" onClick={() => setIsGalleryModalOpen(true)}>
-                      <img
-                        src={product.images && product.images.length > 0 ? product.images[activeImageIndex] : product.image}
-                        alt={product.name}
-                        className="w-full h-full object-cover transform group-hover/img:scale-102 transition-transform duration-500"
-                      />
-                      <div className="absolute bottom-4 right-4 bg-white/90 p-2 rounded-full shadow border border-gray-100 text-gray-700 opacity-0 group-hover/img:opacity-100 transition-opacity flex items-center justify-center">
-                         <Maximize2 className="w-5 h-5 text-gray-600" />
-                      </div>
-                    </div>
+                    <span className="w-fit px-2.5 py-1 text-[9px] font-extrabold text-white bg-[#13a855] rounded shadow-md">
+                      -{product.discountPercent}% OFF
+                    </span>
                   </div>
 
-                  {/* Thumbnail Row with Side Arrows */}
-                  {product.images && product.images.length > 1 && (
-                    <div className="relative group/thumbs flex items-center px-6">
-                      {product.images.length > 4 && (
-                        <button
-                          type="button"
-                          onClick={scrollThumbnailsLeft}
-                          className="absolute left-0 z-10 w-7 h-7 rounded-full bg-white shadow-md border border-gray-200 text-gray-600 hover:text-[#13a855] flex items-center justify-center transition-all cursor-pointer hover:scale-105 active:scale-95"
-                        >
-                          <ChevronLeft className="w-4 h-4" />
-                        </button>
-                      )}
-                      
-                      <div 
-                        ref={thumbnailContainerRef}
-                        className="flex gap-2 overflow-x-auto py-1 scrollbar-none justify-start flex-1 scroll-smooth"
-                      >
-                        {product.images.map((imgUrl, idx) => (
-                          <button
-                            key={idx}
-                            type="button"
-                            onClick={() => setActiveImageIndex(idx)}
-                            className={`relative w-16 h-16 rounded-md overflow-hidden border transition-all flex-shrink-0 cursor-pointer ${
-                              idx === activeImageIndex 
-                                ? "border-[#13a855] shadow-[0_0_0_1px_#13a855]" 
-                                : "border-gray-200 opacity-80 hover:opacity-100 hover:border-gray-300"
-                            }`}
-                          >
-                            <img src={imgUrl} alt={`${product.name} thumbnail ${idx + 1}`} className="w-full h-full object-cover" />
-                          </button>
-                        ))}
-                      </div>
+                  {/* Favorite */}
+                  <button
+                    onClick={() => setIsLiked(!isLiked)}
+                    className={`absolute top-4 right-4 z-20 p-2.5 rounded-full border shadow-md active:scale-90 transition-all cursor-pointer ${
+                      isLiked 
+                        ? "bg-red-50 border-red-200 text-red-500" 
+                        : "bg-white border-gray-200 text-gray-400 hover:text-gray-650"
+                    }`}
+                  >
+                    <Heart className={`w-4.5 h-4.5 ${isLiked ? "fill-red-500" : ""}`} />
+                  </button>
 
-                      {product.images.length > 4 && (
-                        <button
-                          type="button"
-                          onClick={scrollThumbnailsRight}
-                          className="absolute right-0 z-10 w-7 h-7 rounded-full bg-white shadow-md border border-gray-200 text-gray-600 hover:text-[#13a855] flex items-center justify-center transition-all cursor-pointer hover:scale-105 active:scale-95"
-                        >
-                          <ChevronRight className="w-4 h-4" />
-                        </button>
-                      )}
-                    </div>
-                  )}
-
-
-                  {/* Social Share & Likes */}
-                  <div className="flex items-center justify-center gap-8 pt-2">
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm text-gray-600">Chia sẻ:</span>
-                      <div className="flex gap-1">
-                        <div className="w-6 h-6 rounded-full bg-blue-500 text-white flex items-center justify-center cursor-pointer">
-                          <span className="text-xs font-bold">f</span>
-                        </div>
-                        <div className="w-6 h-6 rounded-full bg-blue-400 text-white flex items-center justify-center cursor-pointer">
-                          <span className="text-xs font-bold">m</span>
-                        </div>
-                        <div className="w-6 h-6 rounded-full bg-red-600 text-white flex items-center justify-center cursor-pointer">
-                          <span className="text-xs font-bold">p</span>
-                        </div>
-                      </div>
-                    </div>
-                    <div className="w-px h-5 bg-gray-200"></div>
-                    <button
-                      onClick={() => setIsLiked(!isLiked)}
-                      className={`flex items-center gap-2 cursor-pointer transition-colors ${isLiked ? "text-red-500" : "text-gray-500 hover:text-red-500"
-                        }`}
-                    >
-                      <Heart className={`w-5 h-5 ${isLiked ? "fill-red-500" : ""}`} />
-                      <span className="text-sm">Đã thích ({isLiked ? "723" : "722"})</span>
-                    </button>
-                  </div>
+                  <img
+                    src={product.image}
+                    alt={product.name}
+                    className="w-full h-full object-cover transform group-hover:scale-102 transition-transform duration-500"
+                  />
                 </div>
 
                 {/* Right: Info Panel */}
                 <div className="md:col-span-6 flex flex-col justify-between space-y-6">
                   <div className="space-y-4">
-                    <span className="inline-block px-2.5 py-1 bg-[#ff424e] text-white rounded-sm text-[10px] font-bold uppercase tracking-wider">
-                      Yêu thích+
-                    </span>
-                    <span className="inline-block px-3 py-1 bg-red-50 text-[#ff424e] border border-red-200 rounded-sm text-xs font-medium uppercase tracking-wider">
+                    <span className="inline-block px-3 py-1 bg-[#e8f8f0] text-[#13a855] border border-[#cbeed7] rounded-md text-xs font-bold uppercase tracking-wider">
                       {product.category}
                     </span>
 
-                    <h1 className="text-xl font-medium text-gray-800 leading-tight">
+                    <h1 className="text-xl sm:text-2xl lg:text-3xl font-extrabold text-gray-905 leading-tight">
                       {product.name}
                     </h1>
 
                     {/* Rating and sales */}
-                    <div className="flex items-center gap-2 text-sm">
-                      <div className="flex items-center text-red-500 gap-0.5 border-b border-red-500 cursor-pointer">
-                        <span className="font-medium">{product.rating}</span>
-                        <div className="flex ml-1">
-                          <Star className="w-3.5 h-3.5 fill-red-500 text-red-500" />
-                          <Star className="w-3.5 h-3.5 fill-red-500 text-red-500" />
-                          <Star className="w-3.5 h-3.5 fill-red-500 text-red-500" />
-                          <Star className="w-3.5 h-3.5 fill-red-500 text-red-500" />
-                          <Star className="w-3.5 h-3.5 fill-red-500 text-red-500" />
-                        </div>
+                    <div className="flex items-center gap-2 text-xs sm:text-sm">
+                      <div className="flex items-center text-amber-500 gap-0.5 font-bold">
+                        <Star className="w-4 h-4 fill-amber-500 text-amber-500" />
+                        <span>{product.rating}</span>
                       </div>
                       <span className="text-gray-300">|</span>
-                      <div className="flex items-center gap-1 cursor-pointer border-b border-transparent hover:border-gray-800">
-                        <span className="font-medium text-gray-800">{mockReviews.length}</span>
-                        <span className="text-gray-500">Đánh giá</span>
-                      </div>
+                      <span className="text-gray-500 font-bold">{mockReviews.length} Đánh giá</span>
                       <span className="text-gray-300">|</span>
-                      <div className="flex items-center gap-1">
-                        <span className="font-medium text-gray-800">{product.soldQuantity}</span>
-                        <span className="text-gray-500">Đã bán</span>
+                      <span className="text-gray-500 font-bold">Đã bán {product.soldQuantity}</span>
+                    </div>
+
+                    {/* Price */}
+                    <div className="py-3 border-y border-gray-100 flex flex-wrap items-baseline gap-3.5">
+                      <span className="text-2xl sm:text-3xl font-black text-[#13a855]">
+                        {formatPrice(product.salePrice)}
+                        <span className="text-xs sm:text-sm text-gray-400 font-normal"> / {product.unit}</span>
+                      </span>
+                      <span className="text-sm sm:text-base text-gray-400 line-through font-medium">
+                        {formatPrice(product.originalPrice)}
+                      </span>
+                    </div>
+
+                    {/* Quantity selector */}
+                    <div className="flex items-center flex-wrap gap-4 py-2">
+                      <div className="flex items-center border border-gray-300 rounded-lg p-1 bg-white shadow-sm">
+                        <button
+                          onClick={handleDecrease}
+                          className="p-2 text-gray-500 hover:text-[#13a855] hover:bg-[#e8f8f0] rounded-md transition-colors cursor-pointer active:scale-95"
+                        >
+                          <Minus className="w-4.5 h-4.5" />
+                        </button>
+                        <span className="w-12 text-center font-extrabold text-sm sm:text-base text-gray-800">
+                          {quantity}
+                        </span>
+                        <button
+                          onClick={handleIncrease}
+                          className="p-2 text-gray-500 hover:text-[#13a855] hover:bg-[#e8f8f0] rounded-md transition-colors cursor-pointer active:scale-95"
+                        >
+                          <Plus className="w-4.5 h-4.5" />
+                        </button>
+                      </div>
+                      <div className="text-xs sm:text-sm text-gray-500 font-bold">
+                        Tạm tính: <span className="text-base font-extrabold text-gray-800">{formatPrice(subtotal)}</span>
                       </div>
                     </div>
 
-                    {/* Price - Shopee Style */}
-                    <div className="bg-gray-50 flex flex-col rounded-sm overflow-hidden border border-gray-100">
-                      <div className="bg-[#ff424e] text-white px-4 py-1.5 text-sm font-medium w-full flex items-center gap-2">
-                        <Sparkles className="w-4 h-4 fill-white" />
-                        Giá dành riêng cho bạn
+                    {/* Quick features */}
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 pt-2 text-[11px] text-gray-650 font-bold">
+                      <div className="flex items-center gap-2 p-2 bg-[#f4fbf7] border border-[#d5f3e0] rounded-lg">
+                        <ShieldCheck className="w-4 h-4 text-[#13a855] shrink-0" />
+                        <span>100% Hữu cơ sạch</span>
                       </div>
-                      <div className="p-4 flex flex-wrap items-center gap-3.5">
-                        <span className="text-3xl sm:text-4xl font-medium text-[#ff424e]">
-                          {formatPrice(product.salePrice)}
-                        </span>
-                        <span className="text-sm sm:text-base text-gray-400 line-through ml-2">
-                          {formatPrice(product.originalPrice)}
-                        </span>
-                        <span className="bg-red-100 text-[#ff424e] px-1.5 py-0.5 rounded text-xs font-bold uppercase ml-2">
-                          Giảm {product.discountPercent}%
-                        </span>
+                      <div className="flex items-center gap-2 p-2 bg-[#f4fbf7] border border-[#d5f3e0] rounded-lg">
+                        <Truck className="w-4 h-4 text-[#13a855] shrink-0" />
+                        <span>Giao hàng nhanh 2H</span>
                       </div>
-                    </div>
-
-                    {/* Shipping and Quantity */}
-                    <div className="space-y-6 pt-4">
-                      <div className="grid grid-cols-12 gap-4 items-center">
-                        <div className="col-span-3 sm:col-span-2 text-sm text-gray-500">
-                          Vận Chuyển
-                        </div>
-                        <div className="col-span-9 sm:col-span-10 text-sm text-gray-800 flex items-center gap-2">
-                          <Truck className="w-5 h-5 text-gray-600" />
-                          <span>Miễn phí vận chuyển</span>
-                        </div>
-                      </div>
-
-                      <div className="grid grid-cols-12 gap-4 items-center">
-                        <div className="col-span-3 sm:col-span-2 text-sm text-gray-500">
-                          Số Lượng
-                        </div>
-                        <div className="col-span-9 sm:col-span-10 flex items-center gap-4">
-                          <div className="flex items-center border border-gray-300 rounded-sm bg-white overflow-hidden">
-                            <button
-                              onClick={handleDecrease}
-                              className="px-3 py-1.5 text-gray-500 hover:bg-gray-50 transition-colors border-r border-gray-300 outline-none"
-                            >
-                              <Minus className="w-4 h-4" />
-                            </button>
-                            <span className="w-12 text-center font-medium text-sm sm:text-base text-gray-800">
-                              {quantity}
-                            </span>
-                            <button
-                              onClick={handleIncrease}
-                              className="px-3 py-1.5 text-gray-500 hover:bg-gray-50 transition-colors border-l border-gray-300 outline-none"
-                            >
-                              <Plus className="w-4 h-4" />
-                            </button>
-                          </div>
-                          <span className="text-sm text-gray-500">
-                            Còn {Math.floor(Math.random() * 500) + 50} sản phẩm
-                          </span>
-                        </div>
+                      <div className="flex items-center gap-2 p-2 bg-[#f4fbf7] border border-[#d5f3e0] rounded-lg">
+                        <RefreshCw className="w-4 h-4 text-[#13a855] shrink-0" />
+                        <span>Đổi trả thuận tiện</span>
                       </div>
                     </div>
                   </div>
 
                   {/* CTA Buttons */}
-                  <div className="pt-6 flex flex-col sm:flex-row gap-4 w-full">
-                    <button className="flex items-center justify-center gap-2 px-6 py-3.5 bg-red-50 text-[#ff424e] border border-[#ff424e] font-medium rounded-sm active:scale-97 transition-all cursor-pointer text-base md:w-56">
-                      <ShoppingCart className="w-5 h-5" />
-                      <span>Thêm Vào Giỏ Hàng</span>
+                  <div className="pt-4 flex flex-col sm:flex-row gap-3">
+                    <button className="flex-1 flex items-center justify-center gap-2 px-6 py-3.5 bg-[#13a855] hover:bg-[#0f8b44] text-white font-extrabold rounded-xl active:scale-97 shadow-md transition-all cursor-pointer text-sm">
+                      <ShoppingCart className="w-4.5 h-4.5" />
+                      <span>Thêm vào giỏ hàng</span>
                     </button>
-                    <button className="flex items-center justify-center px-6 py-3.5 bg-[#ff424e] hover:bg-red-600 text-white font-medium rounded-sm active:scale-97 transition-all cursor-pointer text-base md:w-40">
-                      <span>Mua Ngay</span>
+                    <button className="flex-1 flex items-center justify-center px-6 py-3.5 bg-white hover:bg-gray-50 text-[#13a855] hover:text-[#0f8b44] border-2 border-[#13a855] font-extrabold rounded-xl active:scale-97 transition-all cursor-pointer text-sm">
+                      <span>Mua ngay</span>
                     </button>
                   </div>
                 </div>
@@ -432,7 +280,7 @@ export default function ProductDetailView({ product }: ProductDetailViewProps) {
                   <span>Mô tả chi tiết sản phẩm & Giá trị dinh dưỡng</span>
                 </h4>
                 <p>
-                  Sản phẩm <strong>{product.name}</strong> thuộc nhóm danh mục <strong>{product.category}</strong>.
+                  Sản phẩm <strong>{product.name}</strong> thuộc nhóm danh mục <strong>{product.category}</strong>. 
                   Chúng tôi hợp tác trực tiếp với các hợp tác xã sản xuất nông sản uy tín hàng đầu trên cả nước, áp dụng quy trình kiểm định chất lượng nghiêm ngặt từ khâu thu hoạch đến vận chuyển tiêu thụ.
                 </p>
                 <p>
@@ -484,12 +332,12 @@ export default function ProductDetailView({ product }: ProductDetailViewProps) {
                 <Sprout className="w-6 h-6 text-[#13a855]" />
                 <h3 className="text-base sm:text-lg font-black text-gray-900">Quy Trình Trồng Trọt & Thu Hoạch Sạch</h3>
               </div>
-
+              
               <div className="space-y-6 text-xs sm:text-sm leading-relaxed text-gray-655">
                 <p className="font-bold text-gray-800">
                   Từng sản phẩm <span className="text-[#13a855] font-extrabold">"{product.name}"</span> được nuôi trồng bền vững theo quy trình hữu cơ 3 giai đoạn nghiêm ngặt, đảm bảo độ sạch và độ ngon lành tự nhiên tuyệt đối:
                 </p>
-
+                
                 {/* Step-by-Step Pipeline */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-4">
                   {/* Step 1 */}
@@ -544,98 +392,6 @@ export default function ProductDetailView({ product }: ProductDetailViewProps) {
         </div>
 
       </div>
-
-      {/* Fullscreen Gallery Modal */}
-      {isGalleryModalOpen && (
-        <div className="fixed inset-0 z-[9999] bg-white flex flex-col animate-fade-in">
-          {/* Header */}
-          <div className="flex items-center justify-between px-4 py-3 sm:px-6 sm:py-4 border-b border-gray-100">
-             <h3 className="font-bold text-gray-800 text-lg">{product.name}</h3>
-             <button 
-                onClick={() => setIsGalleryModalOpen(false)}
-                className="p-2 bg-gray-100 text-gray-600 hover:bg-gray-200 hover:text-red-500 rounded-full transition-colors"
-             >
-                <X className="w-5 h-5" />
-             </button>
-          </div>
-
-          {/* Main Image Area */}
-          <div className="flex-1 relative bg-gray-50 flex items-center justify-center p-4 overflow-hidden">
-            {product.images && product.images.length > 1 && (
-              <button
-                type="button"
-                onClick={() => setActiveImageIndex((prev) => (prev > 0 ? prev - 1 : product.images!.length - 1))}
-                className="absolute left-4 sm:left-10 top-1/2 -translate-y-1/2 z-20 w-12 h-16 sm:w-16 sm:h-20 bg-black/10 hover:bg-black/20 text-gray-800 rounded-2xl shadow-sm transition-all flex items-center justify-center backdrop-blur-sm"
-              >
-                <ChevronLeft className="w-8 h-8 sm:w-10 sm:h-10 stroke-[1.5] text-gray-700" />
-              </button>
-            )}
-
-            <img 
-              src={product.images && product.images.length > 0 ? product.images[activeImageIndex] : product.image}
-              alt={product.name}
-              className="max-w-full max-h-full object-contain"
-            />
-
-            {product.images && product.images.length > 1 && (
-              <button
-                type="button"
-                onClick={() => setActiveImageIndex((prev) => (prev < product.images!.length - 1 ? prev + 1 : 0))}
-                className="absolute right-4 sm:right-10 top-1/2 -translate-y-1/2 z-20 w-12 h-16 sm:w-16 sm:h-20 bg-black/10 hover:bg-black/20 text-gray-800 rounded-2xl shadow-sm transition-all flex items-center justify-center backdrop-blur-sm"
-              >
-                <ChevronRight className="w-8 h-8 sm:w-10 sm:h-10 stroke-[1.5] text-gray-700" />
-              </button>
-            )}
-          </div>
-
-          {/* Modal Thumbnails */}
-          {product.images && product.images.length > 1 && (
-            <div className="bg-white border-t border-gray-100 p-4 sm:p-6 relative">
-              <div className="max-w-5xl mx-auto relative group/modalthumbs">
-                  {product.images.length > 6 && (
-                    <button
-                      type="button"
-                      onClick={scrollModalThumbnailsLeft}
-                      className="absolute -left-4 sm:-left-6 top-1/2 -translate-y-1/2 z-10 w-10 h-10 rounded-full bg-white shadow-lg border border-gray-200 text-gray-600 hover:text-[#13a855] flex items-center justify-center transition-all cursor-pointer hover:scale-105 active:scale-95"
-                    >
-                      <ChevronLeft className="w-5 h-5" />
-                    </button>
-                  )}
-                  
-                  <div 
-                    ref={modalThumbnailContainerRef}
-                    className="flex gap-3 sm:gap-4 overflow-x-auto py-2 scrollbar-none justify-center sm:justify-start px-2 scroll-smooth"
-                  >
-                    {product.images.map((imgUrl, idx) => (
-                      <button
-                        key={idx}
-                        type="button"
-                        onClick={() => setActiveImageIndex(idx)}
-                        className={`relative w-20 h-20 sm:w-24 sm:h-24 rounded-xl overflow-hidden border-2 transition-all flex-shrink-0 cursor-pointer ${
-                          idx === activeImageIndex 
-                            ? "border-[#13a855] shadow-[0_0_0_2px_#13a855]" 
-                            : "border-gray-200 opacity-70 hover:opacity-100 hover:border-gray-300"
-                        }`}
-                      >
-                        <img src={imgUrl} alt={`${product.name} thumbnail ${idx + 1}`} className="w-full h-full object-cover" />
-                      </button>
-                    ))}
-                  </div>
-
-                  {product.images.length > 6 && (
-                    <button
-                      type="button"
-                      onClick={scrollModalThumbnailsRight}
-                      className="absolute -right-4 sm:-right-6 top-1/2 -translate-y-1/2 z-10 w-10 h-10 rounded-full bg-white shadow-lg border border-gray-200 text-gray-600 hover:text-[#13a855] flex items-center justify-center transition-all cursor-pointer hover:scale-105 active:scale-95"
-                    >
-                      <ChevronRight className="w-5 h-5" />
-                    </button>
-                  )}
-              </div>
-            </div>
-          )}
-        </div>
-      )}
     </div>
   );
 }
