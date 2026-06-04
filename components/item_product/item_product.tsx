@@ -44,7 +44,7 @@ const ProductCard = ({ product, viewMode = "grid" }: ProductCardProps) => {
             >
                 {/* Clickable Image Container on Left */}
                 <Link
-                    href={`/products/${product.id}`}
+                    href={`/products/detail?id=${product.id}`}
                     className="relative w-full sm:w-48 h-48 sm:h-auto aspect-square sm:aspect-square rounded-md overflow-hidden bg-gray-50/30 flex-shrink-0 block cursor-pointer"
                 >
                     {/* Badges */}
@@ -89,7 +89,7 @@ const ProductCard = ({ product, viewMode = "grid" }: ProductCardProps) => {
                         </span>
 
                         {/* Clickable Title */}
-                        <Link href={`/products/${product.id}`} className="block group/title cursor-pointer">
+                        <Link href={`/products/detail?id=${product.id}`} className="block group/title cursor-pointer">
                             <h3 className="font-bold text-gray-850 text-sm sm:text-base group-hover/title:text-[#13a855] transition-colors leading-snug">
                                 {product.name}
                             </h3>
@@ -138,7 +138,7 @@ const ProductCard = ({ product, viewMode = "grid" }: ProductCardProps) => {
         >
             {/* Clickable Image Container */}
             <Link
-                href={`/products/${product.id}`}
+                href={`/products/detail?id=${product.id}`}
                 className="relative aspect-square w-full overflow-hidden bg-gray-50/30 block cursor-pointer"
             >
                 {/* Badges */}
@@ -182,7 +182,7 @@ const ProductCard = ({ product, viewMode = "grid" }: ProductCardProps) => {
                 </span>
 
                 {/* Clickable Title */}
-                <Link href={`/products/${product.id}`} className="block group/title cursor-pointer">
+                <Link href={`/products/detail?id=${product.id}`} className="block group/title cursor-pointer">
                     <h3 className="font-bold text-gray-850 text-xs sm:text-sm line-clamp-2 min-h-[36px] sm:min-h-[40px] group-hover/title:text-[#13a855] transition-colors leading-snug">
                         {product.name}
                     </h3>

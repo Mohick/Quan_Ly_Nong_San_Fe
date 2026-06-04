@@ -1,15 +1,14 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import {
-  Plus, Search, Edit2, Trash2, Landmark,
-  Calendar, Layers, Trees, CheckCircle2,
-  Clock, AlertCircle, X, ChevronRight, Sparkles, Loader2
-} from "lucide-react";
+import { Plus, Search, Landmark, Layers, Trees, Clock, AlertCircle, CheckCircle2, Loader2 } from "lucide-react";
 import { FarmAPI } from "@/lib/_api/farm";
 import { lotsAPI } from "@/lib/_api/lots";
 import { createLotAPI } from "@/lib/_api/create_lots";
-import { createCareProcessAPI, getCareProcessesAPI } from "@/lib/_api/care_process";
+import { getCareProcessesAPI } from "@/lib/_api/care_process";
+import { LotCard } from "@/components/lots/LotCard";
+import { LotDetail } from "@/components/lots/LotDetail";
+import { LotModal } from "@/components/lots/LotModal";
 
 export interface CropLot {
   farm_id?: string;
@@ -39,18 +38,18 @@ export default function CropLotsDashboard() {
   const [statusFilter, setStatusFilter] = useState("all");
   const [farmId, setFarmId] = useState("550e8400-e29b-41d4-a716-446655440000");
 
-  // State for Crop Lot Detail UI as requested by user
   const [selectedLot, setSelectedLot] = useState<CropLot | null>(null);
-  const [detailTab, setDetailTab] = useState<"tt" | "sp">("tt");
   const [lotDiaries, setLotDiaries] = useState<Record<string, any[]>>({});
-  const [showAddDiary, setShowAddDiary] = useState(false);
-  const [newDiaryTitle, setNewDiaryTitle] = useState("");
-  const [newDiaryDesc, setNewDiaryDesc] = useState("");
-  const [newDiaryMonth, setNewDiaryMonth] = useState<number>(1);
-  const [newDiaryStartDate, setNewDiaryStartDate] = useState("");
-  const [newDiaryFinishedDate, setNewDiaryFinishedDate] = useState("");
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingLot, setEditingLot] = useState<CropLot | null>(null);
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
 
-  // Fetch diaries from backend
+  const showToast = (msg: string) => {
+    setToastMessage(msg);
+    setTimeout(() => setToastMessage(null), 3000);
+  };
+
+  // Fetch diaries from backend/localStorage fallback
   useEffect(() => {
     const fetchDiaries = async () => {
       if (selectedLot) {
@@ -61,7 +60,7 @@ export default function CropLotsDashboard() {
         if (res && Array.isArray(res.data)) {
           setLotDiaries((prev) => ({
             ...prev,
-            [lotId]: res.data
+            [lotId]: res.data,
           }));
         }
       }
@@ -108,117 +107,39 @@ export default function CropLotsDashboard() {
     fetchLotsData();
   }, []);
 
-  // Modal controls
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingLot, setEditingLot] = useState<CropLot | null>(null);
-
-  // Form states matching JSON schema fields
-  const [formName, setFormName] = useState("");
-  const [formArea, setFormArea] = useState("");
-  const [formAreaUnit, setFormAreaUnit] = useState("M2");
-  const [formTreeCount, setFormTreeCount] = useState("");
-  const [formStartDate, setFormStartDate] = useState("");
-  const [formHarvestDate, setFormHarvestDate] = useState("");
-  const [formStatus, setFormStatus] = useState<"PROCESS" | "HARVESTED">("PROCESS");
-  const [formNote, setFormNote] = useState("");
-
-  const [toastMessage, setToastMessage] = useState<string | null>(null);
-
-  const showToast = (msg: string) => {
-    setToastMessage(msg);
-    setTimeout(() => setToastMessage(null), 3000);
-  };
-
   const handleOpenAddModal = () => {
     setEditingLot(null);
-    setFormName("");
-    setFormArea("");
-    setFormAreaUnit("M2");
-    setFormTreeCount("");
-    setFormStartDate(new Date().toISOString().split("T")[0]);
-    setFormHarvestDate("");
-    setFormStatus("PROCESS");
-    setFormNote("");
     setIsModalOpen(true);
   };
 
   const handleOpenEditModal = (lot: CropLot) => {
     setEditingLot(lot);
-    setFormName(lot.name);
-    setFormArea(lot.area.toString());
-    setFormAreaUnit(lot.area_unit);
-    setFormTreeCount(lot.tree_count.toString());
-    setFormStartDate(lot.start_date.split("T")[0]);
-    setFormHarvestDate(lot.expected_harvest_date.split("T")[0]);
-    setFormStatus(lot.status);
-    setFormNote(lot.note);
     setIsModalOpen(true);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-
-    if (!formName.trim() || !formArea || !formTreeCount || !formStartDate || !formHarvestDate) {
-      alert("Vui lòng điền đầy đủ các thông tin bắt buộc!");
-      return;
-    }
-
-    const areaNum = Number(formArea);
-    const treeNum = Number(formTreeCount);
-
-    if (editingLot) {
-      // Update
-      setLots((prev) =>
-        prev.map((l) =>
-          l.id === editingLot.id
-            ? {
-              ...l,
-              name: formName,
-              area: areaNum,
-              area_unit: formAreaUnit,
-              tree_count: treeNum,
-              start_date: new Date(formStartDate).toISOString(),
-              expected_harvest_date: new Date(formHarvestDate).toISOString(),
-              status: formStatus,
-              note: formNote,
-            }
-            : l
-        )
-      );
-      showToast("Cập nhật lô đất canh tác thành công!");
-    } else {
-      // Create new lot using the exact JSON fields schema
-      const newLotPayload = {
-        name: formName,
-        area: areaNum,
-        area_unit: formAreaUnit,
-        tree_count: treeNum,
-        start_date: new Date(formStartDate).toISOString().split(".")[0] + "Z",
-        expected_harvest_date: new Date(formHarvestDate).toISOString().split(".")[0] + "Z",
-        status: formStatus,
-        note: formNote,
-      };
-
-      const token = getCookie("access_token");
-      createLotAPI(newLotPayload, token)
-        .then((response) => {
-          if (response.data && response.data.valid === false) {
-            showToast("Khởi tạo lô canh tác thất bại: " + (response.data.message || "Lỗi hệ thống"));
-            return;
-          }
-          lotsAPI(farmId, token).then((res) => {
-            setLots(Array.isArray(res?.data) ? res.data : []);
-          });
-          showToast("Đã khởi tạo lô canh tác mới thành công!");
-        })
-        .catch((error) => {
-          console.error("Lỗi khi gửi yêu cầu khởi tạo lô đất canh tác mới:", error);
-          const errMsg = error.response?.data?.message || error.message || "Lỗi kết nối Backend";
-          alert("Lỗi: " + errMsg);
+  const handleCreateLot = (newLotPayload: any) => {
+    const token = getCookie("access_token");
+    createLotAPI(newLotPayload, token)
+      .then((response) => {
+        if (response.data && response.data.valid === false) {
+          showToast("Khởi tạo lô canh tác thất bại: " + (response.data.message || "Lỗi hệ thống"));
+          return;
+        }
+        lotsAPI(farmId, token).then((res) => {
+          setLots(Array.isArray(res?.data) ? res.data : []);
         });
-    }
+        showToast("Đã khởi tạo lô canh tác mới thành công!");
+      })
+      .catch((error) => {
+        console.error("Lỗi khi gửi yêu cầu khởi tạo lô đất canh tác mới:", error);
+        const errMsg = error.response?.data?.message || error.message || "Lỗi kết nối Backend";
+        alert("Lỗi: " + errMsg);
+      });
+  };
 
-    setIsModalOpen(false);
+  const handleUpdateLot = (updatedLot: CropLot) => {
+    setLots((prev) => prev.map((l) => (l.id === updatedLot.id ? updatedLot : l)));
+    showToast("Cập nhật lô đất canh tác thành công!");
   };
 
   const handleDelete = (id: string) => {
@@ -228,36 +149,44 @@ export default function CropLotsDashboard() {
     }
   };
 
-  // Helper: Format Dates to vi-VN
   const formatDate = (isoStr: string) => {
     return new Date(isoStr).toLocaleDateString("vi-VN", {
-      year: "numeric", month: "short", day: "numeric"
+      year: "numeric",
+      month: "short",
+      day: "numeric",
     });
   };
 
-  // Helper: Status label and badge styling
   const getStatusBadge = (status: string) => {
     switch (status) {
       case "PROCESS":
-        return <span className="px-2.5 py-1 text-[10px] font-extrabold text-[#13a855] bg-[#e8f8f0] border border-[#cbeed7] rounded-md">ĐANG NUÔI TRỒNG</span>;
+        return (
+          <span className="px-2.5 py-1 text-[10px] font-extrabold text-[#13a855] bg-[#e8f8f0] border border-[#cbeed7] rounded-md">
+            ĐANG NUÔI TRỒNG
+          </span>
+        );
       case "HARVESTED":
-        return <span className="px-2.5 py-1 text-[10px] font-extrabold text-amber-600 bg-amber-50 border border-amber-100 rounded-md">ĐANG THU HOẠCH</span>;
+        return (
+          <span className="px-2.5 py-1 text-[10px] font-extrabold text-amber-600 bg-amber-50 border border-amber-100 rounded-md">
+            ĐANG THU HOẠCH
+          </span>
+        );
       default:
         return null;
     }
   };
 
-  // Filter lots
   const filteredLots = lots.filter((lot) => {
-    const matchesSearch = (lot.name || "").toLowerCase().includes(searchQuery.toLowerCase()) || (lot.note || "").toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesSearch =
+      (lot.name || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (lot.note || "").toLowerCase().includes(searchQuery.toLowerCase());
     const matchesStatus = statusFilter === "all" || lot.status === statusFilter;
     return matchesSearch && matchesStatus;
   });
 
-  // Calculate statistics
   const totalArea = lots.reduce((sum, l) => sum + (l.area || 0), 0);
   const totalTrees = lots.reduce((sum, l) => sum + (l.tree_count || 0), 0);
-  const activeLots = lots.filter(l => l.status === "PROCESS" || l.status === "HARVESTED").length;
+  const activeLots = lots.filter((l) => l.status === "PROCESS" || l.status === "HARVESTED").length;
 
   if (isLoading) {
     return (
@@ -269,345 +198,23 @@ export default function CropLotsDashboard() {
   }
 
   if (selectedLot) {
-    const lotId = selectedLot.id || (selectedLot as any).ID;
-    const currentDiaries = lotDiaries[lotId] || [];
-
     return (
-      <div className="space-y-6 font-sans antialiased text-gray-800 animate-fade-in select-none">
-        {/* Back header */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-gray-150/60 pb-4">
-          <div className="flex items-center gap-3">
-            <button
-              onClick={() => setSelectedLot(null)}
-              className="p-2 text-gray-500 hover:text-gray-900 bg-gray-150/80 hover:bg-gray-200 rounded-lg cursor-pointer transition-all flex items-center justify-center"
-            >
-              <X className="w-4 h-4" />
-            </button>
-            <div>
-              <h1 className="text-lg sm:text-xl font-black text-gray-950 tracking-tight">
-                Chi tiết Lô: {selectedLot.name}
-              </h1>
-              <p className="text-[11px] sm:text-xs text-gray-500 font-semibold mt-0.5">
-                Mã lô: #{lotId} | Nông trại: {farmId}
-              </p>
-            </div>
-          </div>
-
-          {/* Sub tabs: tt (Thông tin) and sp (Nhật ký) */}
-          <div className="flex bg-gray-150/60 p-1 rounded-xl w-fit border border-gray-250/60">
-            <button
-              type="button"
-              onClick={() => setDetailTab("tt")}
-              className={`px-4 py-2 text-xs font-black rounded-lg transition-all cursor-pointer ${
-                detailTab === "tt"
-                  ? "bg-white text-gray-900 shadow-sm"
-                  : "text-gray-500 hover:text-gray-900"
-              }`}
-            >
-              Thông Tin (TT)
-            </button>
-            <button
-              type="button"
-              onClick={() => setDetailTab("sp")}
-              className={`px-4 py-2 text-xs font-black rounded-lg transition-all cursor-pointer ${
-                detailTab === "sp"
-                  ? "bg-white text-gray-900 shadow-sm"
-                  : "text-gray-555 hover:text-gray-900"
-              }`}
-            >
-              Nhật Ký (SP)
-            </button>
-          </div>
-        </div>
-
-        {detailTab === "tt" ? (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {/* Info grid */}
-            <div className="md:col-span-2 bg-white border border-gray-200 rounded-2xl p-6 shadow-sm space-y-6">
-              <h3 className="text-sm font-black text-gray-900 border-b border-gray-100 pb-2">Thông tin chi tiết</h3>
-              
-              <div className="grid grid-cols-2 gap-6 text-xs font-bold text-gray-500">
-                <div className="space-y-1">
-                  <span className="text-[10px] text-gray-400 uppercase block">Diện tích canh tác</span>
-                  <span className="text-gray-800 text-sm font-extrabold">{(selectedLot.area ?? 0).toLocaleString()} {selectedLot.area_unit || "M2"}</span>
-                </div>
-                <div className="space-y-1">
-                  <span className="text-[10px] text-gray-400 uppercase block">Quy mô gieo trồng</span>
-                  <span className="text-gray-800 text-sm font-extrabold">{(selectedLot.tree_count ?? 0).toLocaleString()} gốc cây</span>
-                </div>
-                <div className="space-y-1">
-                  <span className="text-[10px] text-gray-400 uppercase block">Ngày gieo hạt</span>
-                  <span className="text-gray-800 text-sm font-extrabold">{formatDate(selectedLot.start_date)}</span>
-                </div>
-                <div className="space-y-1">
-                  <span className="text-[10px] text-gray-400 uppercase block">Dự kiến thu hoạch</span>
-                  <span className="text-gray-800 text-sm font-extrabold">{formatDate(selectedLot.expected_harvest_date)}</span>
-                </div>
-              </div>
-
-              {selectedLot.note && (
-                <div className="space-y-1.5 pt-4 border-t border-gray-100">
-                  <span className="text-[10px] text-gray-400 uppercase block">Ghi chú kỹ thuật</span>
-                  <p className="text-xs text-gray-655 font-medium leading-relaxed bg-[#f4fbf7]/40 border border-[#e8f8f0] p-3 rounded-xl italic">
-                    {selectedLot.note}
-                  </p>
-                </div>
-              )}
-            </div>
-
-            {/* Status card */}
-            <div className="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm flex flex-col justify-between">
-              <div className="space-y-4">
-                <h3 className="text-sm font-black text-gray-900 border-b border-gray-100 pb-2">Trạng thái</h3>
-                <div className="flex items-center gap-2">
-                  {getStatusBadge(selectedLot.status)}
-                </div>
-                <p className="text-[11px] text-gray-500 leading-relaxed font-semibold">
-                  {selectedLot.status === "PROCESS" 
-                    ? "Lô đất hiện đang được nuôi trồng tích cực. Hãy theo dõi độ ẩm đất và chu kỳ tưới tiêu."
-                    : "Lô đất đã thu hoạch thành công vụ mùa. Hãy tiến hành cải tạo lại đất cho chu kỳ mới."}
-                </p>
-              </div>
-
-              <div className="pt-6 border-t border-gray-100">
-                <button
-                  onClick={() => handleOpenEditModal(selectedLot)}
-                  className="w-full py-2.5 border border-gray-300 text-gray-700 hover:bg-gray-50 text-xs font-bold rounded-xl transition-all cursor-pointer text-center"
-                >
-                  Chỉnh sửa thông số lô
-                </button>
-              </div>
-            </div>
-          </div>
-        ) : (
-          <div className="space-y-6">
-            <div className="flex items-center justify-between">
-              <h4 className="text-xs sm:text-sm font-extrabold text-gray-800">Nhật ký sinh trưởng hàng tháng</h4>
-              <button
-                type="button"
-                onClick={() => setShowAddDiary(true)}
-                className="flex items-center gap-1.5 px-3 py-2 bg-[#13a855] hover:bg-[#0f8b44] text-white text-[11px] font-bold rounded-lg shadow transition-all active:scale-95 cursor-pointer"
-              >
-                <Plus className="w-3.5 h-3.5" />
-                <span>Tạo nhật ký</span>
-              </button>
-            </div>
-
-            {showAddDiary && (
-              <form 
-                onSubmit={async (e) => {
-                  e.preventDefault();
-                  if (!newDiaryTitle.trim() || !newDiaryDesc.trim() || !newDiaryStartDate || !newDiaryFinishedDate) {
-                    alert("Vui lòng điền đầy đủ các thông tin bắt buộc!");
-                    return;
-                  }
-                  
-                  const lotId = selectedLot.id || (selectedLot as any).ID;
-                  if (!lotId) return;
-
-                  const payload = {
-                    crop_lot_id: lotId,
-                    title: newDiaryTitle,
-                    description: newDiaryDesc,
-                    month: Number(newDiaryMonth),
-                    started_date: new Date(newDiaryStartDate).toISOString().split(".")[0] + "Z",
-                    finished_dat: new Date(newDiaryFinishedDate).toISOString().split(".")[0] + "Z"
-                  };
-
-                  const token = getCookie("access_token");
-                  try {
-                    const response = await createCareProcessAPI(payload, token);
-                    if (response.status === 200 || response.status === 201) {
-                      const res = await getCareProcessesAPI(lotId, token);
-                      if (res && Array.isArray(res.data)) {
-                        setLotDiaries((prev) => ({
-                          ...prev,
-                          [lotId]: res.data
-                        }));
-                      }
-                      showToast("Đã lưu nhật ký mới thành công!");
-                    } else {
-                      alert("Không thể lưu nhật ký. Vui lòng thử lại!");
-                    }
-                  } catch (error: any) {
-                    console.error("Lỗi khi tạo nhật ký chăm sóc (Chuyển sang LocalStorage cục bộ):", error);
-                    const localKey = `diaries_${lotId}`;
-                    let list = [];
-                    if (typeof window !== "undefined") {
-                      const existing = localStorage.getItem(localKey);
-                      if (existing) {
-                        try { list = JSON.parse(existing); } catch (_) {}
-                      }
-                      const simulatedDiary = {
-                        id: Date.now(),
-                        ...payload
-                      };
-                      list.unshift(simulatedDiary);
-                      localStorage.setItem(localKey, JSON.stringify(list));
-                    }
-                    setLotDiaries((prev) => ({
-                      ...prev,
-                      [lotId]: list
-                    }));
-                    showToast("Đã lưu nhật ký vào Bộ nhớ trình duyệt (LocalStorage)!");
-                  }
-
-                  setNewDiaryTitle("");
-                  setNewDiaryDesc("");
-                  setNewDiaryMonth(1);
-                  setNewDiaryStartDate("");
-                  setNewDiaryFinishedDate("");
-                  setShowAddDiary(false);
-                }} 
-                className="bg-gray-50 p-5 rounded-xl border border-gray-250/60 space-y-4 animate-slide-in"
-              >
-                <div className="flex items-center justify-between border-b border-gray-200 pb-2">
-                  <span className="text-xs font-extrabold text-gray-800">Thêm nhật ký tháng mới</span>
-                  <button 
-                    type="button" 
-                    onClick={() => setShowAddDiary(false)}
-                    className="text-gray-400 hover:text-gray-600 text-xs font-bold cursor-pointer"
-                  >
-                    Hủy
-                  </button>
-                </div>
-
-                <div className="space-y-3">
-                  {/* title */}
-                  <div className="space-y-1">
-                    <label className="text-[10px] font-bold text-gray-500 uppercase tracking-wide">Tiêu đề nhật ký <span className="text-red-500">*</span></label>
-                    <input
-                      type="text"
-                      required
-                      value={newDiaryTitle}
-                      onChange={(e) => setNewDiaryTitle(e.target.value)}
-                      placeholder="Ví dụ: Chăm sóc tháng 1..."
-                      className="w-full bg-white border border-gray-300 rounded-lg py-2 px-3 text-xs text-gray-800 focus:outline-none focus:border-[#13a855] focus:ring-1 focus:ring-[#13a855] transition-all font-semibold"
-                    />
-                  </div>
-
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    {/* month */}
-                    <div className="space-y-1">
-                      <label className="text-[10px] font-bold text-gray-500 uppercase tracking-wide">Chỉ số Tháng (1 - 12) <span className="text-red-500">*</span></label>
-                      <input
-                        type="number"
-                        required
-                        min="1"
-                        max="12"
-                        value={newDiaryMonth}
-                        onChange={(e) => setNewDiaryMonth(Number(e.target.value))}
-                        className="w-full bg-white border border-gray-300 rounded-lg py-2 px-3 text-xs text-gray-800 focus:outline-none focus:border-[#13a855] focus:ring-1 focus:ring-[#13a855] transition-all font-semibold"
-                      />
-                    </div>
-
-                    {/* started_date */}
-                    <div className="space-y-1">
-                      <label className="text-[10px] font-bold text-gray-500 uppercase tracking-wide">Ngày bắt đầu (started_date) <span className="text-red-500">*</span></label>
-                      <input
-                        type="date"
-                        required
-                        value={newDiaryStartDate}
-                        onChange={(e) => setNewDiaryStartDate(e.target.value)}
-                        className="w-full bg-white border border-gray-300 rounded-lg py-2 px-3 text-xs text-gray-800 focus:outline-none focus:border-[#13a855] focus:ring-1 focus:ring-[#13a855] transition-all font-semibold"
-                      />
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    {/* finished_dat */}
-                    <div className="space-y-1">
-                      <label className="text-[10px] font-bold text-gray-500 uppercase tracking-wide">Ngày kết thúc (finished_dat) <span className="text-red-500">*</span></label>
-                      <input
-                        type="date"
-                        required
-                        value={newDiaryFinishedDate}
-                        onChange={(e) => setNewDiaryFinishedDate(e.target.value)}
-                        className="w-full bg-white border border-gray-300 rounded-lg py-2 px-3 text-xs text-gray-800 focus:outline-none focus:border-[#13a855] focus:ring-1 focus:ring-[#13a855] transition-all font-semibold"
-                      />
-                    </div>
-                  </div>
-
-                  {/* description */}
-                  <div className="space-y-1">
-                    <label className="text-[10px] font-bold text-gray-500 uppercase tracking-wide">Nội dung nhật ký (Description) <span className="text-red-500">*</span></label>
-                    <textarea
-                      required
-                      value={newDiaryDesc}
-                      onChange={(e) => setNewDiaryDesc(e.target.value)}
-                      placeholder="Nhập chi tiết các hoạt động, bón phân, tưới tiêu..."
-                      rows={4}
-                      className="w-full bg-white border border-gray-300 rounded-lg py-2 px-3 text-xs text-gray-800 focus:outline-none focus:border-[#13a855] focus:ring-1 focus:ring-[#13a855] transition-all font-medium resize-none"
-                    />
-                  </div>
-                </div>
-
-                <div className="flex justify-end gap-2">
-                  <button
-                    type="submit"
-                    className="px-4 py-2 bg-[#13a855] hover:bg-[#0f8b44] text-white text-xs font-bold rounded-lg shadow-sm cursor-pointer"
-                  >
-                    Lưu nhật ký
-                  </button>
-                </div>
-              </form>
-            )}
-
-            {currentDiaries.length === 0 ? (
-              <div className="text-center py-12 bg-white border border-gray-200 rounded-2xl text-gray-400 font-semibold text-xs">
-                Chưa có nhật ký nào được ghi nhận cho lô canh tác này.
-              </div>
-            ) : (
-              <div className="space-y-3">
-                {currentDiaries.map((diary) => (
-                  <div key={diary.id} className="bg-white border border-gray-200 rounded-xl p-4 shadow-sm hover:shadow transition-shadow relative group">
-                    <div className="flex items-center justify-between mb-2">
-                      <div className="flex items-center gap-2">
-                        <span className="px-2.5 py-1 bg-emerald-50 text-emerald-700 text-[10px] font-black uppercase tracking-wider rounded-md border border-emerald-100">
-                          📅 Tháng {diary.month}
-                        </span>
-                        <span className="text-gray-800 font-black text-xs">{diary.title}</span>
-                      </div>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          const lotId = selectedLot.id || (selectedLot as any).ID;
-                          if (!lotId) return;
-                          const updated = currentDiaries.filter(d => d.id !== diary.id);
-                          if (typeof window !== "undefined") {
-                            localStorage.setItem(`diaries_${lotId}`, JSON.stringify(updated));
-                          }
-                          setLotDiaries({
-                            ...lotDiaries,
-                            [lotId]: updated
-                          });
-                        }}
-                        className="opacity-0 group-hover:opacity-100 transition-opacity text-red-500 hover:text-red-750 text-[10px] font-bold cursor-pointer"
-                      >
-                        Xóa
-                      </button>
-                    </div>
-                    
-                    {diary.started_date && diary.finished_dat && (
-                      <div className="text-[10px] text-gray-450 font-bold mb-1">
-                        Thời gian: {formatDate(diary.started_date)} - {formatDate(diary.finished_dat)}
-                      </div>
-                    )}
-                    
-                    <p className="text-xs text-gray-600 font-semibold leading-relaxed">{diary.description}</p>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        )}
-      </div>
+      <LotDetail
+        selectedLot={selectedLot}
+        onBack={() => setSelectedLot(null)}
+        farmId={farmId}
+        lotDiaries={lotDiaries}
+        setLotDiaries={setLotDiaries}
+        handleOpenEditModal={handleOpenEditModal}
+        showToast={showToast}
+        formatDate={formatDate}
+        getStatusBadge={getStatusBadge}
+      />
     );
   }
 
   return (
     <div className="space-y-6 font-sans antialiased text-gray-800 animate-fade-in select-none">
-
       {/* Toast Alert */}
       {toastMessage && (
         <div className="fixed top-4 right-4 z-50 flex items-center gap-3 px-4.5 py-3 rounded-lg shadow-xl text-sm font-bold border bg-[#e8f8f0] text-[#13a855] border-[#cbeed7] transition-all duration-300 animate-slide-in">
@@ -665,7 +272,9 @@ export default function CropLotsDashboard() {
           </div>
           <div>
             <span className="block text-xs font-bold text-gray-400 uppercase">Lô đất đang hoạt động</span>
-            <span className="text-lg font-black text-gray-800">{activeLots} / {lots.length} lô</span>
+            <span className="text-lg font-black text-gray-800">
+              {activeLots} / {lots.length} lô
+            </span>
           </div>
         </div>
       </div>
@@ -701,84 +310,15 @@ export default function CropLotsDashboard() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {filteredLots.length > 0 ? (
           filteredLots.map((lot, index) => (
-            <div
+            <LotCard
               key={lot.id ? `${lot.id}-${index}` : `lot-${index}`}
-              className="bg-white border border-gray-200 rounded-2xl shadow-sm overflow-hidden hover:shadow-md transition-shadow flex flex-col justify-between"
-            >
-              <div className="p-5 space-y-4">
-                {/* Header: Title and Status */}
-                <div className="flex items-start justify-between gap-3">
-                  <div>
-                    <h3 className="font-extrabold text-gray-850 text-sm sm:text-base leading-tight mb-1 hover:text-[#13a855] transition-colors">
-                      {lot.name}
-                    </h3>
-                    <span className="block text-[10px] text-gray-400">Mã Lô: #{lot.id}</span>
-                  </div>
-                  {getStatusBadge(lot.status)}
-                </div>
-
-                {/* Specs grids */}
-                <div className="grid grid-cols-2 gap-3 bg-gray-50 p-3.5 rounded-xl text-xs font-bold text-gray-500">
-                  <div className="space-y-1">
-                    <span className="block text-[10px] text-gray-400 uppercase">Diện tích</span>
-                    <span className="block text-gray-750 text-xs sm:text-sm">{(lot.area || 0).toLocaleString()} {lot.area_unit}</span>
-                  </div>
-                  <div className="space-y-1">
-                    <span className="block text-[10px] text-gray-400 uppercase">Quy mô</span>
-                    <span className="block text-gray-750 text-xs sm:text-sm">{(lot.tree_count || 0).toLocaleString()} gốc cây</span>
-                  </div>
-                </div>
-
-                {/* Timelines countdown */}
-                <div className="space-y-2 text-xs">
-                  <div className="flex items-center gap-2 text-gray-550">
-                    <Calendar className="w-4 h-4 text-gray-400" />
-                    <span>Ngày gieo: <span className="font-bold text-gray-700">{formatDate(lot.start_date)}</span></span>
-                  </div>
-                  <div className="flex items-center gap-2 text-gray-550">
-                    <CheckCircle2 className="w-4 h-4 text-gray-400" />
-                    <span>Thu hoạch: <span className="font-bold text-gray-700">{formatDate(lot.expected_harvest_date)}</span></span>
-                  </div>
-                </div>
-
-                {/* Notes */}
-                {lot.note && (
-                  <p className="text-xs text-gray-500 leading-relaxed bg-[#f4fbf7]/40 border border-[#e8f8f0] p-2.5 rounded-lg italic">
-                    Ghi chú: {lot.note}
-                  </p>
-                )}
-              </div>
-
-              {/* Actions Footer */}
-              <div className="bg-gray-50/60 border-t border-gray-150/60 p-4 flex items-center justify-between gap-2">
-                <button
-                  onClick={() => {
-                    setSelectedLot(lot);
-                    setDetailTab("tt");
-                  }}
-                  className="p-2 text-gray-500 hover:text-[#13a855] hover:bg-[#e8f8f0] border border-gray-200 hover:border-[#13a855]/30 rounded-lg cursor-pointer transition-all active:scale-95 text-xs font-bold flex items-center gap-1.5"
-                >
-                  <ChevronRight className="w-3.5 h-3.5" />
-                  <span>Chi tiết</span>
-                </button>
-                <div className="flex gap-2">
-                  <button
-                    onClick={() => handleOpenEditModal(lot)}
-                    className="p-2 text-gray-500 hover:text-[#13a855] hover:bg-[#e8f8f0] border border-[#d3ecd8] hover:border-[#13a855]/30 rounded-lg cursor-pointer transition-all active:scale-95 text-xs font-bold flex items-center gap-1.5"
-                  >
-                    <Edit2 className="w-3.5 h-3.5" />
-                    <span>Sửa</span>
-                  </button>
-                  <button
-                    onClick={() => handleDelete(lot.id)}
-                    className="p-2 text-gray-500 hover:text-red-600 hover:bg-red-50 border border-gray-200 hover:border-red-100 rounded-lg cursor-pointer transition-all active:scale-95 text-xs font-bold flex items-center gap-1.5"
-                  >
-                    <Trash2 className="w-3.5 h-3.5" />
-                    <span>Xóa</span>
-                  </button>
-                </div>
-              </div>
-            </div>
+              lot={lot}
+              onDetail={() => setSelectedLot(lot)}
+              onEdit={() => handleOpenEditModal(lot)}
+              onDelete={() => handleDelete(lot.id)}
+              formatDate={formatDate}
+              getStatusBadge={getStatusBadge}
+            />
           ))
         ) : (
           <div className="col-span-full bg-white border border-gray-200 rounded-2xl py-16 text-center text-gray-400 font-medium">
@@ -788,183 +328,15 @@ export default function CropLotsDashboard() {
         )}
       </div>
 
-      {/* Premium Create/Edit Modal */}
-      {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-[4px] transition-all animate-fade-in">
-          <div className="bg-white w-full max-w-lg rounded-2xl shadow-2xl border border-gray-100 overflow-hidden transform scale-100 animate-zoom-in">
-
-            {/* Modal Header */}
-            <div className="px-6 py-5 border-b border-gray-100 bg-gradient-to-r from-[#fbfdfc] to-[#f4fbf7] flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-[#e8f8f0] text-[#13a855] rounded-xl">
-                  <Layers className="w-5 h-5" />
-                </div>
-                <div>
-                  <h3 className="text-base sm:text-lg font-black text-gray-900 leading-tight">
-                    {editingLot ? "Cập Nhật Lô Đất Canh Tác" : "Thiết Lập Lô Canh Tác Mới"}
-                  </h3>
-                  <p className="text-[11px] sm:text-xs text-gray-500 font-medium mt-0.5">
-                    Cấu hình chi tiết diện tích, số cây và lịch trình gieo trồng.
-                  </p>
-                </div>
-              </div>
-              <button
-                onClick={() => setIsModalOpen(false)}
-                className="p-2 text-gray-400 hover:text-gray-700 hover:bg-gray-100 rounded-full cursor-pointer transition-colors"
-              >
-                <X className="w-4 h-4 stroke-[2.5]" />
-              </button>
-            </div>
-
-            {/* Modal Form */}
-            <form onSubmit={handleSubmit} className="p-6 space-y-4 max-h-[75vh] overflow-y-auto">
-              {/* farm_id display */}
-              <div className="space-y-1">
-                <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">ID Trang trại liên kết</label>
-                <input
-                  type="text"
-                  readOnly
-                  value={farmId}
-                  className="w-full bg-gray-50 border border-gray-200 rounded-lg py-2.5 px-3 text-xs sm:text-sm text-gray-500 cursor-not-allowed font-mono tracking-tight font-medium"
-                />
-              </div>
-
-              {/* name */}
-              <div className="space-y-1">
-                <label className="text-[10px] font-bold text-gray-500 uppercase tracking-wider block">
-                  Tên lô canh tác <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="text"
-                  required
-                  value={formName}
-                  onChange={(e) => setFormName(e.target.value)}
-                  placeholder="Ví dụ: Lô Xà Lách Hữu Cơ 2..."
-                  className="w-full bg-white border border-gray-300 rounded-lg py-2.5 px-3 text-xs sm:text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#13a855]/20 focus:border-[#13a855] transition-all font-medium"
-                />
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {/* area */}
-                <div className="space-y-1">
-                  <label className="text-[10px] font-bold text-gray-500 uppercase tracking-wider block">
-                    Diện tích lô đất <span className="text-red-500">*</span>
-                  </label>
-                  <div className="flex gap-2">
-                    <input
-                      type="number"
-                      required
-                      min="1"
-                      value={formArea}
-                      onChange={(e) => setFormArea(e.target.value)}
-                      placeholder="Diện tích..."
-                      className="flex-1 min-w-0 bg-white border border-gray-300 rounded-lg py-2.5 px-3 text-xs sm:text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#13a855]/20 focus:border-[#13a855] transition-all font-medium"
-                    />
-                    <select
-                      value={formAreaUnit}
-                      onChange={(e) => setFormAreaUnit(e.target.value)}
-                      className="w-24 flex-shrink-0 bg-white border border-gray-300 rounded-lg py-2 px-3 text-xs sm:text-sm text-gray-750 font-bold focus:outline-none focus:ring-2 focus:ring-[#13a855]/20 focus:border-[#13a855] cursor-pointer"
-                    >
-                      <option value="M2">M²</option>
-                      <option value="HA">Hécta</option>
-                    </select>
-                  </div>
-                </div>
-
-                {/* tree_count */}
-                <div className="space-y-1">
-                  <label className="text-[10px] font-bold text-gray-500 uppercase tracking-wider block">
-                    Số lượng gốc cây trồng <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="number"
-                    required
-                    min="1"
-                    value={formTreeCount}
-                    onChange={(e) => setFormTreeCount(e.target.value)}
-                    placeholder="Số lượng cây..."
-                    className="w-full bg-white border border-gray-300 rounded-lg py-2.5 px-3 text-xs sm:text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#13a855]/20 focus:border-[#13a855] transition-all font-medium"
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {/* start_date */}
-                <div className="space-y-1">
-                  <label className="text-[10px] font-bold text-gray-500 uppercase tracking-wider block">
-                    Ngày xuống giống gieo hạt <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="date"
-                    required
-                    value={formStartDate}
-                    onChange={(e) => setFormStartDate(e.target.value)}
-                    className="w-full bg-white border border-gray-300 rounded-lg py-2.5 px-3 text-xs sm:text-sm text-gray-700 font-bold focus:outline-none focus:ring-2 focus:ring-[#13a855]/20 focus:border-[#13a855] transition-all"
-                  />
-                </div>
-
-                {/* expected_harvest_date */}
-                <div className="space-y-1">
-                  <label className="text-[10px] font-bold text-gray-500 uppercase tracking-wider block">
-                    Ngày dự kiến thu hoạch <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="date"
-                    required
-                    value={formHarvestDate}
-                    onChange={(e) => setFormHarvestDate(e.target.value)}
-                    className="w-full bg-white border border-gray-300 rounded-lg py-2.5 px-3 text-xs sm:text-sm text-gray-700 font-bold focus:outline-none focus:ring-2 focus:ring-[#13a855]/20 focus:border-[#13a855] transition-all"
-                  />
-                </div>
-              </div>
-
-              {/* status */}
-              <div className="space-y-1">
-                <label className="text-[10px] font-bold text-gray-500 uppercase tracking-wider block">Trạng thái lô canh tác</label>
-                <select
-                  value={formStatus}
-                  onChange={(e) => setFormStatus(e.target.value as any)}
-                  className="w-full bg-white border border-gray-300 rounded-lg py-2.5 px-3 text-xs sm:text-sm text-gray-705 font-bold focus:outline-none focus:ring-2 focus:ring-[#13a855]/20 focus:border-[#13a855] cursor-pointer"
-                >
-                  <option value="PROCESS">Đang nuôi trồng (PROCESS)</option>
-                  <option value="HARVESTED">Đang thu hoạch (HARVESTED)</option>
-                </select>
-              </div>
-
-              {/* note */}
-              <div className="space-y-1">
-                <label className="text-[10px] font-bold text-gray-500 uppercase tracking-wider block">Ghi chú canh tác</label>
-                <textarea
-                  value={formNote}
-                  onChange={(e) => setFormNote(e.target.value)}
-                  placeholder="Ghi chú về phân bón hữu cơ, lượng nước hoặc kỹ thuật canh tác đặc biệt..."
-                  rows={2}
-                  className="w-full bg-white border border-gray-300 rounded-lg py-2 px-3 text-xs sm:text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#13a855]/20 focus:border-[#13a855] transition-all font-medium placeholder-gray-400 resize-none"
-                />
-              </div>
-
-              {/* Footer buttons */}
-              <div className="pt-6 border-t border-gray-100 flex items-center justify-end gap-3">
-                <button
-                  type="button"
-                  onClick={() => setIsModalOpen(false)}
-                  className="px-5 py-2.5 bg-white border border-gray-300 text-gray-650 hover:bg-gray-50 hover:text-gray-800 font-bold rounded-lg text-xs sm:text-sm transition-all cursor-pointer"
-                >
-                  Hủy bỏ
-                </button>
-                <button
-                  type="submit"
-                  className="px-6 py-2.5 bg-[#13a855] hover:bg-[#0f8b44] text-white font-bold rounded-lg text-xs sm:text-sm shadow-md hover:shadow-lg transition-all cursor-pointer active:scale-95"
-                >
-                  {editingLot ? "Lưu thay đổi" : "Khởi tạo lô đất"}
-                </button>
-              </div>
-            </form>
-
-          </div>
-        </div>
-      )}
-
+      {/* Create/Edit Modal */}
+      <LotModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        editingLot={editingLot}
+        farmId={farmId}
+        onCreate={handleCreateLot}
+        onUpdate={handleUpdateLot}
+      />
     </div>
   );
 }

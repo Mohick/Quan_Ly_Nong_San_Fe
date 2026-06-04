@@ -6,7 +6,17 @@ import {
   Package, ShoppingBag, AlertTriangle, Tag, 
   TrendingUp, CheckCircle, HelpCircle 
 } from "lucide-react";
-import { productAPI } from "@/lib/_api/product";
+import { productAPI, createProductAPI } from "@/lib/_api/product";
+import { FarmAPI } from "@/lib/_api/farm";
+import { lotsAPI } from "@/lib/_api/lots";
+
+function getCookie(name: string): string | undefined {
+  if (typeof document === "undefined") return undefined;
+  const value = `; ${document.cookie}`;
+  const parts = value.split(`; ${name}=`);
+  if (parts.length === 2) return parts.pop()?.split(";").shift();
+  return undefined;
+}
 
 interface Product {
   id: number;
@@ -43,6 +53,13 @@ export default function DashboardProducts() {
   const [formImage, setFormImage] = useState("");
   const [formIsBestSeller, setFormIsBestSeller] = useState(false);
 
+  // New fields for backend API
+  const [lots, setLots] = useState<any[]>([]);
+  const [formCropLotId, setFormCropLotId] = useState("");
+  const [formDescription, setFormDescription] = useState("");
+  const [formStock, setFormStock] = useState("10");
+  const [formImageFile, setFormImageFile] = useState<File | null>(null);
+
   // Status message
   const [notification, setNotification] = useState<{ message: string; type: "success" | "error" } | null>(null);
 
@@ -50,7 +67,8 @@ export default function DashboardProducts() {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const res = await productAPI();
+        const token = getCookie("access_token");
+        const res = await productAPI(token);
         const data = Array.isArray(res.data) ? res.data : [];
         setProducts(data);
       } catch (error) {
@@ -59,7 +77,26 @@ export default function DashboardProducts() {
         setIsLoading(false);
       }
     };
+    const fetchLotsData = async () => {
+      try {
+        const token = getCookie("access_token");
+        const farmRes = await FarmAPI(token);
+        const activeFarmId = farmRes?.data?.id || farmRes?.data?.ID;
+        if (activeFarmId) {
+          const res = await lotsAPI(activeFarmId, token);
+          if (res && Array.isArray(res.data)) {
+            setLots(res.data);
+            if (res.data.length > 0) {
+              setFormCropLotId(res.data[0].id || res.data[0].ID);
+            }
+          }
+        }
+      } catch (error) {
+        console.error("Lỗi khi tải danh sách lô để liên kết sản phẩm:", error);
+      }
+    };
     fetchProducts();
+    fetchLotsData();
   }, []);
 
   // Display notification helper
@@ -79,8 +116,14 @@ export default function DashboardProducts() {
     setFormOriginalPrice("");
     setFormUnit("kg");
     setFormDiscount("0");
-    setFormImage("https://images.unsplash.com/photo-1610348725531-843dff10902c?q=80&w=600&auto=format&fit=crop");
+    setFormImage("");
     setFormIsBestSeller(false);
+    setFormDescription("");
+    setFormStock("10");
+    setFormImageFile(null);
+    if (lots.length > 0) {
+      setFormCropLotId(lots[0].id || lots[0].ID);
+    }
     setIsModalOpen(true);
   };
 
@@ -136,27 +179,62 @@ export default function DashboardProducts() {
         )
       );
       showNotification("Cập nhật sản phẩm thành công!", "success");
+      setIsModalOpen(false);
     } else {
       // Create logic
-      const newProduct: Product = {
-        id: products.length > 0 ? Math.max(...products.map((p) => p.id)) + 1 : 1,
-        name: formName,
-        category: formCategory,
-        rating: 5.0,
-        reviewsCount: 0,
-        soldQuantity: "0 kg",
-        salePrice: salePriceNum,
-        originalPrice: originalPriceNum,
-        discountPercent: discountNum,
-        unit: formUnit,
-        image: formImage,
-        isBestSeller: formIsBestSeller,
-      };
-      setProducts((prev) => [newProduct, ...prev]);
-      showNotification("Thêm sản phẩm mới thành công!", "success");
-    }
+      const token = getCookie("access_token");
+      const formData = new FormData();
+      formData.append("crop_lot_id", formCropLotId);
+      formData.append("name", formName);
+      formData.append("description", formDescription);
+      formData.append("price", formSalePrice);
+      formData.append("stock", formStock);
+      if (formImageFile) {
+        formData.append("image", formImageFile);
+      }
 
-    setIsModalOpen(false);
+      createProductAPI(formData, token)
+        .then((res) => {
+          showNotification("Thêm sản phẩm mới lên Backend thành công!", "success");
+          const newProduct: Product = {
+            id: res.data?.data?.id || res.data?.data?.ID || (products.length > 0 ? Math.max(...products.map((p) => p.id)) + 1 : 1),
+            name: formName,
+            category: formCategory,
+            rating: 5.0,
+            reviewsCount: 0,
+            soldQuantity: "0 kg",
+            salePrice: salePriceNum,
+            originalPrice: originalPriceNum,
+            discountPercent: discountNum,
+            unit: formUnit,
+            image: formImageFile ? URL.createObjectURL(formImageFile) : formImage || "https://images.unsplash.com/photo-1610348725531-843dff10902c?q=80&w=600&auto=format&fit=crop",
+            isBestSeller: formIsBestSeller,
+          };
+          setProducts((prev) => [newProduct, ...prev]);
+        })
+        .catch((err) => {
+          console.error("Lỗi khi thêm sản phẩm lên Backend:", err);
+          showNotification("Lỗi Backend: " + (err.response?.data?.message || err.message), "error");
+          
+          // Fallback locally
+          const newProduct: Product = {
+            id: products.length > 0 ? Math.max(...products.map((p) => p.id)) + 1 : 1,
+            name: formName,
+            category: formCategory,
+            rating: 5.0,
+            reviewsCount: 0,
+            soldQuantity: "0 kg",
+            salePrice: salePriceNum,
+            originalPrice: originalPriceNum,
+            discountPercent: discountNum,
+            unit: formUnit,
+            image: formImageFile ? URL.createObjectURL(formImageFile) : formImage || "https://images.unsplash.com/photo-1610348725531-843dff10902c?q=80&w=600&auto=format&fit=crop",
+            isBestSeller: formIsBestSeller,
+          };
+          setProducts((prev) => [newProduct, ...prev]);
+        });
+      setIsModalOpen(false);
+    }
   };
 
   // Delete product logic
@@ -420,171 +498,320 @@ export default function DashboardProducts() {
 
       </div>
 
-      {/* Premium creation / editing modal */}
+      {/* Shopify-like two-column product creation modal */}
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/45 backdrop-blur-[3px] animate-fade-in font-sans">
-          <div className="bg-white w-full max-w-lg rounded-2xl shadow-2xl border border-gray-150 overflow-hidden transform scale-100 animate-zoom-in">
+          <div className="bg-[#f6f6f7] w-full max-w-6xl rounded-xl shadow-2xl border border-gray-200 overflow-hidden transform scale-100 animate-zoom-in flex flex-col max-h-[90vh]">
             
             {/* Modal Header */}
-            <div className="px-6 py-5 border-b border-gray-100 bg-[#fbfdfc] flex items-center justify-between">
+            <div className="px-6 py-4 border-b border-gray-200 bg-white flex items-center justify-between">
               <div>
-                <h3 className="text-base sm:text-lg font-black text-gray-900">
+                <h3 className="text-sm sm:text-base font-black text-gray-900">
                   {editingProduct ? "Cập Nhật Thông Tin Sản Phẩm" : "Thêm Nông Sản Mới Vào Cửa Hàng"}
                 </h3>
-                <p className="text-[11px] sm:text-xs text-gray-500 font-medium">
-                  {editingProduct ? "Thay đổi các trường dữ liệu bên dưới và nhấn Lưu thay đổi." : "Điền đầy đủ thông tin nông sản để tạo thẻ bán lẻ mới."}
+                <p className="text-[11px] text-gray-500 font-medium mt-0.5">
+                  Quản lý thông tin chi tiết, định mức giá bán và phân phối lô đất.
                 </p>
               </div>
               <button
                 onClick={() => setIsModalOpen(false)}
-                className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full cursor-pointer transition-colors"
+                className="p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg cursor-pointer transition-colors"
               >
                 <X className="w-4 h-4 stroke-[2.5]" />
               </button>
             </div>
 
-            {/* Modal Body / Form */}
-            <form onSubmit={handleSubmit} className="p-6 space-y-4 max-h-[70vh] overflow-y-auto">
+            {/* Modal Body - Two-column Shopify editor layout */}
+            <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-6 grid grid-cols-1 md:grid-cols-3 gap-6">
               
-              {/* Product name */}
-              <div className="space-y-1">
-                <label className="text-xs font-bold text-gray-500 uppercase tracking-wide">
-                  Tên sản phẩm <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="text"
-                  required
-                  value={formName}
-                  onChange={(e) => setFormName(e.target.value)}
-                  placeholder="Ví dụ: Dưa lưới Huỳnh Long VietGAP..."
-                  className="w-full bg-white border border-gray-300 rounded-lg py-2.5 px-3 text-xs sm:text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:border-[#13a855] focus:ring-1 focus:ring-[#13a855] transition-all"
-                />
+              {/* Left Column (md:col-span-2) - Main details */}
+              <div className="md:col-span-2 space-y-6">
+                
+                {/* 1. Title & Description Box */}
+                <div className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm space-y-4">
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-bold text-gray-700">Tiêu đề (Title) <span className="text-red-500">*</span></label>
+                    <input
+                      type="text"
+                      required
+                      value={formName}
+                      onChange={(e) => setFormName(e.target.value)}
+                      placeholder="Ví dụ: Short sleeve t-shirt, Dưa lưới Huỳnh Long..."
+                      className="w-full bg-white border border-gray-300 rounded-lg py-2 px-3 text-xs sm:text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:border-[#13a855] focus:ring-1 focus:ring-[#13a855] transition-all font-semibold"
+                    />
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-bold text-gray-700">Mô tả (Description) <span className="text-red-500">*</span></label>
+                    {/* Rich text formatting bar mockup matching the Shopify design */}
+                    <div className="border border-gray-300 rounded-lg overflow-hidden focus-within:border-[#13a855] focus-within:ring-1 focus-within:ring-[#13a855] transition-all bg-white">
+                      <div className="flex flex-wrap items-center gap-1 bg-gray-50 border-b border-gray-200 p-2 text-gray-500 text-xs font-medium">
+                        <button type="button" className="p-1 hover:bg-gray-200 rounded cursor-pointer">✨</button>
+                        <select className="bg-transparent hover:bg-gray-200 p-1 rounded text-[11px] font-bold cursor-pointer outline-none">
+                          <option>Paragraph</option>
+                          <option>Heading 1</option>
+                          <option>Heading 2</option>
+                        </select>
+                        <span className="h-4 w-[1px] bg-gray-300 mx-1"></span>
+                        <button type="button" className="p-1 font-bold hover:bg-gray-200 rounded w-6 cursor-pointer">B</button>
+                        <button type="button" className="p-1 italic hover:bg-gray-200 rounded w-6 cursor-pointer">I</button>
+                        <button type="button" className="p-1 underline hover:bg-gray-200 rounded w-6 cursor-pointer">U</button>
+                        <span className="h-4 w-[1px] bg-gray-300 mx-1"></span>
+                        <button type="button" className="p-1 hover:bg-gray-200 rounded cursor-pointer">🔗</button>
+                        <button type="button" className="p-1 hover:bg-gray-200 rounded cursor-pointer">🖼️</button>
+                        <button type="button" className="p-1 hover:bg-gray-200 rounded cursor-pointer">🎥</button>
+                      </div>
+                      <textarea
+                        required
+                        value={formDescription}
+                        onChange={(e) => setFormDescription(e.target.value)}
+                        placeholder="Mô tả chi tiết sản phẩm, nguồn gốc xuất xứ..."
+                        rows={5}
+                        className="w-full border-none p-3 text-xs sm:text-sm text-gray-800 placeholder-gray-400 focus:outline-none resize-none font-medium"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* 2. Media Upload Card */}
+                <div className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm space-y-3">
+                  <label className="text-xs font-bold text-gray-700">Hình ảnh sản phẩm (Media) <span className="text-red-500">*</span></label>
+                  
+                  {editingProduct ? (
+                    <div className="space-y-3">
+                      <input
+                        type="text"
+                        value={formImage}
+                        onChange={(e) => setFormImage(e.target.value)}
+                        placeholder="URL liên kết ảnh..."
+                        className="w-full bg-white border border-gray-300 rounded-lg py-2 px-3 text-xs sm:text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:border-[#13a855] focus:ring-1 focus:ring-[#13a855] transition-all"
+                      />
+                      {formImage && (
+                        <div className="relative w-28 h-28 border border-gray-200 rounded-lg overflow-hidden">
+                          <img src={formImage} alt="Preview" className="w-full h-full object-cover" />
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    <div className="border-2 border-dashed border-gray-300 rounded-xl p-6 text-center hover:border-[#13a855] transition-all bg-gray-50 flex flex-col items-center justify-center relative">
+                      {formImageFile ? (
+                        <div className="space-y-3 flex flex-col items-center">
+                          <div className="relative w-28 h-28 border border-gray-200 rounded-lg overflow-hidden shadow-sm">
+                            <img src={URL.createObjectURL(formImageFile)} alt="Preview" className="w-full h-full object-cover" />
+                          </div>
+                          <p className="text-[11px] font-bold text-[#13a855]">{formImageFile.name}</p>
+                          <button
+                            type="button"
+                            onClick={() => setFormImageFile(null)}
+                            className="text-[10px] text-red-500 hover:underline font-bold"
+                          >
+                            Hủy bỏ và chọn ảnh khác
+                          </button>
+                        </div>
+                      ) : (
+                        <div className="space-y-2">
+                          <div className="flex justify-center text-gray-400">
+                            <Package className="w-10 h-10 stroke-[1.2]" />
+                          </div>
+                          <div className="flex flex-col items-center gap-1.5">
+                            <label className="px-3 py-1.5 bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 text-xs font-extrabold rounded-lg shadow-sm cursor-pointer transition-all active:scale-95">
+                              Upload new
+                              <input
+                                type="file"
+                                required
+                                accept="image/*"
+                                onChange={(e) => setFormImageFile(e.target.files?.[0] || null)}
+                                className="hidden"
+                              />
+                            </label>
+                            <span className="text-[10px] text-gray-400 font-semibold">Accepts images, videos, or 3D models</span>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+
+                {/* 3. Pricing, Discount and Stock Card */}
+                <div className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm space-y-4">
+                  <h4 className="text-xs font-black text-gray-900 border-b border-gray-100 pb-2">Giá cả & Kho hàng (Pricing & Inventory)</h4>
+                  
+                  <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
+                    {/* Sale Price */}
+                    <div className="space-y-1.5 col-span-2">
+                      <label className="text-[11px] font-bold text-gray-500 uppercase">Giá bán khuyến mãi <span className="text-red-500">*</span></label>
+                      <input
+                        type="number"
+                        required
+                        min="0"
+                        value={formSalePrice}
+                        onChange={(e) => setFormSalePrice(e.target.value)}
+                        placeholder="đ"
+                        className="w-full bg-white border border-gray-300 rounded-lg py-2 px-3 text-xs sm:text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:border-[#13a855] focus:ring-1 focus:ring-[#13a855] transition-all font-semibold"
+                      />
+                    </div>
+
+                    {/* Original Price */}
+                    <div className="space-y-1.5 col-span-2">
+                      <label className="text-[11px] font-bold text-gray-500 uppercase">Giá gốc niêm yết <span className="text-red-500">*</span></label>
+                      <input
+                        type="number"
+                        required
+                        min="0"
+                        value={formOriginalPrice}
+                        onChange={(e) => setFormOriginalPrice(e.target.value)}
+                        placeholder="đ"
+                        className="w-full bg-white border border-gray-300 rounded-lg py-2 px-3 text-xs sm:text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:border-[#13a855] focus:ring-1 focus:ring-[#13a855] transition-all font-semibold"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-1">
+                    {/* Discount percent */}
+                    <div className="space-y-1.5">
+                      <label className="text-[11px] font-bold text-gray-500 uppercase">Chiết khấu (%)</label>
+                      <input
+                        type="number"
+                        min="0"
+                        max="100"
+                        value={formDiscount}
+                        onChange={(e) => setFormDiscount(e.target.value)}
+                        placeholder="%"
+                        className="w-full bg-white border border-gray-300 rounded-lg py-2 px-3 text-xs sm:text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:border-[#13a855] focus:ring-1 focus:ring-[#13a855] transition-all font-semibold"
+                      />
+                    </div>
+
+                    {/* Stock */}
+                    <div className="space-y-1.5">
+                      <label className="text-[11px] font-bold text-gray-500 uppercase">Số lượng tồn kho (stock) <span className="text-red-500">*</span></label>
+                      <input
+                        type="number"
+                        required
+                        min="1"
+                        value={formStock}
+                        onChange={(e) => setFormStock(e.target.value)}
+                        placeholder="Ví dụ: 10..."
+                        className="w-full bg-white border border-gray-300 rounded-lg py-2.5 px-3 text-xs sm:text-sm text-gray-800 focus:outline-none focus:border-[#13a855] focus:ring-1 focus:ring-[#13a855] transition-all font-semibold"
+                      />
+                    </div>
+                  </div>
+                </div>
+
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {/* Category */}
-                <div className="space-y-1">
-                  <label className="text-xs font-bold text-gray-500 uppercase tracking-wide">Danh mục</label>
-                  <select
-                    value={formCategory}
-                    onChange={(e) => setFormCategory(e.target.value)}
-                    className="w-full bg-white border border-gray-300 rounded-lg py-2.5 px-3 text-xs sm:text-sm text-gray-700 font-bold focus:outline-none focus:border-[#13a855] cursor-pointer transition-all"
-                  >
-                    {categories.map((cat) => (
-                      <option key={cat} value={cat}>{cat}</option>
-                    ))}
+              {/* Right Column (md:col-span-1) - Metadata & Settings */}
+              <div className="md:col-span-1 space-y-6">
+                
+                {/* 1. Status Card */}
+                <div className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm space-y-3">
+                  <label className="text-xs font-bold text-gray-700 block">Trạng thái (Status)</label>
+                  <select className="w-full bg-white border border-gray-300 rounded-lg py-2 px-3 text-xs text-gray-700 font-bold focus:outline-none focus:border-[#13a855] cursor-pointer transition-all">
+                    <option>Active</option>
+                    <option>Draft</option>
                   </select>
                 </div>
 
-                {/* Unit */}
-                <div className="space-y-1">
-                  <label className="text-xs font-bold text-gray-500 uppercase tracking-wide">Đơn vị tính</label>
-                  <input
-                    type="text"
-                    required
-                    value={formUnit}
-                    onChange={(e) => setFormUnit(e.target.value)}
-                    placeholder="kg, hộp, lon, chai..."
-                    className="w-full bg-white border border-gray-300 rounded-lg py-2.5 px-3 text-xs sm:text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:border-[#13a855] focus:ring-1 focus:ring-[#13a855] transition-all"
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-5 gap-4">
-                {/* Sale Price */}
-                <div className="space-y-1 sm:col-span-2">
-                  <label className="text-xs font-bold text-gray-500 uppercase tracking-wide">
-                    Giá bán khuyến mãi <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="number"
-                    required
-                    min="0"
-                    value={formSalePrice}
-                    onChange={(e) => setFormSalePrice(e.target.value)}
-                    placeholder="đ"
-                    className="w-full bg-white border border-gray-300 rounded-lg py-2.5 px-3 text-xs sm:text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:border-[#13a855] focus:ring-1 focus:ring-[#13a855] transition-all"
-                  />
+                {/* 2. Publishing Card */}
+                <div className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold text-gray-700">Publishing</span>
+                    <span className="text-[10px] text-gray-400 cursor-pointer">⚙️</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-xs font-semibold text-gray-600 bg-gray-50 p-2.5 rounded-lg">
+                    <span>📢</span>
+                    <span>All channels</span>
+                  </div>
                 </div>
 
-                {/* Original Price */}
-                <div className="space-y-1 sm:col-span-2">
-                  <label className="text-xs font-bold text-gray-500 uppercase tracking-wide">
-                    Giá gốc niêm yết <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="number"
-                    required
-                    min="0"
-                    value={formOriginalPrice}
-                    onChange={(e) => setFormOriginalPrice(e.target.value)}
-                    placeholder="đ"
-                    className="w-full bg-white border border-gray-300 rounded-lg py-2.5 px-3 text-xs sm:text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:border-[#13a855] focus:ring-1 focus:ring-[#13a855] transition-all"
-                  />
+                {/* 3. Product organization Card (Specifically linking crop lot id) */}
+                <div className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm space-y-4">
+                  <div className="flex items-center gap-1">
+                    <span className="text-xs font-bold text-gray-700">Thông tin Phân loại (Organization)</span>
+                    <span className="text-gray-400 text-[10px] font-bold cursor-help" title="Liên kết sản phẩm với một lô canh tác cụ thể">ℹ️</span>
+                  </div>
+
+                  {/* crop_lot_id dropdown */}
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">Lô canh tác liên kết <span className="text-red-500">*</span></label>
+                    <select
+                      value={formCropLotId}
+                      required
+                      onChange={(e) => setFormCropLotId(e.target.value)}
+                      className="w-full bg-white border border-gray-300 rounded-lg py-2.5 px-3 text-xs sm:text-sm text-gray-707 font-bold focus:outline-none focus:border-[#13a855] cursor-pointer transition-all"
+                    >
+                      {lots.map((lot) => (
+                        <option key={lot.id || lot.ID} value={lot.id || lot.ID}>
+                          {lot.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* Category select */}
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">Danh mục (Category)</label>
+                    <select
+                      value={formCategory}
+                      onChange={(e) => setFormCategory(e.target.value)}
+                      className="w-full bg-white border border-gray-300 rounded-lg py-2 px-3 text-xs text-gray-707 font-bold focus:outline-none focus:border-[#13a855] cursor-pointer transition-all"
+                    >
+                      {categories.map((cat) => (
+                        <option key={cat} value={cat}>{cat}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* Unit Input */}
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">Đơn vị tính</label>
+                    <input
+                      type="text"
+                      required
+                      value={formUnit}
+                      onChange={(e) => setFormUnit(e.target.value)}
+                      placeholder="kg, hộp, lon..."
+                      className="w-full bg-white border border-gray-300 rounded-lg py-2 px-3 text-xs text-gray-800 placeholder-gray-400 focus:outline-none focus:border-[#13a855] transition-all font-semibold"
+                    />
+                  </div>
+
+                  {/* Best Seller Checkbox */}
+                  <div className="flex items-center gap-3.5 pt-2 border-t border-gray-100">
+                    <input
+                      type="checkbox"
+                      id="best-seller-check"
+                      checked={formIsBestSeller}
+                      onChange={(e) => setFormIsBestSeller(e.target.checked)}
+                      className="w-4.5 h-4.5 text-[#13a855] border-gray-300 rounded focus:ring-[#13a855] cursor-pointer"
+                    />
+                    <label 
+                      htmlFor="best-seller-check"
+                      className="text-[11px] font-bold text-gray-700 cursor-pointer select-none"
+                    >
+                      Bán Chạy Nhất (Best Seller)
+                    </label>
+                  </div>
                 </div>
 
-                {/* Discount percent */}
-                <div className="space-y-1 sm:col-span-1">
-                  <label className="text-xs font-bold text-gray-500 uppercase tracking-wide">Chiết khấu (%)</label>
-                  <input
-                    type="number"
-                    min="0"
-                    max="100"
-                    value={formDiscount}
-                    onChange={(e) => setFormDiscount(e.target.value)}
-                    placeholder="%"
-                    className="w-full bg-white border border-gray-300 rounded-lg py-2.5 px-3 text-xs sm:text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:border-[#13a855] focus:ring-1 focus:ring-[#13a855] transition-all"
-                  />
-                </div>
-              </div>
-
-              {/* Image URL */}
-              <div className="space-y-1">
-                <label className="text-xs font-bold text-gray-500 uppercase tracking-wide">Đường dẫn ảnh sản phẩm</label>
-                <input
-                  type="text"
-                  value={formImage}
-                  onChange={(e) => setFormImage(e.target.value)}
-                  placeholder="URL liên kết ảnh..."
-                  className="w-full bg-white border border-gray-300 rounded-lg py-2.5 px-3 text-xs sm:text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:border-[#13a855] focus:ring-1 focus:ring-[#13a855] transition-all"
-                />
-              </div>
-
-              {/* Best Seller Checkbox */}
-              <div className="flex items-center gap-3 pt-2">
-                <input
-                  type="checkbox"
-                  id="best-seller-check"
-                  checked={formIsBestSeller}
-                  onChange={(e) => setFormIsBestSeller(e.target.checked)}
-                  className="w-4.5 h-4.5 text-[#13a855] border-gray-300 rounded focus:ring-[#13a855] cursor-pointer"
-                />
-                <label 
-                  htmlFor="best-seller-check"
-                  className="text-xs sm:text-sm font-bold text-gray-700 cursor-pointer select-none"
-                >
-                  Đánh dấu sản phẩm này là <span className="text-red-500 font-extrabold uppercase">Bán Chạy Nhất</span>
-                </label>
-              </div>
-
-              {/* Modal Footer / Buttons */}
-              <div className="pt-6 border-t border-gray-100 flex items-center justify-end gap-3">
-                <button
-                  type="button"
-                  onClick={() => setIsModalOpen(false)}
-                  className="px-5 py-2.5 bg-white border border-gray-300 text-gray-650 hover:bg-gray-50 font-bold rounded-lg text-xs sm:text-sm transition-all cursor-pointer"
-                >
-                  Hủy bỏ
-                </button>
-                <button
-                  type="submit"
-                  className="px-6 py-2.5 bg-[#13a855] hover:bg-[#0f8b44] text-white font-bold rounded-lg text-xs sm:text-sm shadow-md transition-all cursor-pointer active:scale-97"
-                >
-                  {editingProduct ? "Lưu thay đổi" : "Tạo mới sản phẩm"}
-                </button>
               </div>
 
             </form>
+
+            {/* Modal Footer / Action controls */}
+            <div className="px-6 py-4 border-t border-gray-200 bg-white flex items-center justify-end gap-3 shrink-0">
+              <button
+                type="button"
+                onClick={() => setIsModalOpen(false)}
+                className="px-5 py-2 bg-white border border-gray-300 text-gray-650 hover:bg-gray-50 font-bold rounded-lg text-xs transition-all cursor-pointer shadow-sm"
+              >
+                Hủy bỏ
+              </button>
+              <button
+                onClick={handleSubmit}
+                className="px-6 py-2 bg-[#13a855] hover:bg-[#0f8b44] text-white font-bold rounded-lg text-xs shadow-md transition-all cursor-pointer active:scale-97"
+              >
+                {editingProduct ? "Lưu thay đổi" : "Tạo mới sản phẩm"}
+              </button>
+            </div>
 
           </div>
         </div>

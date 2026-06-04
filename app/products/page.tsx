@@ -5,6 +5,14 @@ import ItemProduct, { Product } from "@/components/item_product/item_product";
 import { productAPI } from "@/lib/_api/product";
 import { useEffect, useState } from "react";
 
+function getCookie(name: string): string | undefined {
+  if (typeof document === "undefined") return undefined;
+  const value = `; ${document.cookie}`;
+  const parts = value.split(`; ${name}=`);
+  if (parts.length === 2) return parts.pop()?.split(";").shift();
+  return undefined;
+}
+
 export default function Products() {
   const [products, setProducts] = useState<Product[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -26,7 +34,8 @@ export default function Products() {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const res = await productAPI();
+        const token = getCookie("access_token");
+        const res = await productAPI(token);
         const data = Array.isArray(res.data) ? res.data : [];
         setProducts(data);
         console.log("Danh sách sản phẩm:", data);

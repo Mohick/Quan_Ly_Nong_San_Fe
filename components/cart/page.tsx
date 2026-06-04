@@ -197,7 +197,7 @@ export default function CartView() {
                       {item.category}
                     </span>
                     <Link 
-                      href={`/products/${item.id}`}
+                      href={`/products/detail?id=${item.id}`}
                       className="block font-extrabold text-gray-850 text-sm sm:text-base hover:text-[#13a855] transition-colors leading-snug cursor-pointer"
                     >
                       {item.name}

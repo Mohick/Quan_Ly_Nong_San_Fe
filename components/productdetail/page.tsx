@@ -96,7 +96,7 @@ export default function ProductDetailView({ product }: ProductDetailViewProps) {
           {/* Dynamic Prev/Next Navigation Switcher */}
           <div className="flex items-center gap-2.5 font-sans">
             <Link
-              href={`/products/${prevProductId}`}
+              href={`/products/detail?id=${prevProductId}`}
               className="flex items-center gap-1.5 px-3 py-1.8 bg-white hover:bg-[#e8f8f0] text-gray-500 hover:text-[#13a855] border border-gray-250 hover:border-[#13a855]/40 rounded-lg text-xs font-bold transition-all active:scale-95 shadow-sm cursor-pointer"
               title="Sản phẩm trước đó"
             >
@@ -105,7 +105,7 @@ export default function ProductDetailView({ product }: ProductDetailViewProps) {
             </Link>
             <span className="text-xs text-gray-300 font-bold hidden sm:inline">|</span>
             <Link
-              href={`/products/${nextProductId}`}
+              href={`/products/detail?id=${nextProductId}`}
               className="flex items-center gap-1.5 px-3 py-1.8 bg-white hover:bg-[#e8f8f0] text-gray-500 hover:text-[#13a855] border border-gray-250 hover:border-[#13a855]/40 rounded-lg text-xs font-bold transition-all active:scale-95 shadow-sm cursor-pointer"
               title="Sản phẩm tiếp theo"
             >
