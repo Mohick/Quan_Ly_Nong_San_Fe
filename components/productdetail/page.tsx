@@ -2,9 +2,9 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
-import { 
-  Star, ShoppingCart, ArrowLeft, ShieldCheck, 
-  Truck, RefreshCw, Heart, Plus, Minus, 
+import {
+  Star, ShoppingCart, ArrowLeft, ShieldCheck,
+  Truck, RefreshCw, Heart, Plus, Minus,
   Sparkles, Sprout, MessageSquare, ChevronLeft, ChevronRight,
   Droplet, Calendar, Award
 } from "lucide-react";
@@ -33,10 +33,23 @@ export default function ProductDetailView({ product }: ProductDetailViewProps) {
   const [quantity, setQuantity] = useState(1);
   const [isLiked, setIsLiked] = useState(false);
   const [activeImageIndex, setActiveImageIndex] = useState(0);
-  
+
   // 2 main tabs: info (All product info + reviews), process (Planting/Farming process)
   const [activeTab, setActiveTab] = useState<"info" | "process">("info");
   const [isTabTransitioning, setIsTabTransitioning] = useState(false);
+  const thumbnailContainerRef = React.useRef<HTMLDivElement>(null);
+
+  const scrollThumbnailsLeft = () => {
+    if (thumbnailContainerRef.current) {
+      thumbnailContainerRef.current.scrollBy({ left: -120, behavior: "smooth" });
+    }
+  };
+
+  const scrollThumbnailsRight = () => {
+    if (thumbnailContainerRef.current) {
+      thumbnailContainerRef.current.scrollBy({ left: 120, behavior: "smooth" });
+    }
+  };
 
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat("vi-VN", {
@@ -84,7 +97,7 @@ export default function ProductDetailView({ product }: ProductDetailViewProps) {
   return (
     <div className="w-full bg-[#f8faf9] min-h-screen py-10 font-sans select-none animate-fade-in">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-        
+
         {/* Navigation Breadcrumbs & Dynamic Prev/Next Page Switcher */}
         <div className="flex items-center justify-between mb-6 pb-4 border-b border-gray-150/60">
           <Link
@@ -94,7 +107,7 @@ export default function ProductDetailView({ product }: ProductDetailViewProps) {
             <ArrowLeft className="w-4 h-4 transform group-hover:-translate-x-1 transition-transform" />
             <span>Quay lại Cửa hàng Nông sản</span>
           </Link>
-          
+
           {/* Dynamic Prev/Next Navigation Switcher */}
           <div className="flex items-center gap-2.5 font-sans">
             <Link
@@ -121,23 +134,21 @@ export default function ProductDetailView({ product }: ProductDetailViewProps) {
         <div className="flex border-b border-gray-200 gap-4 sm:gap-8 text-xs sm:text-sm font-bold pb-3.5 mb-6 relative">
           <button
             onClick={() => handleTabChange("info")}
-            className={`flex items-center gap-2 transition-all pb-3 -mb-[16px] z-10 cursor-pointer relative ${
-              activeTab === "info" 
-                ? "text-[#13a855] border-b-3 border-[#13a855]" 
+            className={`flex items-center gap-2 transition-all pb-3 -mb-[16px] z-10 cursor-pointer relative ${activeTab === "info"
+                ? "text-[#13a855] border-b-3 border-[#13a855]"
                 : "text-gray-400 hover:text-gray-650"
-            }`}
+              }`}
           >
             <Sparkles className="w-4.5 h-4.5" />
             <span>Thông tin & Bình luận</span>
           </button>
-          
+
           <button
             onClick={() => handleTabChange("process")}
-            className={`flex items-center gap-2 transition-all pb-3 -mb-[16px] z-10 cursor-pointer relative ${
-              activeTab === "process" 
-                ? "text-[#13a855] border-b-3 border-[#13a855]" 
+            className={`flex items-center gap-2 transition-all pb-3 -mb-[16px] z-10 cursor-pointer relative ${activeTab === "process"
+                ? "text-[#13a855] border-b-3 border-[#13a855]"
                 : "text-gray-400 hover:text-gray-650"
-            }`}
+              }`}
           >
             <Sprout className="w-4.5 h-4.5" />
             <span>Quy trình trồng trọt</span>
@@ -145,10 +156,9 @@ export default function ProductDetailView({ product }: ProductDetailViewProps) {
         </div>
 
         {/* DYNAMIC CONTENT SWITCHER */}
-        <div className={`transition-all duration-200 ${
-          isTabTransitioning ? "opacity-0 translate-y-1" : "opacity-100 translate-y-0"
-        }`}>
-          
+        <div className={`transition-all duration-200 ${isTabTransitioning ? "opacity-0 translate-y-1" : "opacity-100 translate-y-0"
+          }`}>
+
           {/* TAB 1: ALL PRODUCT INFO & COMMENTS CONSOLIDATED */}
           {activeTab === "info" && (
             <div className="space-y-8 animate-fade-in">
@@ -177,16 +187,16 @@ export default function ProductDetailView({ product }: ProductDetailViewProps) {
                         <button
                           type="button"
                           onClick={() => setActiveImageIndex((prev) => (prev > 0 ? prev - 1 : product.images!.length - 1))}
-                          className="absolute left-3 top-1/2 -translate-y-1/2 z-20 p-2 bg-white/80 hover:bg-white text-gray-700 rounded-full shadow hover:scale-105 active:scale-95 transition-all opacity-0 group-hover:opacity-100 cursor-pointer flex items-center justify-center"
+                          className="absolute left-0 top-1/2 -translate-y-1/2 z-20 w-10 h-14 bg-gray-300/60 hover:bg-gray-300 text-white rounded-r-full shadow hover:scale-105 active:scale-95 transition-all opacity-0 group-hover:opacity-100 cursor-pointer flex items-center justify-center backdrop-blur-sm"
                         >
-                          <ChevronLeft className="w-4 h-4 stroke-[2.5]" />
+                          <ChevronLeft className="w-6 h-6 stroke-[2]" />
                         </button>
                         <button
                           type="button"
                           onClick={() => setActiveImageIndex((prev) => (prev < product.images!.length - 1 ? prev + 1 : 0))}
-                          className="absolute right-3 top-1/2 -translate-y-1/2 z-20 p-2 bg-white/80 hover:bg-white text-gray-700 rounded-full shadow hover:scale-105 active:scale-95 transition-all opacity-0 group-hover:opacity-100 cursor-pointer flex items-center justify-center"
+                          className="absolute right-0 top-1/2 -translate-y-1/2 z-20 w-10 h-14 bg-gray-300/60 hover:bg-gray-300 text-white rounded-l-full shadow hover:scale-105 active:scale-95 transition-all opacity-0 group-hover:opacity-100 cursor-pointer flex items-center justify-center backdrop-blur-sm"
                         >
-                          <ChevronRight className="w-4 h-4 stroke-[2.5]" />
+                          <ChevronRight className="w-6 h-6 stroke-[2]" />
                         </button>
 
                         {/* Dots Indicators */}
@@ -194,9 +204,8 @@ export default function ProductDetailView({ product }: ProductDetailViewProps) {
                           {product.images.map((_, idx) => (
                             <span
                               key={idx}
-                              className={`h-1.5 rounded-full transition-all ${
-                                idx === activeImageIndex ? "w-4 bg-[#ff424e]" : "w-1.5 bg-gray-300/80"
-                              }`}
+                              className={`h-1.5 rounded-full transition-all ${idx === activeImageIndex ? "w-4 bg-[#13a855]" : "w-1.5 bg-gray-300/80"
+                                }`}
                             />
                           ))}
                         </div>
@@ -211,21 +220,48 @@ export default function ProductDetailView({ product }: ProductDetailViewProps) {
                     />
                   </div>
 
-                  {/* Thumbnail Row */}
+                  {/* Thumbnail Row with Side Arrows */}
                   {product.images && product.images.length > 1 && (
-                    <div className="flex gap-2.5 overflow-x-auto py-1 scrollbar-none justify-center">
-                      {product.images.map((imgUrl, idx) => (
+                    <div className="relative group/thumbs flex items-center px-6">
+                      {product.images.length > 4 && (
                         <button
-                          key={idx}
                           type="button"
-                          onClick={() => setActiveImageIndex(idx)}
-                          className={`relative w-14 h-14 rounded-lg overflow-hidden border-2 transition-all flex-shrink-0 cursor-pointer ${
-                            idx === activeImageIndex ? "border-[#ff424e] scale-102" : "border-gray-250 opacity-70 hover:opacity-100"
-                          }`}
+                          onClick={scrollThumbnailsLeft}
+                          className="absolute left-0 z-10 w-7 h-7 rounded-full bg-white shadow-md border border-gray-200 text-gray-600 hover:text-[#13a855] flex items-center justify-center transition-all cursor-pointer hover:scale-105 active:scale-95"
                         >
-                          <img src={imgUrl} alt={`${product.name} thumbnail ${idx + 1}`} className="w-full h-full object-cover" />
+                          <ChevronLeft className="w-4 h-4" />
                         </button>
-                      ))}
+                      )}
+                      
+                      <div 
+                        ref={thumbnailContainerRef}
+                        className="flex gap-2 overflow-x-auto py-1 scrollbar-none justify-start flex-1 scroll-smooth"
+                      >
+                        {product.images.map((imgUrl, idx) => (
+                          <button
+                            key={idx}
+                            type="button"
+                            onClick={() => setActiveImageIndex(idx)}
+                            className={`relative w-16 h-16 rounded-md overflow-hidden border transition-all flex-shrink-0 cursor-pointer ${
+                              idx === activeImageIndex 
+                                ? "border-[#13a855] shadow-[0_0_0_1px_#13a855]" 
+                                : "border-gray-200 opacity-80 hover:opacity-100 hover:border-gray-300"
+                            }`}
+                          >
+                            <img src={imgUrl} alt={`${product.name} thumbnail ${idx + 1}`} className="w-full h-full object-cover" />
+                          </button>
+                        ))}
+                      </div>
+
+                      {product.images.length > 4 && (
+                        <button
+                          type="button"
+                          onClick={scrollThumbnailsRight}
+                          className="absolute right-0 z-10 w-7 h-7 rounded-full bg-white shadow-md border border-gray-200 text-gray-600 hover:text-[#13a855] flex items-center justify-center transition-all cursor-pointer hover:scale-105 active:scale-95"
+                        >
+                          <ChevronRight className="w-4 h-4" />
+                        </button>
+                      )}
                     </div>
                   )}
 
@@ -249,9 +285,8 @@ export default function ProductDetailView({ product }: ProductDetailViewProps) {
                     <div className="w-px h-5 bg-gray-200"></div>
                     <button
                       onClick={() => setIsLiked(!isLiked)}
-                      className={`flex items-center gap-2 cursor-pointer transition-colors ${
-                        isLiked ? "text-red-500" : "text-gray-500 hover:text-red-500"
-                      }`}
+                      className={`flex items-center gap-2 cursor-pointer transition-colors ${isLiked ? "text-red-500" : "text-gray-500 hover:text-red-500"
+                        }`}
                     >
                       <Heart className={`w-5 h-5 ${isLiked ? "fill-red-500" : ""}`} />
                       <span className="text-sm">Đã thích ({isLiked ? "723" : "722"})</span>
@@ -299,62 +334,62 @@ export default function ProductDetailView({ product }: ProductDetailViewProps) {
 
                     {/* Price - Shopee Style */}
                     <div className="bg-gray-50 flex flex-col rounded-sm overflow-hidden border border-gray-100">
-                        <div className="bg-[#ff424e] text-white px-4 py-1.5 text-sm font-medium w-full flex items-center gap-2">
-                           <Sparkles className="w-4 h-4 fill-white" />
-                           Giá dành riêng cho bạn
-                        </div>
-                        <div className="p-4 flex flex-wrap items-center gap-3.5">
-                            <span className="text-3xl sm:text-4xl font-medium text-[#ff424e]">
-                                {formatPrice(product.salePrice)}
-                            </span>
-                            <span className="text-sm sm:text-base text-gray-400 line-through ml-2">
-                                {formatPrice(product.originalPrice)}
-                            </span>
-                            <span className="bg-red-100 text-[#ff424e] px-1.5 py-0.5 rounded text-xs font-bold uppercase ml-2">
-                                Giảm {product.discountPercent}%
-                            </span>
-                        </div>
+                      <div className="bg-[#ff424e] text-white px-4 py-1.5 text-sm font-medium w-full flex items-center gap-2">
+                        <Sparkles className="w-4 h-4 fill-white" />
+                        Giá dành riêng cho bạn
+                      </div>
+                      <div className="p-4 flex flex-wrap items-center gap-3.5">
+                        <span className="text-3xl sm:text-4xl font-medium text-[#ff424e]">
+                          {formatPrice(product.salePrice)}
+                        </span>
+                        <span className="text-sm sm:text-base text-gray-400 line-through ml-2">
+                          {formatPrice(product.originalPrice)}
+                        </span>
+                        <span className="bg-red-100 text-[#ff424e] px-1.5 py-0.5 rounded text-xs font-bold uppercase ml-2">
+                          Giảm {product.discountPercent}%
+                        </span>
+                      </div>
                     </div>
 
                     {/* Shipping and Quantity */}
                     <div className="space-y-6 pt-4">
-                        <div className="grid grid-cols-12 gap-4 items-center">
-                            <div className="col-span-3 sm:col-span-2 text-sm text-gray-500">
-                                Vận Chuyển
-                            </div>
-                            <div className="col-span-9 sm:col-span-10 text-sm text-gray-800 flex items-center gap-2">
-                                <Truck className="w-5 h-5 text-gray-600" />
-                                <span>Miễn phí vận chuyển</span>
-                            </div>
+                      <div className="grid grid-cols-12 gap-4 items-center">
+                        <div className="col-span-3 sm:col-span-2 text-sm text-gray-500">
+                          Vận Chuyển
                         </div>
+                        <div className="col-span-9 sm:col-span-10 text-sm text-gray-800 flex items-center gap-2">
+                          <Truck className="w-5 h-5 text-gray-600" />
+                          <span>Miễn phí vận chuyển</span>
+                        </div>
+                      </div>
 
-                        <div className="grid grid-cols-12 gap-4 items-center">
-                            <div className="col-span-3 sm:col-span-2 text-sm text-gray-500">
-                                Số Lượng
-                            </div>
-                            <div className="col-span-9 sm:col-span-10 flex items-center gap-4">
-                                <div className="flex items-center border border-gray-300 rounded-sm bg-white overflow-hidden">
-                                  <button
-                                    onClick={handleDecrease}
-                                    className="px-3 py-1.5 text-gray-500 hover:bg-gray-50 transition-colors border-r border-gray-300 outline-none"
-                                  >
-                                    <Minus className="w-4 h-4" />
-                                  </button>
-                                  <span className="w-12 text-center font-medium text-sm sm:text-base text-gray-800">
-                                    {quantity}
-                                  </span>
-                                  <button
-                                    onClick={handleIncrease}
-                                    className="px-3 py-1.5 text-gray-500 hover:bg-gray-50 transition-colors border-l border-gray-300 outline-none"
-                                  >
-                                    <Plus className="w-4 h-4" />
-                                  </button>
-                                </div>
-                                <span className="text-sm text-gray-500">
-                                    Còn {Math.floor(Math.random() * 500) + 50} sản phẩm
-                                </span>
-                            </div>
+                      <div className="grid grid-cols-12 gap-4 items-center">
+                        <div className="col-span-3 sm:col-span-2 text-sm text-gray-500">
+                          Số Lượng
                         </div>
+                        <div className="col-span-9 sm:col-span-10 flex items-center gap-4">
+                          <div className="flex items-center border border-gray-300 rounded-sm bg-white overflow-hidden">
+                            <button
+                              onClick={handleDecrease}
+                              className="px-3 py-1.5 text-gray-500 hover:bg-gray-50 transition-colors border-r border-gray-300 outline-none"
+                            >
+                              <Minus className="w-4 h-4" />
+                            </button>
+                            <span className="w-12 text-center font-medium text-sm sm:text-base text-gray-800">
+                              {quantity}
+                            </span>
+                            <button
+                              onClick={handleIncrease}
+                              className="px-3 py-1.5 text-gray-500 hover:bg-gray-50 transition-colors border-l border-gray-300 outline-none"
+                            >
+                              <Plus className="w-4 h-4" />
+                            </button>
+                          </div>
+                          <span className="text-sm text-gray-500">
+                            Còn {Math.floor(Math.random() * 500) + 50} sản phẩm
+                          </span>
+                        </div>
+                      </div>
                     </div>
                   </div>
 
@@ -378,7 +413,7 @@ export default function ProductDetailView({ product }: ProductDetailViewProps) {
                   <span>Mô tả chi tiết sản phẩm & Giá trị dinh dưỡng</span>
                 </h4>
                 <p>
-                  Sản phẩm <strong>{product.name}</strong> thuộc nhóm danh mục <strong>{product.category}</strong>. 
+                  Sản phẩm <strong>{product.name}</strong> thuộc nhóm danh mục <strong>{product.category}</strong>.
                   Chúng tôi hợp tác trực tiếp với các hợp tác xã sản xuất nông sản uy tín hàng đầu trên cả nước, áp dụng quy trình kiểm định chất lượng nghiêm ngặt từ khâu thu hoạch đến vận chuyển tiêu thụ.
                 </p>
                 <p>
@@ -430,12 +465,12 @@ export default function ProductDetailView({ product }: ProductDetailViewProps) {
                 <Sprout className="w-6 h-6 text-[#13a855]" />
                 <h3 className="text-base sm:text-lg font-black text-gray-900">Quy Trình Trồng Trọt & Thu Hoạch Sạch</h3>
               </div>
-              
+
               <div className="space-y-6 text-xs sm:text-sm leading-relaxed text-gray-655">
                 <p className="font-bold text-gray-800">
                   Từng sản phẩm <span className="text-[#13a855] font-extrabold">"{product.name}"</span> được nuôi trồng bền vững theo quy trình hữu cơ 3 giai đoạn nghiêm ngặt, đảm bảo độ sạch và độ ngon lành tự nhiên tuyệt đối:
                 </p>
-                
+
                 {/* Step-by-Step Pipeline */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-4">
                   {/* Step 1 */}
