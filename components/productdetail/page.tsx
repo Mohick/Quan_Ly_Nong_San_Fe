@@ -228,7 +228,7 @@ export default function ProductDetailView({ product }: ProductDetailViewProps) {
                       ))}
                     </div>
                   )}
-                </div>
+
 
                   {/* Social Share & Likes */}
                   <div className="flex items-center justify-center gap-8 pt-2">
