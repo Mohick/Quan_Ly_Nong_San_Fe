@@ -9,6 +9,7 @@ import {
 import { FarmAPI } from "@/lib/_api/farm";
 import { lotsAPI } from "@/lib/_api/lots";
 import { createLotAPI } from "@/lib/_api/create_lots";
+import { createCareProcessAPI, getCareProcessesAPI } from "@/lib/_api/care_process";
 
 export interface CropLot {
   farm_id?: string;
@@ -41,33 +42,30 @@ export default function CropLotsDashboard() {
   // State for Crop Lot Detail UI as requested by user
   const [selectedLot, setSelectedLot] = useState<CropLot | null>(null);
   const [detailTab, setDetailTab] = useState<"tt" | "sp">("tt");
-  const [lotDiaries, setLotDiaries] = useState<Record<string, any[]>>({
-    // Pre-populate some crop lot diaries for dynamic presentation
-    "1": [
-      { 
-        id: 1, 
-        title: "Cham soc thang 1", 
-        description: "Cày bừa, cấy hạt giống rau ăn lá đợt đầu. Sử dụng phân bón hữu cơ sinh học.",
-        month: 1,
-        started_date: "2026-06-01T00:00:00Z",
-        finished_dat: "2026-06-30T00:00:00Z"
-      },
-      { 
-        id: 2, 
-        title: "Cham soc thang 2", 
-        description: "Cây con cao khoảng 5-7cm, hệ thống tưới tự động ổn định, chưa phát hiện sâu bệnh gây hại.",
-        month: 2,
-        started_date: "2026-07-01T00:00:00Z",
-        finished_dat: "2026-07-31T00:00:00Z"
-      }
-    ]
-  });
+  const [lotDiaries, setLotDiaries] = useState<Record<string, any[]>>({});
   const [showAddDiary, setShowAddDiary] = useState(false);
   const [newDiaryTitle, setNewDiaryTitle] = useState("");
   const [newDiaryDesc, setNewDiaryDesc] = useState("");
   const [newDiaryMonth, setNewDiaryMonth] = useState<number>(1);
   const [newDiaryStartDate, setNewDiaryStartDate] = useState("");
   const [newDiaryFinishedDate, setNewDiaryFinishedDate] = useState("");
+
+  // Fetch diaries from backend
+  useEffect(() => {
+    const fetchDiaries = async () => {
+      if (selectedLot) {
+        const token = getCookie("access_token");
+        const res = await getCareProcessesAPI(selectedLot.id, token);
+        if (res && Array.isArray(res.data)) {
+          setLotDiaries((prev) => ({
+            ...prev,
+            [selectedLot.id]: res.data
+          }));
+        }
+      }
+    };
+    fetchDiaries();
+  }, [selectedLot]);
 
   // Fetch lots from Backend APIs directly
   useEffect(() => {
@@ -394,7 +392,7 @@ export default function CropLotsDashboard() {
 
             {showAddDiary && (
               <form 
-                onSubmit={(e) => {
+                onSubmit={async (e) => {
                   e.preventDefault();
                   if (!newDiaryTitle.trim() || !newDiaryDesc.trim() || !newDiaryStartDate || !newDiaryFinishedDate) {
                     alert("Vui lòng điền đầy đủ các thông tin bắt buộc!");
@@ -410,15 +408,25 @@ export default function CropLotsDashboard() {
                     finished_dat: new Date(newDiaryFinishedDate).toISOString().split(".")[0] + "Z"
                   };
 
-                  const simulatedDiary = {
-                    id: Date.now(),
-                    ...payload
-                  };
-
-                  setLotDiaries({
-                    ...lotDiaries,
-                    [selectedLot.id]: [simulatedDiary, ...currentDiaries]
-                  });
+                  const token = getCookie("access_token");
+                  try {
+                    const response = await createCareProcessAPI(payload, token);
+                    if (response.status === 200 || response.status === 201) {
+                      const res = await getCareProcessesAPI(selectedLot.id, token);
+                      if (res && Array.isArray(res.data)) {
+                        setLotDiaries((prev) => ({
+                          ...prev,
+                          [selectedLot.id]: res.data
+                        }));
+                      }
+                      showToast("Đã lưu nhật ký mới thành công!");
+                    } else {
+                      alert("Không thể lưu nhật ký. Vui lòng thử lại!");
+                    }
+                  } catch (error: any) {
+                    console.error("Lỗi khi tạo nhật ký chăm sóc:", error);
+                    alert("Lỗi: " + (error.response?.data?.message || error.message));
+                  }
 
                   setNewDiaryTitle("");
                   setNewDiaryDesc("");
