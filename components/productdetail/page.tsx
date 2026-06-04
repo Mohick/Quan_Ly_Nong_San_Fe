@@ -6,7 +6,7 @@ import {
   Star, ShoppingCart, ArrowLeft, ShieldCheck,
   Truck, RefreshCw, Heart, Plus, Minus,
   Sparkles, Sprout, MessageSquare, ChevronLeft, ChevronRight,
-  Droplet, Calendar, Award
+  Droplet, Calendar, Award, X, Maximize2
 } from "lucide-react";
 
 export interface Product {
@@ -37,7 +37,9 @@ export default function ProductDetailView({ product }: ProductDetailViewProps) {
   // 2 main tabs: info (All product info + reviews), process (Planting/Farming process)
   const [activeTab, setActiveTab] = useState<"info" | "process">("info");
   const [isTabTransitioning, setIsTabTransitioning] = useState(false);
+  const [isGalleryModalOpen, setIsGalleryModalOpen] = useState(false);
   const thumbnailContainerRef = React.useRef<HTMLDivElement>(null);
+  const modalThumbnailContainerRef = React.useRef<HTMLDivElement>(null);
 
   const scrollThumbnailsLeft = () => {
     if (thumbnailContainerRef.current) {
@@ -48,6 +50,18 @@ export default function ProductDetailView({ product }: ProductDetailViewProps) {
   const scrollThumbnailsRight = () => {
     if (thumbnailContainerRef.current) {
       thumbnailContainerRef.current.scrollBy({ left: 120, behavior: "smooth" });
+    }
+  };
+
+  const scrollModalThumbnailsLeft = () => {
+    if (modalThumbnailContainerRef.current) {
+      modalThumbnailContainerRef.current.scrollBy({ left: -200, behavior: "smooth" });
+    }
+  };
+
+  const scrollModalThumbnailsRight = () => {
+    if (modalThumbnailContainerRef.current) {
+      modalThumbnailContainerRef.current.scrollBy({ left: 200, behavior: "smooth" });
     }
   };
 
@@ -213,11 +227,16 @@ export default function ProductDetailView({ product }: ProductDetailViewProps) {
                     )}
 
                     {/* Active Image */}
-                    <img
-                      src={product.images && product.images.length > 0 ? product.images[activeImageIndex] : product.image}
-                      alt={product.name}
-                      className="w-full h-full object-cover transform group-hover:scale-102 transition-transform duration-500"
-                    />
+                    <div className="w-full h-full cursor-zoom-in group/img" onClick={() => setIsGalleryModalOpen(true)}>
+                      <img
+                        src={product.images && product.images.length > 0 ? product.images[activeImageIndex] : product.image}
+                        alt={product.name}
+                        className="w-full h-full object-cover transform group-hover/img:scale-102 transition-transform duration-500"
+                      />
+                      <div className="absolute bottom-4 right-4 bg-white/90 p-2 rounded-full shadow border border-gray-100 text-gray-700 opacity-0 group-hover/img:opacity-100 transition-opacity flex items-center justify-center">
+                         <Maximize2 className="w-5 h-5 text-gray-600" />
+                      </div>
+                    </div>
                   </div>
 
                   {/* Thumbnail Row with Side Arrows */}
@@ -525,6 +544,98 @@ export default function ProductDetailView({ product }: ProductDetailViewProps) {
         </div>
 
       </div>
+
+      {/* Fullscreen Gallery Modal */}
+      {isGalleryModalOpen && (
+        <div className="fixed inset-0 z-[9999] bg-white flex flex-col animate-fade-in">
+          {/* Header */}
+          <div className="flex items-center justify-between px-4 py-3 sm:px-6 sm:py-4 border-b border-gray-100">
+             <h3 className="font-bold text-gray-800 text-lg">{product.name}</h3>
+             <button 
+                onClick={() => setIsGalleryModalOpen(false)}
+                className="p-2 bg-gray-100 text-gray-600 hover:bg-gray-200 hover:text-red-500 rounded-full transition-colors"
+             >
+                <X className="w-5 h-5" />
+             </button>
+          </div>
+
+          {/* Main Image Area */}
+          <div className="flex-1 relative bg-gray-50 flex items-center justify-center p-4 overflow-hidden">
+            {product.images && product.images.length > 1 && (
+              <button
+                type="button"
+                onClick={() => setActiveImageIndex((prev) => (prev > 0 ? prev - 1 : product.images!.length - 1))}
+                className="absolute left-4 sm:left-10 top-1/2 -translate-y-1/2 z-20 w-12 h-16 sm:w-16 sm:h-20 bg-black/10 hover:bg-black/20 text-gray-800 rounded-2xl shadow-sm transition-all flex items-center justify-center backdrop-blur-sm"
+              >
+                <ChevronLeft className="w-8 h-8 sm:w-10 sm:h-10 stroke-[1.5] text-gray-700" />
+              </button>
+            )}
+
+            <img 
+              src={product.images && product.images.length > 0 ? product.images[activeImageIndex] : product.image}
+              alt={product.name}
+              className="max-w-full max-h-full object-contain"
+            />
+
+            {product.images && product.images.length > 1 && (
+              <button
+                type="button"
+                onClick={() => setActiveImageIndex((prev) => (prev < product.images!.length - 1 ? prev + 1 : 0))}
+                className="absolute right-4 sm:right-10 top-1/2 -translate-y-1/2 z-20 w-12 h-16 sm:w-16 sm:h-20 bg-black/10 hover:bg-black/20 text-gray-800 rounded-2xl shadow-sm transition-all flex items-center justify-center backdrop-blur-sm"
+              >
+                <ChevronRight className="w-8 h-8 sm:w-10 sm:h-10 stroke-[1.5] text-gray-700" />
+              </button>
+            )}
+          </div>
+
+          {/* Modal Thumbnails */}
+          {product.images && product.images.length > 1 && (
+            <div className="bg-white border-t border-gray-100 p-4 sm:p-6 relative">
+              <div className="max-w-5xl mx-auto relative group/modalthumbs">
+                  {product.images.length > 6 && (
+                    <button
+                      type="button"
+                      onClick={scrollModalThumbnailsLeft}
+                      className="absolute -left-4 sm:-left-6 top-1/2 -translate-y-1/2 z-10 w-10 h-10 rounded-full bg-white shadow-lg border border-gray-200 text-gray-600 hover:text-[#13a855] flex items-center justify-center transition-all cursor-pointer hover:scale-105 active:scale-95"
+                    >
+                      <ChevronLeft className="w-5 h-5" />
+                    </button>
+                  )}
+                  
+                  <div 
+                    ref={modalThumbnailContainerRef}
+                    className="flex gap-3 sm:gap-4 overflow-x-auto py-2 scrollbar-none justify-center sm:justify-start px-2 scroll-smooth"
+                  >
+                    {product.images.map((imgUrl, idx) => (
+                      <button
+                        key={idx}
+                        type="button"
+                        onClick={() => setActiveImageIndex(idx)}
+                        className={`relative w-20 h-20 sm:w-24 sm:h-24 rounded-xl overflow-hidden border-2 transition-all flex-shrink-0 cursor-pointer ${
+                          idx === activeImageIndex 
+                            ? "border-[#13a855] shadow-[0_0_0_2px_#13a855]" 
+                            : "border-gray-200 opacity-70 hover:opacity-100 hover:border-gray-300"
+                        }`}
+                      >
+                        <img src={imgUrl} alt={`${product.name} thumbnail ${idx + 1}`} className="w-full h-full object-cover" />
+                      </button>
+                    ))}
+                  </div>
+
+                  {product.images.length > 6 && (
+                    <button
+                      type="button"
+                      onClick={scrollModalThumbnailsRight}
+                      className="absolute -right-4 sm:-right-6 top-1/2 -translate-y-1/2 z-10 w-10 h-10 rounded-full bg-white shadow-lg border border-gray-200 text-gray-600 hover:text-[#13a855] flex items-center justify-center transition-all cursor-pointer hover:scale-105 active:scale-95"
+                    >
+                      <ChevronRight className="w-5 h-5" />
+                    </button>
+                  )}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }
