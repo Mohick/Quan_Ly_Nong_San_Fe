@@ -10,8 +10,8 @@ import { productAPI, createProductAPI } from "@/lib/_api/product";
 import { FarmAPI } from "@/lib/_api/farm";
 import { lotsAPI } from "@/lib/_api/lots";
 import dynamic from 'next/dynamic';
-const ReactQuill = dynamic(() => import('react-quill'), { ssr: false });
-import 'react-quill/dist/quill.snow.css';
+const ReactQuill = dynamic(() => import('react-quill-new'), { ssr: false });
+import 'react-quill-new/dist/quill.snow.css';
 
 function getCookie(name: string): string | undefined {
   if (typeof document === "undefined") return undefined;
