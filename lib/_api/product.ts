@@ -36,7 +36,10 @@ async function productAPI(token?: string, page: number = 1) {
         originalPrice: item.Price || item.originalPrice || 0,
         salePrice: item.Price || item.salePrice || 0,
         discountPercent: item.DiscountPercent || 0,
-        image: item.ImageURL || item.image || "https://images.unsplash.com/photo-1610348725531-843dff10902c?q=80&w=600&auto=format&fit=crop",
+        image: (item.ImageProducts && item.ImageProducts[0]?.ImageURL) || 
+               (item.ImageProducts && item.ImageProducts[0]?.image_url) || 
+               (item.image_products && item.image_products[0]?.image_url) || 
+               item.ImageURL || item.image || "https://images.unsplash.com/photo-1610348725531-843dff10902c?q=80&w=600&auto=format&fit=crop",
         isBestSeller: item.IsBestSeller || false,
         unit: item.Unit || "sp"
     }));
