@@ -54,12 +54,14 @@ export default function CropLotsDashboard() {
   useEffect(() => {
     const fetchDiaries = async () => {
       if (selectedLot) {
+        const lotId = selectedLot.id || (selectedLot as any).ID;
+        if (!lotId) return;
         const token = getCookie("access_token");
-        const res = await getCareProcessesAPI(selectedLot.id, token);
+        const res = await getCareProcessesAPI(lotId, token);
         if (res && Array.isArray(res.data)) {
           setLotDiaries((prev) => ({
             ...prev,
-            [selectedLot.id]: res.data
+            [lotId]: res.data
           }));
         }
       }
@@ -267,7 +269,8 @@ export default function CropLotsDashboard() {
   }
 
   if (selectedLot) {
-    const currentDiaries = lotDiaries[selectedLot.id] || [];
+    const lotId = selectedLot.id || (selectedLot as any).ID;
+    const currentDiaries = lotDiaries[lotId] || [];
 
     return (
       <div className="space-y-6 font-sans antialiased text-gray-800 animate-fade-in select-none">
@@ -285,7 +288,7 @@ export default function CropLotsDashboard() {
                 Chi tiết Lô: {selectedLot.name}
               </h1>
               <p className="text-[11px] sm:text-xs text-gray-500 font-semibold mt-0.5">
-                Mã lô: #{selectedLot.id} | Nông trại: {farmId}
+                Mã lô: #{lotId} | Nông trại: {farmId}
               </p>
             </div>
           </div>
@@ -399,8 +402,11 @@ export default function CropLotsDashboard() {
                     return;
                   }
                   
+                  const lotId = selectedLot.id || (selectedLot as any).ID;
+                  if (!lotId) return;
+
                   const payload = {
-                    crop_lot_id: selectedLot.id,
+                    crop_lot_id: lotId,
                     title: newDiaryTitle,
                     description: newDiaryDesc,
                     month: Number(newDiaryMonth),
@@ -412,11 +418,11 @@ export default function CropLotsDashboard() {
                   try {
                     const response = await createCareProcessAPI(payload, token);
                     if (response.status === 200 || response.status === 201) {
-                      const res = await getCareProcessesAPI(selectedLot.id, token);
+                      const res = await getCareProcessesAPI(lotId, token);
                       if (res && Array.isArray(res.data)) {
                         setLotDiaries((prev) => ({
                           ...prev,
-                          [selectedLot.id]: res.data
+                          [lotId]: res.data
                         }));
                       }
                       showToast("Đã lưu nhật ký mới thành công!");
@@ -547,9 +553,11 @@ export default function CropLotsDashboard() {
                       <button
                         type="button"
                         onClick={() => {
+                          const lotId = selectedLot.id || (selectedLot as any).ID;
+                          if (!lotId) return;
                           setLotDiaries({
                             ...lotDiaries,
-                            [selectedLot.id]: currentDiaries.filter(d => d.id !== diary.id)
+                            [lotId]: currentDiaries.filter(d => d.id !== diary.id)
                           });
                         }}
                         className="opacity-0 group-hover:opacity-100 transition-opacity text-red-500 hover:text-red-750 text-[10px] font-bold cursor-pointer"
