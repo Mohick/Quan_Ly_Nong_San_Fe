@@ -4,6 +4,8 @@ import { Landmark, ArrowLeft, Sprout, Upload, Loader2, Plus } from "lucide-react
 
 interface FarmTabProps {
     user: any;
+    myFarm: any;
+    isFetchingFarm: boolean;
     farmName: string;
     setFarmName: (val: string) => void;
     farmPhone: string;
@@ -21,6 +23,8 @@ interface FarmTabProps {
 
 export default function FarmTab({
     user,
+    myFarm,
+    isFetchingFarm,
     farmName,
     setFarmName,
     farmPhone,
@@ -35,8 +39,6 @@ export default function FarmTab({
     isSubmitting,
     onSubmit
 }: FarmTabProps) {
-    const isFarmer = user?.Role === "FARMER" || user?.role === "FARMER" || (user as any)?.farm_id || (user as any)?.Farms;
-
     const handleFarmImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files && e.target.files[0]) {
             const file = e.target.files[0];
@@ -45,24 +47,84 @@ export default function FarmTab({
         }
     };
 
-    if (isFarmer) {
+    if (isFetchingFarm) {
         return (
-            <div className="space-y-6 animate-fade-in py-10 text-center max-w-md mx-auto">
-                <div className="w-16 h-16 bg-[#e8f8f0] text-[#13a855] rounded-full flex items-center justify-center mx-auto shadow-md">
-                    <Landmark className="w-8 h-8" />
-                </div>
-                <div className="space-y-2">
-                    <h3 className="text-lg font-black text-gray-900">Bạn đã có Trang Trại!</h3>
-                    <p className="text-xs text-gray-400 font-bold leading-relaxed">
-                        Tài khoản của bạn đã được liên kết với một Trang trại hoạt động. Hãy truy cập vào Cổng quản trị để bắt đầu bán hàng.
+            <div className="flex flex-col items-center justify-center py-12 space-y-3">
+                <Loader2 className="w-8 h-8 animate-spin text-[#13a855]" />
+                <span className="text-xs font-bold text-gray-500">Đang tải thông tin trang trại...</span>
+            </div>
+        );
+    }
+
+    if (myFarm) {
+        const name = myFarm.farm_name || myFarm.FarmName || "Trang trại của tôi";
+        const img = myFarm.image_url || myFarm.ImageURL || "https://images.unsplash.com/photo-1500937386664-56d1dfef3854?auto=format&fit=crop&q=80&w=1000";
+        const addr = myFarm.address || myFarm.Address || "Chưa xác định";
+        const ph = myFarm.phone || myFarm.Phone || "Chưa cập nhật";
+        const desc = myFarm.description || myFarm.Description || "Chưa có mô tả chi tiết.";
+        const status = myFarm.status !== false;
+
+        return (
+            <div className="space-y-6 animate-fade-in">
+                <div className="border-b border-gray-100 pb-4">
+                    <div className="flex items-center gap-2 text-[#13a855]">
+                        <Landmark className="w-5 h-5" />
+                        <h3 className="text-base sm:text-lg font-black text-gray-900">Thông Tin Trang Trại Của Bạn</h3>
+                    </div>
+                    <p className="text-[11px] sm:text-xs text-gray-500 font-medium mt-0.5">
+                        Trang trại của bạn đang hoạt động và liên kết trực tiếp trên hệ thống PIONE.
                     </p>
                 </div>
-                <Link href="/dashboard" className="block w-full">
-                    <button className="w-full py-3.5 bg-[#13a855] hover:bg-[#0f8b44] text-white text-xs sm:text-sm font-bold rounded-xl shadow-md transition-all active:scale-98 flex items-center justify-center gap-2 cursor-pointer">
-                        <span>Truy cập Cổng vận hành Trang trại</span>
-                        <ArrowLeft className="w-4 h-4 rotate-180" />
-                    </button>
-                </Link>
+
+                {/* Farm details card */}
+                <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-shadow">
+                    <div className="h-48 w-full relative overflow-hidden bg-gray-100">
+                        <img src={img} alt={name} className="w-full h-full object-cover" />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
+                        <div className="absolute top-4 right-4">
+                            <span className={`px-3 py-1 text-[10px] font-black uppercase rounded-full shadow-md tracking-wider border ${
+                                status 
+                                    ? "bg-emerald-50 text-emerald-600 border-emerald-200" 
+                                    : "bg-red-50 text-red-600 border-red-200"
+                            }`}>
+                                {status ? "Đang hoạt động" : "Tạm dừng"}
+                            </span>
+                        </div>
+                        <div className="absolute bottom-4 left-5 right-5 text-white">
+                            <h4 className="text-lg font-black tracking-tight drop-shadow-sm">{name}</h4>
+                            <p className="text-xs font-semibold text-gray-200 drop-shadow-sm flex items-center gap-1 mt-0.5">
+                                <span>📍 {addr}</span>
+                            </p>
+                        </div>
+                    </div>
+
+                    <div className="p-6 space-y-4 text-xs font-bold text-gray-500">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div className="space-y-1">
+                                <span className="text-[10px] text-gray-400 uppercase tracking-wider block">Số điện thoại liên hệ</span>
+                                <span className="text-gray-800 text-sm font-extrabold">{ph}</span>
+                            </div>
+                            <div className="space-y-1">
+                                <span className="text-[10px] text-gray-400 uppercase tracking-wider block">ID Trang trại</span>
+                                <span className="text-gray-800 font-mono text-xs font-medium bg-gray-50 p-1.5 rounded border border-gray-200 block truncate">{myFarm.id || myFarm.ID}</span>
+                            </div>
+                        </div>
+
+                        <div className="space-y-1 pt-2 border-t border-gray-100">
+                            <span className="text-[10px] text-gray-400 uppercase tracking-wider block">Mô tả giới thiệu</span>
+                            <p className="text-gray-600 font-medium leading-relaxed text-xs">{desc}</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div className="pt-4 border-t border-gray-100 flex justify-end">
+                    <Link href="/dashboard" className="block w-full sm:w-auto">
+                        <button className="w-full sm:w-auto px-6 py-3.5 bg-[#13a855] hover:bg-[#0f8b44] text-white text-xs sm:text-sm font-bold rounded-xl shadow-md transition-all active:scale-95 flex items-center justify-center gap-2 cursor-pointer">
+                            <span>Truy cập Cổng quản trị trang trại</span>
+                            <ArrowLeft className="w-4 h-4 rotate-180" />
+                        </button>
+                    </Link>
+                </div>
             </div>
         );
     }

@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import { useAuthStore, useAutoLogin } from "@/hooks/useAutoLogin";
 import { createFarmAPI } from "@/lib/_api/create_farm";
+import { FarmAPI } from "@/lib/_api/farm";
 import ProfileTab from "@/components/setings/ProfileTab";
 import FarmTab from "@/components/setings/FarmTab";
 import SecurityTab from "@/components/setings/SecurityTab";
@@ -46,6 +47,8 @@ export default function ProfileSettings() {
   const [farmDescription, setFarmDescription] = useState("");
   const [farmImage, setFarmImage] = useState<File | null>(null);
   const [farmImagePreview, setFarmImagePreview] = useState("");
+  const [myFarm, setMyFarm] = useState<any>(null);
+  const [isFetchingFarm, setIsFetchingFarm] = useState(true);
 
   // UI States
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -75,6 +78,28 @@ export default function ProfileSettings() {
       }
     };
     fetchAndFillUser();
+  }, []);
+
+  useEffect(() => {
+    const fetchFarm = async () => {
+      const token = getCookie("access_token");
+      if (token) {
+        setIsFetchingFarm(true);
+        try {
+          const res = await FarmAPI(token);
+          if (res && res.data) {
+            setMyFarm(res.data);
+          }
+        } catch (error) {
+          console.error("Lỗi khi tải thông tin trang trại:", error);
+        } finally {
+          setIsFetchingFarm(false);
+        }
+      } else {
+        setIsFetchingFarm(false);
+      }
+    };
+    fetchFarm();
   }, []);
 
   const handleProfileSubmit = (e: React.FormEvent) => {
@@ -278,6 +303,8 @@ export default function ProfileSettings() {
             {activeTab === "farm" && (
               <FarmTab
                 user={user}
+                myFarm={myFarm}
+                isFetchingFarm={isFetchingFarm}
                 farmName={farmName}
                 setFarmName={setFarmName}
                 farmPhone={farmPhone}
