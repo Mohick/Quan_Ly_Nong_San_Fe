@@ -46,8 +46,22 @@ async function productAPI(token?: string, page: number = 1) {
         reviewsCount: item.ReviewsCount || 0,
         soldQuantity: `${item.Stock || item.stock || 0} sp`,
         originalPrice: item.Price || item.originalPrice || 0,
-        salePrice: item.Price || item.salePrice || 0,
-        discountPercent: item.DiscountPercent || 0,
+        salePrice: (() => {
+            const base = item.Price || item.price || item.originalPrice || 0;
+            const disc = item.discount_price || item.DiscountPrice || item.discountPrice || 0;
+            if (disc > 0 && disc < base) {
+                return disc;
+            }
+            return base;
+        })(),
+        discountPercent: (() => {
+            const base = item.Price || item.price || item.originalPrice || 0;
+            const disc = item.discount_price || item.DiscountPrice || item.discountPrice || 0;
+            if (disc > 0 && disc < base && base > 0) {
+                return Math.round(((base - disc) / base) * 100);
+            }
+            return 0;
+        })(),
         image: (() => {
             const rawImg = (item.ImageProducts && item.ImageProducts[0]?.ImageURL) || 
                            (item.ImageProducts && item.ImageProducts[0]?.image_url) || 
@@ -154,8 +168,22 @@ async function getProductDetailAPI(id: string, token?: string) {
         reviewsCount: item.ReviewsCount || 0,
         soldQuantity: `${item.Stock || item.stock || 0} sp`,
         originalPrice: item.Price || item.originalPrice || 0,
-        salePrice: item.Price || item.salePrice || 0,
-        discountPercent: item.DiscountPercent || 0,
+        salePrice: (() => {
+            const base = item.Price || item.price || item.originalPrice || 0;
+            const disc = item.discount_price || item.DiscountPrice || item.discountPrice || 0;
+            if (disc > 0 && disc < base) {
+                return disc;
+            }
+            return base;
+        })(),
+        discountPercent: (() => {
+            const base = item.Price || item.price || item.originalPrice || 0;
+            const disc = item.discount_price || item.DiscountPrice || item.discountPrice || 0;
+            if (disc > 0 && disc < base && base > 0) {
+                return Math.round(((base - disc) / base) * 100);
+            }
+            return 0;
+        })(),
         image: (() => {
             const rawImg = (item.ImageProducts && item.ImageProducts[0]?.ImageURL) || 
                            (item.ImageProducts && item.ImageProducts[0]?.image_url) || 

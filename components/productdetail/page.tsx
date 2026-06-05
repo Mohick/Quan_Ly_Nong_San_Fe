@@ -181,9 +181,11 @@ export default function ProductDetailView({ product }: ProductDetailViewProps) {
                           Bán chạy nhất
                         </span>
                       )}
-                      <span className="w-fit px-2.5 py-1 text-[9px] font-extrabold text-white bg-[#13a855] rounded shadow-md">
-                        -{product.discountPercent}% OFF
-                      </span>
+                      {product.discountPercent > 0 && (
+                        <span className="w-fit px-2.5 py-1 text-[9px] font-extrabold text-white bg-[#13a855] rounded shadow-md">
+                          -{product.discountPercent}% OFF
+                        </span>
+                      )}
                     </div>
 
                     {/* Favorite */}
@@ -268,9 +270,11 @@ export default function ProductDetailView({ product }: ProductDetailViewProps) {
                         {formatPrice(product.salePrice)}
                         <span className="text-xs sm:text-sm text-gray-400 font-normal"> / {product.unit}</span>
                       </span>
-                      <span className="text-sm sm:text-base text-gray-400 line-through font-medium">
-                        {formatPrice(product.originalPrice)}
-                      </span>
+                      {product.discountPercent > 0 && (
+                        <span className="text-sm sm:text-base text-gray-400 line-through font-medium">
+                          {formatPrice(product.originalPrice)}
+                        </span>
+                      )}
                     </div>
 
                     {/* Quantity selector */}

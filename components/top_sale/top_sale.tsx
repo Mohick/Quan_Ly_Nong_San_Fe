@@ -69,9 +69,11 @@ const TopSale = () => {
                                                 Bán chạy
                                             </span>
                                         )}
-                                        <span className="px-2 py-0.5 text-[10px] font-bold text-white bg-[#13a855] rounded-md shadow-sm">
-                                            -{product.discountPercent}%
-                                        </span>
+                                        {product.discountPercent > 0 && (
+                                            <span className="px-2 py-0.5 text-[10px] font-bold text-white bg-[#13a855] rounded-md shadow-sm">
+                                                -{product.discountPercent}%
+                                            </span>
+                                        )}
                                     </div>
 
                                     {/* Quick Action Overlay (Fade in on hover) */}
@@ -116,9 +118,11 @@ const TopSale = () => {
                                     {/* Pricing and Unit */}
                                     <div className="flex items-end justify-between pt-2 mt-auto">
                                         <div className="flex flex-col">
-                                            <span className="text-xs text-gray-400 line-through font-medium leading-none">
-                                                {formatPrice(product.originalPrice)}
-                                            </span>
+                                            {product.discountPercent > 0 && (
+                                                <span className="text-xs text-gray-400 line-through font-medium leading-none">
+                                                    {formatPrice(product.originalPrice)}
+                                                </span>
+                                            )}
                                             <span className="text-base sm:text-lg font-black text-[#13a855] leading-tight">
                                                 {formatPrice(product.salePrice)}
                                                 <span className="text-xs text-gray-400 font-normal"> / {product.unit}</span>

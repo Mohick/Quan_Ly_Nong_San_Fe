@@ -65,9 +65,11 @@ const ProductCard = ({ product, viewMode = "grid" }: ProductCardProps) => {
                                 Bán chạy
                             </span>
                         )}
-                        <span className="w-fit px-1.5 py-0.5 text-[8px] font-bold text-white bg-[#13a855] rounded shadow-sm">
-                            -{product.discountPercent}%
-                        </span>
+                        {product.discountPercent > 0 && (
+                            <span className="w-fit px-1.5 py-0.5 text-[8px] font-bold text-white bg-[#13a855] rounded shadow-sm">
+                                -{product.discountPercent}%
+                            </span>
+                        )}
                     </div>
 
                     {/* Quick Action Overlay */}
@@ -120,9 +122,11 @@ const ProductCard = ({ product, viewMode = "grid" }: ProductCardProps) => {
                     {/* Pricing and Unit */}
                     <div className="flex items-end justify-between pt-2 mt-auto border-t border-gray-50">
                         <div className="flex flex-col">
-                            <span className="text-[10px] text-gray-400 line-through font-medium leading-none">
-                                {formatPrice(product.originalPrice)}
-                            </span>
+                            {product.discountPercent > 0 && (
+                                <span className="text-[10px] text-gray-400 line-through font-medium leading-none">
+                                    {formatPrice(product.originalPrice)}
+                                </span>
+                            )}
                             <span className="text-base sm:text-lg font-extrabold text-[#13a855] leading-tight">
                                 {formatPrice(product.salePrice)}
                                 <span className="text-[10px] text-gray-400 font-normal"> / {product.unit}</span>
@@ -159,9 +163,11 @@ const ProductCard = ({ product, viewMode = "grid" }: ProductCardProps) => {
                             Bán chạy
                         </span>
                     )}
-                    <span className="px-2 py-0.5 text-[9px] font-bold text-white bg-[#13a855] rounded shadow-sm">
-                        -{product.discountPercent}%
-                    </span>
+                    {product.discountPercent > 0 && (
+                        <span className="px-2 py-0.5 text-[9px] font-bold text-white bg-[#13a855] rounded shadow-sm">
+                            -{product.discountPercent}%
+                        </span>
+                    )}
                 </div>
 
                 {/* Quick Action Overlay */}
@@ -212,9 +218,11 @@ const ProductCard = ({ product, viewMode = "grid" }: ProductCardProps) => {
                 {/* Pricing and Unit */}
                 <div className="flex items-end justify-between pt-1.5 mt-auto">
                     <div className="flex flex-col">
-                        <span className="text-[10px] text-gray-400 line-through font-medium leading-none">
-                            {formatPrice(product.originalPrice)}
-                        </span>
+                        {product.discountPercent > 0 && (
+                            <span className="text-[10px] text-gray-400 line-through font-medium leading-none">
+                                {formatPrice(product.originalPrice)}
+                            </span>
+                        )}
                         <span className="text-sm sm:text-base font-extrabold text-[#13a855] leading-tight">
                             {formatPrice(product.salePrice)}
                             <span className="text-[10px] text-gray-400 font-normal"> / {product.unit}</span>
