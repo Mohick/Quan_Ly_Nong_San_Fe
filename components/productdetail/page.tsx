@@ -13,6 +13,16 @@ export interface Product {
   id: number;
   name: string;
   category: string;
+  cropLotId?: string | null;
+  cropLot?: {
+    id: string;
+    name: string;
+    area: number;
+    areaUnit: string;
+    startDate: string;
+    expectedHarvestDate: string;
+    status: string;
+  } | null;
   rating: number;
   reviewsCount?: number;
   soldQuantity: string;
@@ -188,9 +198,16 @@ export default function ProductDetailView({ product }: ProductDetailViewProps) {
                 {/* Right: Info Panel */}
                 <div className="md:col-span-6 flex flex-col justify-between space-y-6">
                   <div className="space-y-4">
-                    <span className="inline-block px-3 py-1 bg-[#e8f8f0] text-[#13a855] border border-[#cbeed7] rounded-md text-xs font-bold uppercase tracking-wider">
-                      {product.category}
-                    </span>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="inline-block px-3 py-1 bg-[#e8f8f0] text-[#13a855] border border-[#cbeed7] rounded-md text-xs font-bold uppercase tracking-wider">
+                        {product.category}
+                      </span>
+                      {product.cropLot?.name && (
+                        <span className="inline-block px-3 py-1 bg-amber-50 text-amber-700 border border-amber-200 rounded-md text-xs font-bold uppercase tracking-wider">
+                          Mã Lô: {product.cropLot.name}
+                        </span>
+                      )}
+                    </div>
 
                     <h1 className="text-xl sm:text-2xl lg:text-3xl font-extrabold text-gray-905 leading-tight">
                       {product.name}
@@ -334,6 +351,37 @@ export default function ProductDetailView({ product }: ProductDetailViewProps) {
               </div>
               
               <div className="space-y-6 text-xs sm:text-sm leading-relaxed text-gray-655">
+                {product.cropLot && (
+                  <div className="bg-[#f0f9f4] border border-[#d1f2e0] rounded-xl p-5 space-y-3">
+                    <h4 className="font-extrabold text-[#0a5c36] text-xs sm:text-sm uppercase flex items-center gap-2">
+                      <Award className="w-4 h-4 text-[#13a855]" />
+                      <span>Thông tin Lô đất nuôi trồng</span>
+                    </h4>
+                    <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-4 text-xs font-semibold text-gray-700">
+                      <div>
+                        <span className="text-gray-400 block font-normal text-[10px]">Tên lô sản xuất</span>
+                        <span className="text-[#13a855] font-extrabold text-sm">{product.cropLot.name}</span>
+                      </div>
+                      <div>
+                        <span className="text-gray-400 block font-normal text-[10px]">Diện tích gieo trồng</span>
+                        <span className="text-gray-850 font-bold">{product.cropLot.area} {product.cropLot.areaUnit}</span>
+                      </div>
+                      <div>
+                        <span className="text-gray-400 block font-normal text-[10px]">Ngày xuống giống</span>
+                        <span className="text-gray-850 font-bold">
+                          {product.cropLot.startDate ? new Date(product.cropLot.startDate).toLocaleDateString("vi-VN") : "Chưa cập nhật"}
+                        </span>
+                      </div>
+                      <div>
+                        <span className="text-gray-400 block font-normal text-[10px]">Thu hoạch dự kiến</span>
+                        <span className="text-gray-850 font-bold">
+                          {product.cropLot.expectedHarvestDate ? new Date(product.cropLot.expectedHarvestDate).toLocaleDateString("vi-VN") : "Chưa cập nhật"}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
                 <p className="font-bold text-gray-800">
                   Từng sản phẩm <span className="text-[#13a855] font-extrabold">"{product.name}"</span> được nuôi trồng bền vững theo quy trình hữu cơ 3 giai đoạn nghiêm ngặt, đảm bảo độ sạch và độ ngon lành tự nhiên tuyệt đối:
                 </p>

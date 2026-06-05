@@ -8,6 +8,16 @@ export interface Product {
     id: number;
     name: string;
     category: string;
+    cropLotId?: string | null;
+    cropLot?: {
+        id: string;
+        name: string;
+        area: number;
+        areaUnit: string;
+        startDate: string;
+        expectedHarvestDate: string;
+        status: string;
+    } | null;
     rating: number;
     reviewsCount?: number;
     soldQuantity: string;
