@@ -6,7 +6,7 @@ import {
   Package, ShoppingBag, AlertTriangle, Tag, 
   TrendingUp, CheckCircle, HelpCircle 
 } from "lucide-react";
-import { productAPI, createProductAPI, deleteProductAPI } from "@/lib/_api/product";
+import { productAPI, createProductAPI, deleteProductAPI, updateProductAPI } from "@/lib/_api/product";
 import { FarmAPI } from "@/lib/_api/farm";
 import { lotsAPI } from "@/lib/_api/lots";
 import dynamic from 'next/dynamic';
@@ -25,6 +25,18 @@ interface Product {
   id: number | string;
   name: string;
   category: string;
+  cropLotId?: string | null;
+  cropLot?: {
+    id: string;
+    name: string;
+    area: number;
+    areaUnit: string;
+    startDate: string;
+    expectedHarvestDate: string;
+    status: string;
+  } | null;
+  description?: string;
+  stock?: number;
   rating: number;
   reviewsCount?: number;
   soldQuantity: string;
@@ -142,6 +154,10 @@ export default function DashboardProducts() {
     setFormDiscount(product.discountPercent.toString());
     setFormImage(product.image);
     setFormIsBestSeller(!!product.isBestSeller);
+    setFormDescription(product.description || "");
+    setFormCropLotId(product.cropLotId || (lots.length > 0 ? (lots[0].id || lots[0].ID) : ""));
+    setFormStock((product.stock || 10).toString());
+    setFormImageFiles([]);
     setIsModalOpen(true);
   };
 
@@ -165,24 +181,80 @@ export default function DashboardProducts() {
 
     if (editingProduct) {
       // Update logic
-      setProducts((prev) =>
-        prev.map((p) =>
-          p.id === editingProduct.id
-            ? {
-                ...p,
-                name: formName,
-                category: formCategory,
-                salePrice: salePriceNum,
-                originalPrice: originalPriceNum,
-                discountPercent: discountNum,
-                unit: formUnit,
-                image: formImage,
-                isBestSeller: formIsBestSeller,
-              }
-            : p
-        )
-      );
-      showNotification("Cập nhật sản phẩm thành công!", "success");
+      const token = getCookie("access_token");
+      const formData = new FormData();
+      formData.append("crop_lot_id", formCropLotId);
+      formData.append("name", formName);
+      formData.append("description", formDescription);
+      formData.append("price", formSalePrice);
+      formData.append("stock", formStock);
+      
+      formImageFiles.forEach((file) => {
+        formData.append("image", file);
+      });
+
+      updateProductAPI(editingProduct.id, formData, token)
+        .then((res) => {
+          showNotification("Cập nhật sản phẩm trên Backend thành công!", "success");
+          
+          const linkedLot = lots.find(l => (l.id || l.ID) === formCropLotId);
+          
+          setProducts((prev) =>
+            prev.map((p) =>
+              p.id === editingProduct.id
+                ? {
+                    ...p,
+                    name: formName,
+                    category: linkedLot ? linkedLot.name : formCategory,
+                    cropLotId: formCropLotId || null,
+                    cropLot: linkedLot ? {
+                      id: linkedLot.id || linkedLot.ID || "",
+                      name: linkedLot.name || "",
+                      area: linkedLot.area || 0,
+                      areaUnit: linkedLot.areaUnit || "M2",
+                      startDate: linkedLot.startDate || "",
+                      expectedHarvestDate: linkedLot.expectedHarvestDate || "",
+                      status: linkedLot.status || "",
+                    } : null,
+                    description: formDescription,
+                    stock: Number(formStock) || 0,
+                    salePrice: salePriceNum,
+                    originalPrice: originalPriceNum,
+                    discountPercent: discountNum,
+                    unit: formUnit,
+                    image: formImageFiles.length > 0 ? URL.createObjectURL(formImageFiles[0]) : formImage,
+                    isBestSeller: formIsBestSeller,
+                  }
+                : p
+            )
+          );
+        })
+        .catch((err) => {
+          console.error("Lỗi khi cập nhật sản phẩm lên Backend:", err);
+          showNotification("Lỗi Backend: " + (err.response?.data?.message || err.message), "error");
+          
+          // Fallback locally
+          setProducts((prev) =>
+            prev.map((p) =>
+              p.id === editingProduct.id
+                ? {
+                    ...p,
+                    name: formName,
+                    category: formCategory,
+                    cropLotId: formCropLotId || null,
+                    description: formDescription,
+                    stock: Number(formStock) || 0,
+                    salePrice: salePriceNum,
+                    originalPrice: originalPriceNum,
+                    discountPercent: discountNum,
+                    unit: formUnit,
+                    image: formImageFiles.length > 0 ? URL.createObjectURL(formImageFiles[0]) : formImage,
+                    isBestSeller: formIsBestSeller,
+                  }
+                : p
+            )
+          );
+        });
       setIsModalOpen(false);
     } else {
       // Create logic

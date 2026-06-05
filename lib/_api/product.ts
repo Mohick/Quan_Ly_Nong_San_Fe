@@ -40,6 +40,8 @@ async function productAPI(token?: string, page: number = 1) {
             expectedHarvestDate: (item.crop_lot || item.CropLot).expected_harvest_date || (item.crop_lot || item.CropLot).ExpectedHarvestDate || "",
             status: (item.crop_lot || item.CropLot).status || (item.crop_lot || item.CropLot).Status || "",
         } : null,
+        description: item.Description || item.description || "",
+        stock: item.Stock || item.stock || 0,
         rating: item.Rating || 5.0,
         reviewsCount: item.ReviewsCount || 0,
         soldQuantity: `${item.Stock || item.stock || 0} sp`,
@@ -146,6 +148,8 @@ async function getProductDetailAPI(id: string, token?: string) {
             expectedHarvestDate: (item.crop_lot || item.CropLot).expected_harvest_date || (item.crop_lot || item.CropLot).ExpectedHarvestDate || "",
             status: (item.crop_lot || item.CropLot).status || (item.crop_lot || item.CropLot).Status || "",
         } : null,
+        description: item.Description || item.description || "",
+        stock: item.Stock || item.stock || 0,
         rating: item.Rating || 5.0,
         reviewsCount: item.ReviewsCount || 0,
         soldQuantity: `${item.Stock || item.stock || 0} sp`,
@@ -223,4 +227,14 @@ async function deleteProductAPI(id: string | number, token?: string) {
     return await axiosInstance.delete(`/products/delete/${id}`, { headers });
 }
 
-export { productAPI, createProductAPI, getProductDetailAPI, deleteProductAPI };
+async function updateProductAPI(id: string | number, formData: FormData, token?: string) {
+    const headers: Record<string, string> = {
+        "Content-Type": "multipart/form-data",
+    };
+    if (token) {
+        headers["Authorization"] = token.startsWith("Bearer ") ? token : `Bearer ${token}`;
+    }
+    return await axiosInstance.put(`/products/update/${id}`, formData, { headers });
+}
+
+export { productAPI, createProductAPI, getProductDetailAPI, deleteProductAPI, updateProductAPI };
