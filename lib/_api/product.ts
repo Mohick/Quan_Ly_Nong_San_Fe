@@ -215,4 +215,12 @@ async function getProductDetailAPI(id: string, token?: string) {
     return { data: mapped };
 }
 
-export { productAPI, createProductAPI, getProductDetailAPI };
+async function deleteProductAPI(id: string | number, token?: string) {
+    const headers: Record<string, string> = {};
+    if (token) {
+        headers["Authorization"] = token.startsWith("Bearer ") ? token : `Bearer ${token}`;
+    }
+    return await axiosInstance.delete(`/products/delete/${id}`, { headers });
+}
+
+export { productAPI, createProductAPI, getProductDetailAPI, deleteProductAPI };

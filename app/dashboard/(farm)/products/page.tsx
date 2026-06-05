@@ -6,7 +6,7 @@ import {
   Package, ShoppingBag, AlertTriangle, Tag, 
   TrendingUp, CheckCircle, HelpCircle 
 } from "lucide-react";
-import { productAPI, createProductAPI } from "@/lib/_api/product";
+import { productAPI, createProductAPI, deleteProductAPI } from "@/lib/_api/product";
 import { FarmAPI } from "@/lib/_api/farm";
 import { lotsAPI } from "@/lib/_api/lots";
 import dynamic from 'next/dynamic';
@@ -22,7 +22,7 @@ function getCookie(name: string): string | undefined {
 }
 
 interface Product {
-  id: number;
+  id: number | string;
   name: string;
   category: string;
   rating: number;
@@ -202,7 +202,7 @@ export default function DashboardProducts() {
         .then((res) => {
           showNotification("Thêm sản phẩm mới lên Backend thành công!", "success");
           const newProduct: Product = {
-            id: res.data?.data?.id || res.data?.data?.ID || (products.length > 0 ? Math.max(...products.map((p) => p.id)) + 1 : 1),
+            id: res.data?.data?.id || res.data?.data?.ID || (products.length > 0 ? Math.max(...products.map((p) => Number(p.id)).filter((n) => !isNaN(n))) + 1 : 1),
             name: formName,
             category: formCategory,
             rating: 5.0,
@@ -223,7 +223,7 @@ export default function DashboardProducts() {
           
           // Fallback locally
           const newProduct: Product = {
-            id: products.length > 0 ? Math.max(...products.map((p) => p.id)) + 1 : 1,
+            id: products.length > 0 ? Math.max(...products.map((p) => Number(p.id)).filter((n) => !isNaN(n))) + 1 : 1,
             name: formName,
             category: formCategory,
             rating: 5.0,
@@ -243,10 +243,17 @@ export default function DashboardProducts() {
   };
 
   // Delete product logic
-  const handleDeleteProduct = (id: number) => {
+  const handleDeleteProduct = async (id: number | string) => {
     if (confirm("Bạn có chắc chắn muốn xóa sản phẩm này? Hành động này không thể hoàn tác.")) {
-      setProducts((prev) => prev.filter((p) => p.id !== id));
-      showNotification("Đã xóa sản phẩm khỏi danh sách thành công!", "success");
+      try {
+        const token = getCookie("access_token");
+        await deleteProductAPI(id, token);
+        setProducts((prev) => prev.filter((p) => p.id !== id));
+        showNotification("Đã xóa sản phẩm trên hệ thống thành công!", "success");
+      } catch (err: any) {
+        console.error("Lỗi khi xóa sản phẩm:", err);
+        showNotification("Lỗi khi xóa sản phẩm: " + (err.response?.data?.message || err.message), "error");
+      }
     }
   };
 
