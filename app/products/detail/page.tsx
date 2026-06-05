@@ -5,7 +5,7 @@ import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, Loader2 } from "lucide-react";
 import ProductDetailView, { Product } from "@/components/productdetail/page";
-import { productAPI } from "@/lib/_api/product";
+import { getProductDetailAPI } from "@/lib/_api/product";
 
 function getCookie(name: string): string | undefined {
   if (typeof document === "undefined") return undefined;
@@ -31,11 +31,9 @@ function ProductDetailContent() {
     const fetchProduct = async () => {
       try {
         const token = getCookie("access_token");
-        // Get all products to find the target product matching ID
-        const res = await productAPI(token);
-        const productsList: Product[] = Array.isArray(res.data) ? res.data : [];
-        const found = productsList.find((p) => String(p.id) === idParam);
-        setProduct(found || null);
+        // Fetch product directly by ID
+        const res = await getProductDetailAPI(idParam, token);
+        setProduct(res.data || null);
       } catch (error) {
         console.error("Error fetching product details:", error);
       } finally {
