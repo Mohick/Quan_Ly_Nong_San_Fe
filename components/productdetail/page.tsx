@@ -30,6 +30,7 @@ export interface Product {
   salePrice: number;
   discountPercent: number;
   image: string;
+  images?: string[];
   isBestSeller?: boolean;
   unit: string;
 }
@@ -41,6 +42,14 @@ interface ProductDetailViewProps {
 export default function ProductDetailView({ product }: ProductDetailViewProps) {
   const [quantity, setQuantity] = useState(1);
   const [isLiked, setIsLiked] = useState(false);
+  
+  const productImages = product.images && product.images.length > 0 ? product.images : [product.image];
+  const [activeImage, setActiveImage] = useState(productImages[0] || product.image);
+
+  React.useEffect(() => {
+    const list = product.images && product.images.length > 0 ? product.images : [product.image];
+    setActiveImage(list[0] || product.image);
+  }, [product]);
   
   // 2 main tabs: info (All product info + reviews), process (Planting/Farming process)
   const [activeTab, setActiveTab] = useState<"info" | "process">("info");
@@ -162,37 +171,65 @@ export default function ProductDetailView({ product }: ProductDetailViewProps) {
             <div className="space-y-8 animate-fade-in">
               {/* Main Product Card */}
               <div className="bg-white rounded-2xl border border-gray-200 shadow-md overflow-hidden grid grid-cols-1 md:grid-cols-12 gap-8 p-6 sm:p-8 lg:p-10">
-                {/* Left: Image */}
-                <div className="md:col-span-6 flex flex-col items-center justify-center bg-gray-50 rounded-xl overflow-hidden relative border border-gray-100 aspect-square group">
-                  {/* Badges */}
-                  <div className="absolute top-4 left-4 z-20 flex flex-col gap-2">
-                    {product.isBestSeller && (
-                      <span className="px-3 py-1.5 text-[9px] font-extrabold text-white bg-gradient-to-r from-red-500 to-orange-500 rounded shadow-md tracking-wider uppercase">
-                        Bán chạy nhất
+                {/* Left: Image & Thumbnails */}
+                <div className="md:col-span-6 flex flex-col gap-4">
+                  <div className="flex items-center justify-center bg-gray-50 rounded-xl overflow-hidden relative border border-gray-100 aspect-square group w-full">
+                    {/* Badges */}
+                    <div className="absolute top-4 left-4 z-20 flex flex-col gap-2">
+                      {product.isBestSeller && (
+                        <span className="px-3 py-1.5 text-[9px] font-extrabold text-white bg-gradient-to-r from-red-500 to-orange-500 rounded shadow-md tracking-wider uppercase">
+                          Bán chạy nhất
+                        </span>
+                      )}
+                      <span className="w-fit px-2.5 py-1 text-[9px] font-extrabold text-white bg-[#13a855] rounded shadow-md">
+                        -{product.discountPercent}% OFF
                       </span>
-                    )}
-                    <span className="w-fit px-2.5 py-1 text-[9px] font-extrabold text-white bg-[#13a855] rounded shadow-md">
-                      -{product.discountPercent}% OFF
-                    </span>
+                    </div>
+
+                    {/* Favorite */}
+                    <button
+                      onClick={() => setIsLiked(!isLiked)}
+                      className={`absolute top-4 right-4 z-20 p-2.5 rounded-full border shadow-md active:scale-90 transition-all cursor-pointer ${
+                        isLiked 
+                          ? "bg-red-50 border-red-200 text-red-500" 
+                          : "bg-white border-gray-200 text-gray-400 hover:text-gray-650"
+                      }`}
+                    >
+                      <Heart className={`w-4.5 h-4.5 ${isLiked ? "fill-red-500" : ""}`} />
+                    </button>
+
+                    <img
+                      src={activeImage}
+                      alt={product.name}
+                      className="w-full h-full object-cover transform group-hover:scale-102 transition-transform duration-500"
+                    />
                   </div>
 
-                  {/* Favorite */}
-                  <button
-                    onClick={() => setIsLiked(!isLiked)}
-                    className={`absolute top-4 right-4 z-20 p-2.5 rounded-full border shadow-md active:scale-90 transition-all cursor-pointer ${
-                      isLiked 
-                        ? "bg-red-50 border-red-200 text-red-500" 
-                        : "bg-white border-gray-200 text-gray-400 hover:text-gray-650"
-                    }`}
-                  >
-                    <Heart className={`w-4.5 h-4.5 ${isLiked ? "fill-red-500" : ""}`} />
-                  </button>
-
-                  <img
-                    src={product.image}
-                    alt={product.name}
-                    className="w-full h-full object-cover transform group-hover:scale-102 transition-transform duration-500"
-                  />
+                  {/* Thumbnail Selector */}
+                  {productImages.length > 1 && (
+                    <div className="flex flex-wrap items-center gap-3 justify-center">
+                      {productImages.map((imgUrl, index) => {
+                        const isActive = imgUrl === activeImage;
+                        return (
+                          <button
+                            key={index}
+                            onClick={() => setActiveImage(imgUrl)}
+                            className={`w-16 h-16 rounded-lg overflow-hidden border-2 bg-gray-55 transition-all cursor-pointer ${
+                              isActive 
+                                ? "border-[#13a855] shadow-md scale-105" 
+                                : "border-gray-200 hover:border-gray-300"
+                            }`}
+                          >
+                            <img
+                              src={imgUrl}
+                              alt={`${product.name} thumbnail ${index + 1}`}
+                              className="w-full h-full object-cover"
+                            />
+                          </button>
+                        );
+                      })}
+                    </div>
+                  )}
                 </div>
 
                 {/* Right: Info Panel */}
