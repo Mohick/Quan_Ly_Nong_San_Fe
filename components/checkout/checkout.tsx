@@ -5,9 +5,21 @@ import Link from "next/link";
 import { 
   ArrowLeft, CreditCard, ShieldCheck, MapPin, 
   Phone, User, Mail, Truck, Loader2, CheckCircle,
-  QrCode, Wallet 
+  QrCode, Wallet, Printer 
 } from "lucide-react";
 import { productAPI } from "@/lib/_api/product";
+import { getCartAPI } from "@/components/cart/service";
+import { placeOrderAPI } from "@/lib/_api/order";
+import { getProfileAPI } from "@/lib/_api/profile";
+import { printInvoice } from "@/utils/printInvoice";
+
+function getCookie(name: string): string | undefined {
+  if (typeof document === "undefined") return undefined;
+  const value = `; ${document.cookie}`;
+  const parts = value.split(`; ${name}=`);
+  if (parts.length === 2) return parts.pop()?.split(";").shift();
+  return undefined;
+}
 
 interface CheckoutItem {
   id: number;
@@ -34,6 +46,7 @@ export default function CheckoutView() {
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
+  const [createdOrder, setCreatedOrder] = useState<any>(null);
 
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat("vi-VN", {
@@ -42,29 +55,101 @@ export default function CheckoutView() {
     }).format(price);
   };
 
-  // Fetch real products from dynamic database to initialize checkout items
+  // Fetch actual products from the cart database or fall back to local cart
   useEffect(() => {
     const fetchCheckoutProducts = async () => {
       try {
-        const res = await productAPI();
-        const data = Array.isArray(res.data) ? res.data : [];
-        // Map first 3 products from database as simulated checkout items
-        const initialOrder = data.slice(0, 3).map((item: any, idx: number) => ({
-          id: item.id,
-          name: item.name,
-          price: item.salePrice,
-          quantity: idx === 0 ? 2 : idx === 1 ? 1 : 3, // Mock quantities: 2, 1, 3
-          image: item.image,
-          unit: item.unit
-        }));
-        setOrderItems(initialOrder);
+        const token = getCookie("access_token");
+        const res = await getCartAPI(token);
+        const cartData = res.data?.data || {};
+        const items = Array.isArray(cartData.items) ? cartData.items : (Array.isArray(cartData.cart_items) ? cartData.cart_items : []);
+        
+        const mapped = items.map((item: any) => {
+          const prod = item.product || item.Product || {};
+          const discount = prod.Discount || prod.discount || {};
+          const hasDiscount = discount.Active || discount.active || false;
+          const originalPrice = prod.Price || prod.price || 0;
+          const price = hasDiscount ? (discount.DiscountPrice || discount.discount_price || originalPrice) : originalPrice;
+          
+          let image = "https://images.unsplash.com/photo-1610348725531-843dff10902c?q=80&w=600&auto=format&fit=crop";
+          const imageProducts = prod.ImageProducts || prod.image_products || [];
+          if (imageProducts.length > 0) {
+            image = imageProducts[0].ImageURL || imageProducts[0].image_url || imageProducts[0].ImageUrl || image;
+          }
+          
+          return {
+            id: item.product_id || item.ProductID || prod.id || prod.ID,
+            name: prod.Name || prod.name || "",
+            price: price,
+            quantity: item.quantity || item.Quantity || 1,
+            image: image,
+            unit: prod.Unit || prod.unit || "kg"
+          };
+        });
+
+        if (mapped.length > 0) {
+          setOrderItems(mapped);
+        } else {
+          // Fallback to local cart
+          if (typeof window !== "undefined") {
+            const localCart = localStorage.getItem("local_cart");
+            if (localCart) {
+              const parsed = JSON.parse(localCart);
+              setOrderItems(parsed.map((item: any) => ({
+                id: item.id,
+                name: item.name,
+                price: item.price,
+                quantity: item.quantity,
+                image: item.image,
+                unit: item.unit
+              })));
+            }
+          }
+        }
       } catch (error) {
-        console.error("Error loading products for checkout:", error);
+        console.warn("Cart API failed in checkout, trying local cart fallback:", error);
+        if (typeof window !== "undefined") {
+          const localCart = localStorage.getItem("local_cart");
+          if (localCart) {
+            try {
+              const parsed = JSON.parse(localCart);
+              setOrderItems(parsed.map((item: any) => ({
+                id: item.id,
+                name: item.name,
+                price: item.price,
+                quantity: item.quantity,
+                image: item.image,
+                unit: item.unit
+              })));
+            } catch (_) {}
+          }
+        }
       } finally {
         setIsLoading(false);
       }
     };
     fetchCheckoutProducts();
+  }, []);
+
+  // Fetch user profile info to prefill form
+  useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        const token = getCookie("access_token");
+        if (!token) return;
+        const res = await getProfileAPI(token);
+        if (res.data && res.data.valid) {
+          const user = res.data.data || {};
+          if (user.full_name) setFullName(user.full_name);
+          if (user.phone) setPhone(user.phone);
+          if (user.email) setEmail(user.email);
+          if (user.address) setAddress(user.address);
+        }
+      } catch (error) {
+        console.warn("Failed to load user profile for checkout prefill:", error);
+      }
+    };
+    fetchProfile();
   }, []);
 
   // Order Calculations
@@ -73,7 +158,7 @@ export default function CheckoutView() {
   const promoDiscount = tempTotal * 0.1; // Default 10% code applied
   const grandTotal = tempTotal + shippingFee - promoDiscount;
 
-  const handleSubmitOrder = (e: React.FormEvent) => {
+  const handleSubmitOrder = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!fullName || !phone || !address) {
       alert("Vui lòng điền đầy đủ các thông tin giao nhận hàng!");
@@ -81,10 +166,28 @@ export default function CheckoutView() {
     }
 
     setIsSubmitting(true);
-    setTimeout(() => {
+    try {
+      const token = getCookie("access_token");
+      const res = await placeOrderAPI({
+        address: address,
+        payment_method: paymentMethod.toUpperCase()
+      }, token);
+
+      if (res.data && res.data.valid) {
+        if (typeof window !== "undefined") {
+          localStorage.removeItem("local_cart");
+        }
+        setCreatedOrder(res.data.data);
+        setIsSuccess(true);
+      } else {
+        alert(res.data?.message || "Đặt hàng không thành công. Vui lòng thử lại!");
+      }
+    } catch (error: any) {
+      console.error("Error submitting order:", error);
+      alert(error.response?.data?.message || "Đã xảy ra lỗi khi đặt hàng. Vui lòng kiểm tra lại kết nối!");
+    } finally {
       setIsSubmitting(false);
-      setIsSuccess(true);
-    }, 2200);
+    }
   };
 
   if (isLoading) {
@@ -96,23 +199,105 @@ export default function CheckoutView() {
     );
   }
 
+  const handlePrintCheckoutInvoice = () => {
+    const orderData = {
+      id: createdOrder?.ID || createdOrder?.id || "ORD-" + Math.floor(Math.random() * 900000 + 100000),
+      customerName: fullName,
+      customerPhone: phone,
+      customerEmail: email,
+      address: address,
+      paymentMethod: paymentMethod,
+      totalAmount: grandTotal,
+      createdAt: createdOrder?.CreatedAt || new Date().toISOString(),
+      items: orderItems.map(item => ({
+        productName: item.name,
+        quantity: item.quantity,
+        price: item.price,
+        unit: item.unit
+      }))
+    };
+    printInvoice(orderData);
+  };
+
   if (isSuccess) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-[#f8faf9] font-sans p-6 text-center select-none animate-fade-in text-gray-800">
-        <div className="w-20 h-20 bg-[#e8f8f0] text-[#13a855] border-2 border-[#13a855]/30 rounded-full flex items-center justify-center mb-6 shadow-md">
-          <CheckCircle className="w-10 h-10 stroke-[2.5]" />
+      <div className="min-h-screen flex flex-col items-center justify-center bg-[#f8faf9] font-sans p-6 select-none animate-fade-in text-gray-800">
+        <div className="w-16 h-16 bg-[#e8f8f0] text-[#13a855] border border-[#13a855]/30 rounded-full flex items-center justify-center mb-4 shadow-md">
+          <CheckCircle className="w-8 h-8 stroke-[2.5]" />
         </div>
-        <h2 className="text-xl sm:text-2xl font-black text-gray-900 mb-2">Đơn Hàng Đã Được Xác Nhận!</h2>
-        <p className="text-xs sm:text-sm text-gray-500 max-w-md mb-8 leading-relaxed">
-          Đơn hàng của bạn đang được đóng gói và vận chuyển siêu tốc. Chúng tôi sẽ liên hệ với số điện thoại <span className="text-[#13a855] font-extrabold">{phone}</span> trước khi giao hàng 2H.
+        <h2 className="text-xl sm:text-2xl font-black text-gray-900 mb-2 text-center">Đặt Hàng Thành Công!</h2>
+        <p className="text-xs sm:text-sm text-gray-500 max-w-md mb-6 leading-relaxed text-center">
+          Cảm ơn bạn đã mua sắm tại Mohick Organic Farm. Đơn hàng của bạn đã được tiếp nhận và xử lý.
         </p>
-        <Link
-          href="/products"
-          className="flex items-center gap-2 px-6 py-3.5 bg-[#13a855] text-white font-extrabold rounded-xl hover:bg-[#0f8b44] transition-all shadow-md active:scale-97 text-sm cursor-pointer"
-        >
-          <ArrowLeft className="w-4 h-4" />
-          <span>Quay lại trang sản phẩm</span>
-        </Link>
+
+        {/* Invoice Summary Card */}
+        <div className="w-full max-w-xl bg-white border border-gray-200 rounded-2xl p-6 shadow-sm mb-6 space-y-4 text-xs">
+          <div className="flex justify-between items-center border-b border-gray-100 pb-3">
+            <span className="font-extrabold text-sm text-gray-800 uppercase">HÓA ĐƠN CHI TIẾT</span>
+            <span className="font-mono text-[10px] text-gray-400 font-bold bg-gray-50 px-2 py-0.5 rounded border">
+              #{createdOrder?.ID?.slice(0, 8).toUpperCase() || createdOrder?.id?.slice(0, 8).toUpperCase() || "PENDING"}
+            </span>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="space-y-1">
+              <span className="block text-[10px] font-black uppercase text-gray-400">Thông tin người mua</span>
+              <p className="font-bold text-gray-700">{fullName}</p>
+              <p className="text-gray-500 font-medium">{phone}</p>
+              <p className="text-gray-500 font-medium break-all">{email}</p>
+            </div>
+            <div className="space-y-1">
+              <span className="block text-[10px] font-black uppercase text-gray-400">Địa chỉ giao nhận</span>
+              <p className="text-gray-650 font-semibold leading-relaxed">{address}</p>
+              <p className="text-gray-500 font-medium">Thanh toán: <span className="font-bold text-gray-700 uppercase">{paymentMethod}</span></p>
+            </div>
+          </div>
+
+          <div className="border-t border-gray-100 pt-3">
+            <span className="block text-[10px] font-black uppercase text-gray-400 mb-2">Sản phẩm nông sản đặt hàng</span>
+            <div className="divide-y divide-gray-50 border border-gray-150 rounded-xl overflow-hidden bg-[#fafdfb]">
+              {orderItems.map((item) => (
+                <div key={item.id} className="p-3 flex justify-between items-center">
+                  <div>
+                    <span className="font-extrabold text-gray-700">{item.name}</span>
+                    <span className="block text-[10px] text-gray-400 font-bold mt-0.5">Số lượng: x{item.quantity} {item.unit}</span>
+                  </div>
+                  <span className="font-black text-gray-700">{formatPrice(item.price * item.quantity)}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="border-t border-gray-100 pt-3 flex justify-between items-baseline">
+            <span className="font-black text-gray-800">TỔNG THANH TOÁN:</span>
+            <span className="font-black text-base text-[#13a855]">{formatPrice(grandTotal)}</span>
+          </div>
+        </div>
+
+        {/* Action Buttons */}
+        <div className="flex flex-col sm:flex-row gap-3 w-full max-w-xl">
+          <button
+            onClick={handlePrintCheckoutInvoice}
+            className="flex-1 flex items-center justify-center gap-2 px-5 py-3.5 bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold rounded-xl transition-all shadow-md active:scale-97 text-sm cursor-pointer"
+          >
+            <Printer className="w-4.5 h-4.5" />
+            <span>In Hóa Đơn (PDF)</span>
+          </button>
+          
+          <Link
+            href="/history"
+            className="flex-1 flex items-center justify-center gap-2 px-5 py-3.5 bg-white border border-gray-250 hover:bg-gray-50 text-gray-750 font-extrabold rounded-xl transition-all shadow-sm active:scale-97 text-sm cursor-pointer text-center"
+          >
+            <span>Xem lịch sử đơn hàng</span>
+          </Link>
+          
+          <Link
+            href="/products"
+            className="flex-1 flex items-center justify-center gap-2 px-5 py-3.5 bg-white border border-gray-250 hover:bg-gray-50 text-gray-750 font-extrabold rounded-xl transition-all shadow-sm active:scale-97 text-sm cursor-pointer text-center"
+          >
+            <span>Tiếp tục mua hàng</span>
+          </Link>
+        </div>
       </div>
     );
   }

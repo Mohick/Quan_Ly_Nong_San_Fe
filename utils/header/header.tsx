@@ -26,6 +26,35 @@ const Header = () => {
 
   ];
 
+  const [cartCount, setCartCount] = useState(0);
+
+  React.useEffect(() => {
+    const updateCount = () => {
+      if (typeof window !== "undefined") {
+        const localCart = localStorage.getItem("local_cart");
+        if (localCart) {
+          try {
+            const items = JSON.parse(localCart);
+            if (Array.isArray(items)) {
+              const count = items.reduce((acc, item) => acc + (item.quantity || 0), 0);
+              setCartCount(count);
+              return;
+            }
+          } catch (_) {}
+        }
+      }
+      setCartCount(0);
+    };
+
+    updateCount();
+    window.addEventListener("cart-updated", updateCount);
+    window.addEventListener("storage", updateCount);
+    return () => {
+      window.removeEventListener("cart-updated", updateCount);
+      window.removeEventListener("storage", updateCount);
+    };
+  }, []);
+
   return (
     <header className="w-full bg-white shadow-sm font-sans">
       {/* Top Header Bar */}
@@ -75,9 +104,11 @@ const Header = () => {
               className="p-3 bg-[#e8f8f0] text-[#13a855] rounded-full hover:bg-[#d4f2e1] active:scale-95 transition-all duration-200 cursor-pointer relative"
             >
               <ShoppingCart className="w-5 h-5" />
-              <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold rounded-full w-4.5 h-4.5 flex items-center justify-center shadow-sm">
-                0
-              </span>
+              {cartCount > 0 && (
+                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold rounded-full w-4.5 h-4.5 flex items-center justify-center shadow-sm">
+                  {cartCount}
+                </span>
+              )}
             </Link>
 
             {/* Auth Buttons - Desktop */}

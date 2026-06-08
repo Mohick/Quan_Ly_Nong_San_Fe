@@ -4,11 +4,12 @@ import React, { useState, useEffect } from "react";
 import {
   ShoppingBag, Search, Eye, RefreshCw, Calendar,
   MapPin, CheckCircle, Clock, Truck, XCircle, ArrowLeft,
-  ChevronRight, ChevronLeft, ArrowRight, Tag, CreditCard, ChevronDown
+  ChevronRight, ChevronLeft, ArrowRight, Tag, CreditCard, ChevronDown, Printer
 } from "lucide-react";
 import Link from "next/link";
 import axios from "axios";
-import { HistoryAPI } from "@/lib/_api/histoy";
+import { HistoryAPI } from "@/lib/_api/history";
+import { printInvoice } from "@/utils/printInvoice";
 
 interface OrderItem {
   id: string;
@@ -282,6 +283,15 @@ export default function PurchaseHistoryComponent() {
 
                         <div className="flex items-center gap-2">
                           <button
+                            onClick={() => printInvoice(order)}
+                            className="flex items-center gap-1.5 px-3.5 py-2 hover:bg-emerald-50 border border-[#13a855] text-[#13a855] text-xs font-black rounded-xl transition-all cursor-pointer active:scale-95"
+                            title="In Hóa Đơn"
+                          >
+                            <Printer className="w-4 h-4" />
+                            <span>In Hóa Đơn</span>
+                          </button>
+
+                          <button
                             onClick={() => setSelectedOrder(order)}
                             className="flex items-center gap-1.5 px-3.5 py-2 hover:bg-gray-50 border border-gray-250 text-gray-700 text-xs font-black rounded-xl transition-all cursor-pointer"
                           >
@@ -446,7 +456,14 @@ export default function PurchaseHistoryComponent() {
             </div>
 
             {/* Modal Footer */}
-            <div className="p-4 bg-gray-50/50 border-t border-gray-150 flex justify-end">
+            <div className="p-4 bg-gray-50/50 border-t border-gray-150 flex justify-end gap-2">
+              <button
+                onClick={() => printInvoice(selectedOrder)}
+                className="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-black rounded-xl transition-all flex items-center gap-1.5 cursor-pointer active:scale-95 shadow-sm"
+              >
+                <Printer className="w-4 h-4" />
+                <span>In Hóa Đơn</span>
+              </button>
               <button
                 onClick={() => setSelectedOrder(null)}
                 className="px-5 py-2.5 bg-gray-800 hover:bg-gray-900 text-white text-xs font-black rounded-xl transition-all cursor-pointer"

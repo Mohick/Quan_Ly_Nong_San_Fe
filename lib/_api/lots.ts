@@ -33,4 +33,30 @@ async function lotsAPI(farmId?: string, token?: string) {
     return { data: [] };
 }
 
-export { lotsAPI };
+async function updateLotAPI(id: string, payload: any, token?: string) {
+    const headers: Record<string, string> = {
+        "Content-Type": "application/json",
+    };
+    if (token) {
+        headers["Authorization"] = token.startsWith("Bearer ") ? token : `Bearer ${token}`;
+    }
+    return await axiosInstance.put(`/crop-lot/update/${id}`, payload, { headers });
+}
+
+async function deleteLotAPI(id: string, token?: string) {
+    const headers: Record<string, string> = {};
+    if (token) {
+        headers["Authorization"] = token.startsWith("Bearer ") ? token : `Bearer ${token}`;
+    }
+    return await axiosInstance.delete(`/crop-lot/delete/${id}`, { headers });
+}
+
+async function getCropLotByIDAPI(id: string | number, token?: string) {
+    const headers: Record<string, string> = {};
+    if (token) {
+        headers["Authorization"] = token.startsWith("Bearer ") ? token : `Bearer ${token}`;
+    }
+    return await axiosInstance.get(`/crop-lot/get-one/${id}`, { headers });
+}
+
+export { lotsAPI, updateLotAPI, deleteLotAPI, getCropLotByIDAPI };

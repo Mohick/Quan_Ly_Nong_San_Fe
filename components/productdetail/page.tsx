@@ -1,13 +1,24 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { 
   Star, ShoppingCart, ArrowLeft, ShieldCheck, 
   Truck, RefreshCw, Heart, Plus, Minus, 
   Sparkles, Sprout, MessageSquare, ChevronLeft, ChevronRight,
-  Droplet, Calendar, Award
+  Droplet, Calendar, Award, CheckCircle, Loader2
 } from "lucide-react";
+import { addToCartAPI } from "../cart/service";
+import { getCareProcessesAPI } from "@/lib/_api/care_process";
+
+function getCookie(name: string): string | undefined {
+  if (typeof document === "undefined") return undefined;
+  const value = `; ${document.cookie}`;
+  const parts = value.split(`; ${name}=`);
+  if (parts.length === 2) return parts.pop()?.split(";").shift();
+  return undefined;
+}
 
 export interface Product {
   id: number;
@@ -40,8 +51,94 @@ interface ProductDetailViewProps {
 }
 
 export default function ProductDetailView({ product }: ProductDetailViewProps) {
+  const router = useRouter();
   const [quantity, setQuantity] = useState(1);
   const [isLiked, setIsLiked] = useState(false);
+  const [toast, setToast] = useState<{
+    message: string;
+    type: "success" | "error";
+  } | null>(null);
+
+  const [diaries, setDiaries] = useState<any[]>([]);
+  const [isDiariesLoading, setIsDiariesLoading] = useState(false);
+
+  useEffect(() => {
+    const cropLotId = product.cropLot?.id;
+    if (!cropLotId) return;
+    
+    const fetchDiaries = async () => {
+      setIsDiariesLoading(true);
+      try {
+        const token = getCookie("access_token");
+        const res = await getCareProcessesAPI(cropLotId, token);
+        if (res && Array.isArray(res.data)) {
+          const sorted = [...res.data].sort((a, b) => (a.month || 1) - (b.month || 1));
+          setDiaries(sorted);
+        }
+      } catch (err) {
+        console.error("Lỗi khi tải nhật ký canh tác cho sản phẩm:", err);
+      } finally {
+        setIsDiariesLoading(false);
+      }
+    };
+    fetchDiaries();
+  }, [product.cropLot?.id]);
+
+  const showToast = (message: string, type: "success" | "error") => {
+    setToast({ message, type });
+    setTimeout(() => setToast(null), 3000);
+  };
+
+  const handleAddToCart = async () => {
+    const token = getCookie("access_token");
+
+    // 1. Call API
+    try {
+      await addToCartAPI(product.id, quantity, token);
+    } catch (error) {
+      console.warn("Backend add to cart failed/missing. Falling back to local storage.", error);
+    }
+
+    // 2. Fallback to localStorage
+    if (typeof window !== "undefined") {
+      const localCart = localStorage.getItem("local_cart");
+      let cartItems: any[] = [];
+      if (localCart) {
+        try {
+          cartItems = JSON.parse(localCart);
+        } catch (_) {}
+      }
+      if (!Array.isArray(cartItems)) {
+        cartItems = [];
+      }
+
+      const existingIndex = cartItems.findIndex((item: any) => item.id === product.id);
+      if (existingIndex > -1) {
+        cartItems[existingIndex].quantity += quantity;
+      } else {
+        cartItems.push({
+          id: product.id,
+          name: product.name,
+          category: product.category || "Nông sản sạch",
+          price: product.salePrice,
+          originalPrice: product.originalPrice,
+          quantity: quantity,
+          image: product.image,
+          unit: product.unit || "kg"
+        });
+      }
+
+      localStorage.setItem("local_cart", JSON.stringify(cartItems));
+      window.dispatchEvent(new Event("cart-updated"));
+    }
+
+    showToast(`Đã thêm ${quantity} "${product.name}" vào giỏ hàng thành công!`, "success");
+  };
+
+  const handleBuyNow = async () => {
+    await handleAddToCart();
+    router.push("/cart");
+  };
   
   const productImages = product.images && product.images.length > 0 ? product.images : [product.image];
   const [activeImage, setActiveImage] = useState(productImages[0] || product.image);
@@ -100,6 +197,18 @@ export default function ProductDetailView({ product }: ProductDetailViewProps) {
 
   return (
     <div className="w-full bg-[#f8faf9] min-h-screen py-10 font-sans select-none animate-fade-in">
+      {toast && (
+        <div
+          className={`animate-slide-in fixed top-4 right-4 z-50 flex items-center gap-3 rounded-lg border px-4.5 py-3 text-sm font-bold shadow-xl transition-all duration-300 ${
+            toast.type === "success"
+              ? "border-[#cbeed7] bg-[#e8f8f0] text-[#13a855]"
+              : "border-red-100 bg-red-50 text-red-600"
+          }`}
+        >
+          <CheckCircle className="h-5 w-5" />
+          <span>{toast.message}</span>
+        </div>
+      )}
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         
         {/* Navigation Breadcrumbs & Dynamic Prev/Next Page Switcher */}
@@ -320,11 +429,17 @@ export default function ProductDetailView({ product }: ProductDetailViewProps) {
 
                   {/* CTA Buttons */}
                   <div className="pt-4 flex flex-col sm:flex-row gap-3">
-                    <button className="flex-1 flex items-center justify-center gap-2 px-6 py-3.5 bg-[#13a855] hover:bg-[#0f8b44] text-white font-extrabold rounded-xl active:scale-97 shadow-md transition-all cursor-pointer text-sm">
+                    <button
+                      onClick={handleAddToCart}
+                      className="flex-1 flex items-center justify-center gap-2 px-6 py-3.5 bg-[#13a855] hover:bg-[#0f8b44] text-white font-extrabold rounded-xl active:scale-97 shadow-md transition-all cursor-pointer text-sm"
+                    >
                       <ShoppingCart className="w-4.5 h-4.5" />
                       <span>Thêm vào giỏ hàng</span>
                     </button>
-                    <button className="flex-1 flex items-center justify-center px-6 py-3.5 bg-white hover:bg-gray-50 text-[#13a855] hover:text-[#0f8b44] border-2 border-[#13a855] font-extrabold rounded-xl active:scale-97 transition-all cursor-pointer text-sm">
+                    <button
+                      onClick={handleBuyNow}
+                      className="flex-1 flex items-center justify-center px-6 py-3.5 bg-white hover:bg-gray-50 text-[#13a855] hover:text-[#0f8b44] border-2 border-[#13a855] font-extrabold rounded-xl active:scale-97 transition-all cursor-pointer text-sm"
+                    >
                       <span>Mua ngay</span>
                     </button>
                   </div>
@@ -428,46 +543,77 @@ export default function ProductDetailView({ product }: ProductDetailViewProps) {
                 </p>
                 
                 {/* Step-by-Step Pipeline */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-4">
-                  {/* Step 1 */}
-                  <div className="p-5.5 bg-[#f4fbf7] border border-[#d5f3e0] rounded-xl space-y-3 relative group hover:shadow-md transition-all duration-250">
-                    <div className="w-10 h-10 bg-white border border-[#cbeed7] rounded-full flex items-center justify-center text-[#13a855] font-black text-sm shadow-sm">
-                      01
-                    </div>
-                    <div className="space-y-1.5">
-                      <span className="block font-black text-gray-850 text-sm uppercase">Chuẩn bị Đất & Giống</span>
-                      <p className="text-xs text-gray-500 leading-normal">
-                        Sử dụng 100% giống thuần chủng chất lượng cao, kháng sâu bệnh tự nhiên. Đất trồng được xử lý sạch mầm bệnh, bón lót phân hữu cơ vi sinh ủ hoai kỹ lưỡng.
-                      </p>
-                    </div>
+                {isDiariesLoading ? (
+                  <div className="py-10 flex flex-col items-center justify-center text-gray-500">
+                    <Loader2 className="w-6 h-6 animate-spin text-emerald-600 mb-2" />
+                    <span className="text-xs font-bold">Đang tải nhật ký canh tác thực tế...</span>
                   </div>
+                ) : diaries.length > 0 ? (
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-4">
+                    {diaries.map((diary, index) => (
+                      <div key={diary.id || index} className="p-5.5 bg-[#f4fbf7] border border-[#d5f3e0] rounded-xl space-y-3 relative group hover:shadow-md transition-all duration-250">
+                        <div className="w-10 h-10 bg-white border border-[#cbeed7] rounded-full flex items-center justify-center text-[#13a855] font-black text-sm shadow-sm shrink-0">
+                          {String(index + 1).padStart(2, "0")}
+                        </div>
+                        <div className="space-y-1.5">
+                          <span className="block font-black text-gray-850 text-sm uppercase">
+                            {diary.title || `Giai đoạn ${diary.month}`}
+                          </span>
+                          {diary.started_date && (
+                            <span className="block text-[10px] text-gray-400 font-semibold leading-none">
+                              Thời gian: {new Date(diary.started_date).toLocaleDateString("vi-VN")}
+                              {diary.finished_dat && ` - ${new Date(diary.finished_dat).toLocaleDateString("vi-VN")}`}
+                            </span>
+                          )}
+                          <p className="text-xs text-gray-500 leading-normal">
+                            {diary.description}
+                          </p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-4">
+                    {/* Step 1 */}
+                    <div className="p-5.5 bg-[#f4fbf7] border border-[#d5f3e0] rounded-xl space-y-3 relative group hover:shadow-md transition-all duration-250">
+                      <div className="w-10 h-10 bg-white border border-[#cbeed7] rounded-full flex items-center justify-center text-[#13a855] font-black text-sm shadow-sm">
+                        01
+                      </div>
+                      <div className="space-y-1.5">
+                        <span className="block font-black text-gray-850 text-sm uppercase">Chuẩn bị Đất & Giống</span>
+                        <p className="text-xs text-gray-500 leading-normal">
+                          Sử dụng 100% giống thuần chủng chất lượng cao, kháng sâu bệnh tự nhiên. Đất trồng được xử lý sạch mầm bệnh, bón lót phân hữu cơ vi sinh ủ hoai kỹ lưỡng.
+                        </p>
+                      </div>
+                    </div>
 
-                  {/* Step 2 */}
-                  <div className="p-5.5 bg-[#f4fbf7] border border-[#d5f3e0] rounded-xl space-y-3 relative group hover:shadow-md transition-all duration-250">
-                    <div className="w-10 h-10 bg-white border border-[#cbeed7] rounded-full flex items-center justify-center text-[#13a855] font-black text-sm shadow-sm">
-                      02
+                    {/* Step 2 */}
+                    <div className="p-5.5 bg-[#f4fbf7] border border-[#d5f3e0] rounded-xl space-y-3 relative group hover:shadow-md transition-all duration-250">
+                      <div className="w-10 h-10 bg-white border border-[#cbeed7] rounded-full flex items-center justify-center text-[#13a855] font-black text-sm shadow-sm">
+                        02
+                      </div>
+                      <div className="space-y-1.5">
+                        <span className="block font-black text-gray-850 text-sm uppercase">Chăm sóc & Tưới nước</span>
+                        <p className="text-xs text-gray-500 leading-normal">
+                          Nguồn nước tưới được lọc sạch cẩn thận. Sử dụng các chế phẩm sinh học thảo mộc tự nhiên chống côn trùng gây hại. Tuyệt đối không dùng thuốc trừ sâu hóa học.
+                        </p>
+                      </div>
                     </div>
-                    <div className="space-y-1.5">
-                      <span className="block font-black text-gray-850 text-sm uppercase">Chăm sóc & Tưới nước</span>
-                      <p className="text-xs text-gray-500 leading-normal">
-                        Nguồn nước tưới được lọc sạch cẩn thận. Sử dụng các chế phẩm sinh học thảo mộc tự nhiên chống côn trùng gây hại. Tuyệt đối không dùng thuốc trừ sâu hóa học.
-                      </p>
-                    </div>
-                  </div>
 
-                  {/* Step 3 */}
-                  <div className="p-5.5 bg-[#f4fbf7] border border-[#d5f3e0] rounded-xl space-y-3 relative group hover:shadow-md transition-all duration-250">
-                    <div className="w-10 h-10 bg-white border border-[#cbeed7] rounded-full flex items-center justify-center text-[#13a855] font-black text-sm shadow-sm">
-                      03
-                    </div>
-                    <div className="space-y-1.5">
-                      <span className="block font-black text-gray-850 text-sm uppercase">Thu hoạch & Đóng gói</span>
-                      <p className="text-xs text-gray-500 leading-normal">
-                        Sản phẩm được thu hoạch bằng tay vào thời điểm sáng sớm mát mẻ khi đạt độ chín hoàn hảo nhất, sau đó làm sạch bụi bẩn và đóng gói đạt chuẩn an toàn thực phẩm.
-                      </p>
+                    {/* Step 3 */}
+                    <div className="p-5.5 bg-[#f4fbf7] border border-[#d5f3e0] rounded-xl space-y-3 relative group hover:shadow-md transition-all duration-250">
+                      <div className="w-10 h-10 bg-white border border-[#cbeed7] rounded-full flex items-center justify-center text-[#13a855] font-black text-sm shadow-sm">
+                        03
+                      </div>
+                      <div className="space-y-1.5">
+                        <span className="block font-black text-gray-850 text-sm uppercase">Thu hoạch & Đóng gói</span>
+                        <p className="text-xs text-gray-500 leading-normal">
+                          Sản phẩm được thu hoạch bằng tay vào thời điểm sáng sớm mát mẻ khi đạt độ chín hoàn hảo nhất, sau đó làm sạch bụi bẩn và đóng gói đạt chuẩn an toàn thực phẩm.
+                        </p>
+                      </div>
                     </div>
                   </div>
-                </div>
+                )}
 
                 {/* Safety certification notice */}
                 <div className="pt-4 border-t border-gray-100 flex items-center gap-3 text-xs text-gray-400 font-bold">

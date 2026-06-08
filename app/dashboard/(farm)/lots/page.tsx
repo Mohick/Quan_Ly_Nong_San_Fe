@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { Plus, Search, Landmark, Layers, Trees, Clock, AlertCircle, CheckCircle2, Loader2 } from "lucide-react";
 import { FarmAPI } from "@/lib/_api/farm";
-import { lotsAPI } from "@/lib/_api/lots";
+import { lotsAPI, updateLotAPI, deleteLotAPI } from "@/lib/_api/lots";
 import { createLotAPI } from "@/lib/_api/create_lots";
 import { getCareProcessesAPI } from "@/lib/_api/care_process";
 import { LotCard } from "@/components/lots/LotCard";
@@ -138,14 +138,51 @@ export default function CropLotsDashboard() {
   };
 
   const handleUpdateLot = (updatedLot: CropLot) => {
-    setLots((prev) => prev.map((l) => (l.id === updatedLot.id ? updatedLot : l)));
-    showToast("Cập nhật lô đất canh tác thành công!");
+    const token = getCookie("access_token");
+    const payload = {
+      name: updatedLot.name,
+      area: updatedLot.area,
+      area_unit: updatedLot.area_unit,
+      tree_count: updatedLot.tree_count,
+      start_date: updatedLot.start_date,
+      expected_harvest_date: updatedLot.expected_harvest_date,
+      status: updatedLot.status,
+      note: updatedLot.note,
+    };
+
+    updateLotAPI(updatedLot.id, payload, token)
+      .then((res) => {
+        if (res.data && res.data.valid === false) {
+          showToast("Cập nhật lô canh tác thất bại: " + (res.data.message || "Lỗi hệ thống"));
+          return;
+        }
+        setLots((prev) => prev.map((l) => (l.id === updatedLot.id ? updatedLot : l)));
+        showToast("Cập nhật lô đất canh tác thành công!");
+      })
+      .catch((error) => {
+        console.error("Lỗi khi cập nhật lô đất canh tác:", error);
+        const errMsg = error.response?.data?.message || error.message || "Lỗi kết nối Backend";
+        alert("Lỗi: " + errMsg);
+      });
   };
 
   const handleDelete = (id: string) => {
     if (confirm("Xóa lô đất canh tác này khỏi nông trại? Tất cả lịch trình liên quan sẽ bị hủy bỏ.")) {
-      setLots((prev) => prev.filter((l) => l.id !== id));
-      showToast("Đã xóa lô đất canh tác thành công!");
+      const token = getCookie("access_token");
+      deleteLotAPI(id, token)
+        .then((res) => {
+          if (res.data && res.data.valid === false) {
+            showToast("Xóa lô canh tác thất bại: " + (res.data.message || "Lỗi hệ thống"));
+            return;
+          }
+          setLots((prev) => prev.filter((l) => l.id !== id));
+          showToast("Đã xóa lô đất canh tác thành công!");
+        })
+        .catch((error) => {
+          console.error("Lỗi khi xóa lô đất canh tác:", error);
+          const errMsg = error.response?.data?.message || error.message || "Lỗi kết nối Backend";
+          alert("Lỗi: " + errMsg);
+        });
     }
   };
 

@@ -1,5 +1,13 @@
 import axiosInstance from "../axios";
 
+interface FarmUpdatePayload {
+    name?: string;
+    description?: string;
+    address?: string;
+    phone?: string;
+}
+
+// Lấy thông tin trang trại của chính mình (/farms/get-one)
 async function FarmAPI(token?: string) {
     if (token) {
         try {
@@ -30,4 +38,24 @@ async function FarmAPI(token?: string) {
     return { data: [] };
 }
 
-export { FarmAPI };
+// Cập nhật thông tin trang trại (/farms/update/:id)
+async function updateFarmAPI(id: string | number, payload: FarmUpdatePayload, token?: string) {
+    const headers: Record<string, string> = {
+        "Content-Type": "application/json",
+    };
+    if (token) {
+        headers["Authorization"] = token.startsWith("Bearer ") ? token : `Bearer ${token}`;
+    }
+    return await axiosInstance.put(`/farms/update/${id}`, payload, { headers });
+}
+
+// Xóa trang trại (/farms/delete/:id)
+async function deleteFarmAPI(id: string | number, token?: string) {
+    const headers: Record<string, string> = {};
+    if (token) {
+        headers["Authorization"] = token.startsWith("Bearer ") ? token : `Bearer ${token}`;
+    }
+    return await axiosInstance.delete(`/farms/delete/${id}`, { headers });
+}
+
+export { FarmAPI, updateFarmAPI, deleteFarmAPI };

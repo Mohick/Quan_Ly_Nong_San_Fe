@@ -2,7 +2,7 @@
 
 import HeaderProduct from "@/components/header_product/heder_product";
 import ItemProduct, { Product } from "@/components/item_product/item_product";
-import { productAPI } from "@/lib/_api/product";
+import { getProductListAPI } from "@/lib/_api/product";
 import { useEffect, useState } from "react";
 
 function getCookie(name: string): string | undefined {
@@ -28,17 +28,18 @@ export default function Products() {
   
   // Pagination
   const [currentPage, setCurrentPage] = useState(1);
-  const ITEMS_PER_PAGE = 20;
+  const [totalPages, setTotalPages] = useState(1);
 
-  // Fetch products on load
+  // Fetch products on load and page change
   useEffect(() => {
     const fetchProducts = async () => {
+      setIsLoading(true);
       try {
         const token = getCookie("access_token");
-        const res = await productAPI(token);
-        const data = Array.isArray(res.data) ? res.data : [];
-        setProducts(data);
-        console.log("Danh sách sản phẩm:", data);
+        const res = await getProductListAPI(currentPage, token);
+        setProducts(res.data || []);
+        setTotalPages(res.totalPages || 1);
+        console.log("Danh sách sản phẩm trang", currentPage, ":", res.data);
       } catch (error) {
         console.error("Error fetching products:", error);
       } finally {
@@ -46,7 +47,7 @@ export default function Products() {
       }
     };
     fetchProducts();
-  }, []);
+  }, [currentPage]);
 
   // Reset filters handler
   const handleResetFilters = () => {
@@ -145,10 +146,8 @@ export default function Products() {
       return 0;
     });
 
-  // 2. Paginate products
-  const totalPages = Math.ceil(filteredProducts.length / ITEMS_PER_PAGE);
-  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
-  const paginatedProducts = filteredProducts.slice(startIndex, startIndex + ITEMS_PER_PAGE);
+  // 2. Products are already paginated by the backend, we just display the filtered/sorted results of the current page
+  const paginatedProducts = filteredProducts;
 
   return (
     <div className="w-full bg-gray-50/30 min-h-screen">

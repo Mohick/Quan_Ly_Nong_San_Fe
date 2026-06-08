@@ -14,6 +14,7 @@ import {
 import { useAuthStore, useAutoLogin } from "@/hooks/useAutoLogin";
 import { createFarmAPI } from "@/lib/_api/create_farm";
 import { FarmAPI } from "@/lib/_api/farm";
+import { updateProfileAPI } from "@/lib/_api/profile";
 import ProfileTab from "@/components/settings/ProfileTab";
 import FarmTab from "@/components/settings/FarmTab";
 import SecurityTab from "@/components/settings/SecurityTab";
@@ -102,13 +103,43 @@ export default function ProfileSettings() {
     fetchFarm();
   }, []);
 
-  const handleProfileSubmit = (e: React.FormEvent) => {
+  const handleProfileSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!fullName.trim() || !phone.trim() || !address.trim()) {
+      showToast("Vui lòng nhập đầy đủ các thông tin bắt buộc!", "error");
+      return;
+    }
     setIsSubmitting(true);
-    setTimeout(() => {
+    try {
+      const token = getCookie("access_token");
+      const res = await updateProfileAPI({
+        full_name: fullName,
+        phone,
+        address,
+      }, token);
+
+      if (res.status === 200 || res.status === 201) {
+        showToast("Cập nhật thông tin tài khoản thành công!", "success");
+        if (user) {
+          setUser({
+            ...user,
+            full_name: fullName,
+            phone,
+            address,
+          });
+        }
+      } else {
+        showToast("Không thể cập nhật hồ sơ. Vui lòng thử lại!", "error");
+      }
+    } catch (error: any) {
+      console.error("Lỗi khi cập nhật hồ sơ cá nhân:", error);
+      showToast(
+        error.response?.data?.message || error.message || "Lỗi hệ thống khi cập nhật hồ sơ.",
+        "error"
+      );
+    } finally {
       setIsSubmitting(false);
-      showToast("Cập nhật thông tin tài khoản thành công!", "success");
-    }, 1200);
+    }
   };
 
   const handleFarmSubmit = async (e: React.FormEvent) => {

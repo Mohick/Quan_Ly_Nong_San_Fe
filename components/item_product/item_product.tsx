@@ -1,8 +1,17 @@
 "use client";
 
 import React, { useState } from "react";
-import { Star, ShoppingCart, Eye, Heart, ChevronLeft, ChevronRight } from "lucide-react";
+import { Star, ShoppingCart, Eye, Heart, ChevronLeft, ChevronRight, CheckCircle } from "lucide-react";
 import Link from "next/link";
+import { addToCartAPI } from "../cart/service";
+
+function getCookie(name: string): string | undefined {
+    if (typeof document === "undefined") return undefined;
+    const value = `; ${document.cookie}`;
+    const parts = value.split(`; ${name}=`);
+    if (parts.length === 2) return parts.pop()?.split(";").shift();
+    return undefined;
+}
 
 export interface Product {
     id: number;
@@ -33,10 +42,11 @@ export interface Product {
 interface ProductCardProps {
     product: Product;
     viewMode?: "grid" | "list";
+    onAddToCart: (product: Product) => void;
 }
 
 // Reusable single product card component supporting both grid & list viewmodes
-const ProductCard = ({ product, viewMode = "grid" }: ProductCardProps) => {
+const ProductCard = ({ product, viewMode = "grid", onAddToCart }: ProductCardProps) => {
     const [isHovered, setIsHovered] = useState(false);
 
     const formatPrice = (price: number) => {
@@ -134,7 +144,10 @@ const ProductCard = ({ product, viewMode = "grid" }: ProductCardProps) => {
                         </div>
 
                         {/* Quick Add to Cart Button */}
-                        <button className="flex items-center gap-2 px-4 py-2 bg-[#e8f8f0] hover:bg-[#13a855] text-[#13a855] hover:text-white rounded-lg active:scale-95 transition-all duration-200 cursor-pointer shadow-sm text-xs font-bold">
+                        <button
+                            onClick={() => onAddToCart(product)}
+                            className="flex items-center gap-2 px-4 py-2 bg-[#e8f8f0] hover:bg-[#13a855] text-[#13a855] hover:text-white rounded-lg active:scale-95 transition-all duration-200 cursor-pointer shadow-sm text-xs font-bold"
+                        >
                             <ShoppingCart className="w-4 h-4" />
                             <span>Thêm giỏ hàng</span>
                         </button>
@@ -230,7 +243,10 @@ const ProductCard = ({ product, viewMode = "grid" }: ProductCardProps) => {
                     </div>
 
                     {/* Quick Add to Cart Button */}
-                    <button className="p-2 bg-[#e8f8f0] hover:bg-[#13a855] text-[#13a855] hover:text-white rounded-lg active:scale-95 transition-all duration-200 cursor-pointer shadow-sm">
+                    <button
+                        onClick={() => onAddToCart(product)}
+                        className="p-2 bg-[#e8f8f0] hover:bg-[#13a855] text-[#13a855] hover:text-white rounded-lg active:scale-95 transition-all duration-200 cursor-pointer shadow-sm"
+                    >
                         <ShoppingCart className="w-4.5 h-4.5" />
                     </button>
                 </div>
@@ -257,6 +273,61 @@ const ItemProduct = ({
     totalPages,
     onPageChange,
 }: ItemProductProps) => {
+    const [toast, setToast] = useState<{
+        message: string;
+        type: "success" | "error";
+    } | null>(null);
+
+    const showToast = (message: string, type: "success" | "error") => {
+        setToast({ message, type });
+        setTimeout(() => setToast(null), 3000);
+    };
+
+    const handleAddToCart = async (product: Product) => {
+        const token = getCookie("access_token");
+
+        // 1. Call API
+        try {
+            await addToCartAPI(product.id, 1, token);
+        } catch (error) {
+            console.warn("Backend add to cart failed/missing. Falling back to local storage.", error);
+        }
+
+        // 2. Fallback to localStorage
+        if (typeof window !== "undefined") {
+            const localCart = localStorage.getItem("local_cart");
+            let cartItems: any[] = [];
+            if (localCart) {
+                try {
+                    cartItems = JSON.parse(localCart);
+                } catch (_) {}
+            }
+            if (!Array.isArray(cartItems)) {
+                cartItems = [];
+            }
+
+            const existingIndex = cartItems.findIndex((item: any) => item.id === product.id);
+            if (existingIndex > -1) {
+                cartItems[existingIndex].quantity += 1;
+            } else {
+                cartItems.push({
+                    id: product.id,
+                    name: product.name,
+                    category: product.category || "Nông sản sạch",
+                    price: product.salePrice,
+                    originalPrice: product.originalPrice,
+                    quantity: 1,
+                    image: product.image,
+                    unit: product.unit || "kg"
+                });
+            }
+
+            localStorage.setItem("local_cart", JSON.stringify(cartItems));
+            window.dispatchEvent(new Event("cart-updated"));
+        }
+
+        showToast(`Đã thêm "${product.name}" vào giỏ hàng thành công!`, "success");
+    };
 
     // Helper to generate page numbers list
     const getPageNumbers = () => {
@@ -271,6 +342,18 @@ const ItemProduct = ({
 
     return (
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex flex-col min-h-[500px]">
+            {toast && (
+                <div
+                    className={`animate-slide-in fixed top-4 right-4 z-50 flex items-center gap-3 rounded-xl border px-4.5 py-3 text-sm font-bold shadow-xl transition-all duration-300 ${
+                        toast.type === "success"
+                            ? "border-[#cbeed7] bg-[#e8f8f0] text-[#13a855]"
+                            : "border-red-100 bg-red-50 text-red-600"
+                    }`}
+                >
+                    <CheckCircle className="h-5 w-5" />
+                    <span>{toast.message}</span>
+                </div>
+            )}
             <div className="flex-grow">
                 {isLoading ? (
                     /* Loading Skeleton Grid */
@@ -289,13 +372,13 @@ const ItemProduct = ({
                     viewMode === "grid" ? (
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8">
                             {products.map((product) => (
-                                <ProductCard key={product.id} product={product} viewMode="grid" />
+                                <ProductCard key={product.id} product={product} viewMode="grid" onAddToCart={handleAddToCart} />
                             ))}
                         </div>
                     ) : (
                         <div className="flex flex-col gap-5">
                             {products.map((product) => (
-                                <ProductCard key={product.id} product={product} viewMode="list" />
+                                <ProductCard key={product.id} product={product} viewMode="list" onAddToCart={handleAddToCart} />
                             ))}
                         </div>
                     )

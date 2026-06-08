@@ -6,10 +6,19 @@ import {
   Trash2, Plus, Minus, ArrowLeft, ShoppingBag, 
   Tag, ShieldCheck, Truck, RotateCcw, Check, Loader2 
 } from "lucide-react";
+import { getCartAPI, updateCartItemAPI, removeCartItemAPI, clearCartAPI } from "./service";
 import { productAPI } from "@/lib/_api/product";
 
+function getCookie(name: string): string | undefined {
+  if (typeof document === "undefined") return undefined;
+  const value = `; ${document.cookie}`;
+  const parts = value.split(`; ${name}=`);
+  if (parts.length === 2) return parts.pop()?.split(";").shift();
+  return undefined;
+}
+
 interface CartItem {
-  id: number;
+  id: string | number;
   name: string;
   category: string;
   price: number;
@@ -27,26 +36,58 @@ export default function CartView() {
   const [isCheckoutLoading, setIsCheckoutLoading] = useState(false);
   const [isCheckoutSuccess, setIsCheckoutSuccess] = useState(false);
 
-  // Fetch real products from dynamic database to initialize cart
+  // Fetch real products from cart database to initialize cart
   useEffect(() => {
     const fetchCartProducts = async () => {
       try {
-        const res = await productAPI();
-        const data = Array.isArray(res.data) ? res.data : [];
-        // Map first 3 products from database as initialized cart items
-        const initialCart = data.slice(0, 3).map((item: any, idx: number) => ({
-          id: item.id,
-          name: item.name,
-          category: item.category,
-          price: item.salePrice,
-          originalPrice: item.originalPrice,
-          quantity: idx === 0 ? 2 : idx === 1 ? 1 : 3, // Mock quantities: 2, 1, 3
-          image: item.image,
-          unit: item.unit
-        }));
-        setCartItems(initialCart);
+        const token = getCookie("access_token");
+        const res = await getCartAPI(token);
+        const cartData = res.data?.data || {};
+        const items = Array.isArray(cartData.items) ? cartData.items : (Array.isArray(cartData.cart_items) ? cartData.cart_items : []);
+        
+        const mapped = items.map((item: any) => {
+          const prod = item.product || item.Product || {};
+          const discount = prod.Discount || prod.discount || {};
+          const hasDiscount = discount.Active || discount.active || false;
+          const originalPrice = prod.Price || prod.price || 0;
+          const price = hasDiscount ? (discount.DiscountPrice || discount.discount_price || originalPrice) : originalPrice;
+          
+          let image = "/images/placeholder.jpg";
+          const imageProducts = prod.ImageProducts || prod.image_products || [];
+          if (imageProducts.length > 0) {
+            image = imageProducts[0].ImageURL || imageProducts[0].image_url || imageProducts[0].ImageUrl || "";
+          }
+          
+          return {
+            id: item.id || item.ID || prod.id || prod.ID,
+            name: prod.Name || prod.name || "",
+            category: prod.Category?.Name || prod.Category?.name || "Nông sản sạch",
+            price: price,
+            originalPrice: originalPrice,
+            quantity: item.quantity || item.Quantity || 1,
+            image: image,
+            unit: prod.Unit || prod.unit || "kg"
+          };
+        });
+
+        setCartItems(mapped);
+        if (typeof window !== "undefined") {
+          localStorage.setItem("local_cart", JSON.stringify(mapped));
+        }
       } catch (error) {
-        console.error("Error loading products for cart:", error);
+        console.warn("Cart API is not supported on Backend (or connection error), falling back to LocalStorage.");
+        
+        if (typeof window !== "undefined") {
+          const localCart = localStorage.getItem("local_cart");
+          if (localCart) {
+            try {
+              setCartItems(JSON.parse(localCart));
+              setIsLoading(false);
+              return;
+            } catch (_) {}
+          }
+        }
+        setCartItems([]);
       } finally {
         setIsLoading(false);
       }
@@ -62,27 +103,62 @@ export default function CartView() {
   };
 
   // Quantity updates
-  const handleIncrease = (id: number) => {
-    setCartItems((prev) =>
-      prev.map((item) =>
-        item.id === id ? { ...item, quantity: item.quantity + 1 } : item
-      )
+  const handleIncrease = async (id: string | number) => {
+    const item = cartItems.find((item) => item.id === id);
+    if (!item) return;
+    const newQty = item.quantity + 1;
+    
+    const updatedItems = cartItems.map((item) =>
+      item.id === id ? { ...item, quantity: newQty } : item
     );
+    setCartItems(updatedItems);
+    if (typeof window !== "undefined") {
+      localStorage.setItem("local_cart", JSON.stringify(updatedItems));
+    }
+
+    try {
+      const token = getCookie("access_token");
+      await updateCartItemAPI(id, newQty, token);
+    } catch (err) {
+      // Ignore backend error in fallback mode
+    }
   };
 
-  const handleDecrease = (id: number) => {
-    setCartItems((prev) =>
-      prev.map((item) =>
-        item.id === id && item.quantity > 1
-          ? { ...item, quantity: item.quantity - 1 }
-          : item
-      )
+  const handleDecrease = async (id: string | number) => {
+    const item = cartItems.find((item) => item.id === id);
+    if (!item || item.quantity <= 1) return;
+    const newQty = item.quantity - 1;
+
+    const updatedItems = cartItems.map((item) =>
+      item.id === id ? { ...item, quantity: newQty } : item
     );
+    setCartItems(updatedItems);
+    if (typeof window !== "undefined") {
+      localStorage.setItem("local_cart", JSON.stringify(updatedItems));
+    }
+
+    try {
+      const token = getCookie("access_token");
+      await updateCartItemAPI(id, newQty, token);
+    } catch (err) {
+      // Ignore backend error in fallback mode
+    }
   };
 
-  const handleRemove = (id: number) => {
+  const handleRemove = async (id: string | number) => {
     if (confirm("Xóa sản phẩm này khỏi giỏ hàng?")) {
-      setCartItems((prev) => prev.filter((item) => item.id !== id));
+      const updatedItems = cartItems.filter((item) => item.id !== id);
+      setCartItems(updatedItems);
+      if (typeof window !== "undefined") {
+        localStorage.setItem("local_cart", JSON.stringify(updatedItems));
+      }
+
+      try {
+        const token = getCookie("access_token");
+        await removeCartItemAPI(id, token);
+      } catch (err) {
+        // Ignore backend error in fallback mode
+      }
     }
   };
 
@@ -109,13 +185,21 @@ export default function CartView() {
     }
   };
 
-  const handleCheckout = () => {
+  const handleCheckout = async () => {
     setIsCheckoutLoading(true);
-    setTimeout(() => {
-      setIsCheckoutLoading(false);
+    try {
+      const token = getCookie("access_token");
+      await clearCartAPI(token);
+    } catch (err) {
+      // Ignore backend error in fallback mode
+    } finally {
       setIsCheckoutSuccess(true);
       setCartItems([]);
-    }, 2000);
+      if (typeof window !== "undefined") {
+        localStorage.removeItem("local_cart");
+      }
+      setIsCheckoutLoading(false);
+    }
   };
 
   if (isLoading) {

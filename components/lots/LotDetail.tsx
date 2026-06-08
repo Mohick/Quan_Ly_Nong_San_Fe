@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import { X, Plus, Calendar, CheckCircle2 } from "lucide-react";
 import { CropLot } from "@/app/dashboard/(farm)/lots/page";
-import { createCareProcessAPI } from "@/lib/_api/care_process";
+import { createCareProcessAPI, updateCareProcessAPI, deleteCareProcessAPI } from "@/lib/_api/care_process";
 
 interface LotDetailProps {
   selectedLot: CropLot;
@@ -79,6 +79,7 @@ export const LotDetail: React.FC<LotDetailProps> = ({
     try {
       if (editingDiary) {
         // Edit flow
+        await updateCareProcessAPI({ id: editingDiary.id, ...payload }, token);
         const localKey = `diaries_${lotId}`;
         const list = currentDiaries.map((d) =>
           d.id === editingDiary.id ? { ...d, ...payload } : d
@@ -161,16 +162,33 @@ export const LotDetail: React.FC<LotDetailProps> = ({
     setEditingDiary(null);
   };
 
-  const handleDiaryDelete = (diaryId: any) => {
+  const handleDiaryDelete = async (diaryId: any) => {
     if (!lotId) return;
-    const updated = currentDiaries.filter((d) => d.id !== diaryId);
-    if (typeof window !== "undefined") {
-      localStorage.setItem(`diaries_${lotId}`, JSON.stringify(updated));
+    if (!confirm("Bạn có chắc chắn muốn xóa nhật ký chăm sóc này?")) return;
+    const token = getCookie("access_token");
+    try {
+      await deleteCareProcessAPI(diaryId, token);
+      const updated = currentDiaries.filter((d) => d.id !== diaryId);
+      if (typeof window !== "undefined") {
+        localStorage.setItem(`diaries_${lotId}`, JSON.stringify(updated));
+      }
+      setLotDiaries((prev) => ({
+        ...prev,
+        [lotId]: updated,
+      }));
+      showToast("Đã xóa nhật ký chăm sóc thành công!");
+    } catch (error) {
+      console.error("Lỗi khi xóa nhật ký trên backend (Chuyển sang LocalStorage cục bộ):", error);
+      const updated = currentDiaries.filter((d) => d.id !== diaryId);
+      if (typeof window !== "undefined") {
+        localStorage.setItem(`diaries_${lotId}`, JSON.stringify(updated));
+      }
+      setLotDiaries((prev) => ({
+        ...prev,
+        [lotId]: updated,
+      }));
+      showToast("Đã xóa nhật ký từ LocalStorage!");
     }
-    setLotDiaries((prev) => ({
-      ...prev,
-      [lotId]: updated,
-    }));
   };
 
   return (
