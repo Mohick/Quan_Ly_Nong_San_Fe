@@ -163,7 +163,7 @@ const HeaderProduct = ({
   return (
     <div 
       ref={containerRef}
-      className="w-full bg-[#fcfdfe] rounded-2xl border border-gray-200/80 shadow-sm p-5 font-sans select-none max-w-7xl mx-auto my-6"
+      className="w-full bg-[#fcfdfe] rounded-2xl border border-gray-200/80 shadow-sm p-5 font-sans select-none max-w-7xl mx-auto my-6 relative z-30"
     >
       <div className="space-y-4">
         
@@ -210,7 +210,7 @@ const HeaderProduct = ({
 
               {/* Category Popover Menu */}
               {activeDropdown === "category" && (
-                <div className="absolute left-0 mt-2 w-80 bg-white border border-gray-200 rounded-2xl shadow-xl p-4 z-40 space-y-3 animate-fade-in">
+                <div className="absolute left-0 mt-2 w-80 bg-white border border-gray-200 rounded-2xl shadow-xl p-4 z-50 space-y-3 animate-fade-in">
                   <h4 className="text-[10px] font-black uppercase text-gray-400 tracking-wider">Chọn danh mục nông sản</h4>
                   <div className="grid grid-cols-2 gap-2">
                     <button
@@ -251,7 +251,7 @@ const HeaderProduct = ({
 
               {/* Farmer Popover Menu */}
               {activeDropdown === "farmer" && (
-                <div className="absolute left-0 mt-2 w-64 bg-white border border-gray-200 rounded-2xl shadow-xl p-4 z-40 space-y-3 animate-fade-in">
+                <div className="absolute left-0 mt-2 w-64 bg-white border border-gray-200 rounded-2xl shadow-xl p-4 z-50 space-y-3 animate-fade-in">
                   <h4 className="text-[10px] font-black uppercase text-gray-400 tracking-wider">Chọn xuất xứ nhà vườn</h4>
                   <div className="flex flex-col gap-1.5">
                     <button
@@ -293,7 +293,7 @@ const HeaderProduct = ({
 
               {/* Price Range Popover Menu */}
               {activeDropdown === "price" && (
-                <div className="absolute left-0 sm:left-auto sm:right-0 mt-2 w-72 bg-white border border-gray-200 rounded-2xl shadow-xl p-4.5 z-40 space-y-4 animate-fade-in">
+                <div className="absolute left-0 sm:left-auto sm:right-0 mt-2 w-72 bg-white border border-gray-200 rounded-2xl shadow-xl p-4.5 z-50 space-y-4 animate-fade-in">
                   <h4 className="text-[10px] font-black uppercase text-gray-400 tracking-wider">Lọc nhanh theo giá</h4>
                   
                   {/* Quick price selection tags */}
