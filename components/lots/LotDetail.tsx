@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import { X, Plus, Calendar, CheckCircle2 } from "lucide-react";
 import { CropLot } from "@/app/dashboard/(farm)/lots/page";
-import { createCareProcessAPI } from "@/lib/_api/care_process";
+import { createCareProcessAPI, updateCareProcessAPI, deleteCareProcessAPI } from "@/lib/_api/care_process";
 
 interface LotDetailProps {
   selectedLot: CropLot;
@@ -38,6 +38,7 @@ export const LotDetail: React.FC<LotDetailProps> = ({
 }) => {
   const [detailTab, setDetailTab] = useState<"tt" | "sp">("tt");
   const [showAddDiary, setShowAddDiary] = useState(false);
+  const [editingDiary, setEditingDiary] = useState<any | null>(null);
   const [newDiaryTitle, setNewDiaryTitle] = useState("");
   const [newDiaryDesc, setNewDiaryDesc] = useState("");
   const [newDiaryMonth, setNewDiaryMonth] = useState<number>(1);
@@ -46,6 +47,16 @@ export const LotDetail: React.FC<LotDetailProps> = ({
 
   const lotId = selectedLot.id || (selectedLot as any).ID;
   const currentDiaries = lotDiaries[lotId] || [];
+
+  const handleDiaryEdit = (diary: any) => {
+    setEditingDiary(diary);
+    setNewDiaryTitle(diary.title || "");
+    setNewDiaryDesc(diary.description || "");
+    setNewDiaryMonth(diary.month || 1);
+    setNewDiaryStartDate(diary.started_date ? diary.started_date.split("T")[0] : "");
+    setNewDiaryFinishedDate(diary.finished_dat ? diary.finished_dat.split("T")[0] : "");
+    setShowAddDiary(true);
+  };
 
   const handleDiarySubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -66,10 +77,60 @@ export const LotDetail: React.FC<LotDetailProps> = ({
 
     const token = getCookie("access_token");
     try {
-      const response = await createCareProcessAPI(payload, token);
-      if (response.status === 200 || response.status === 201) {
+      if (editingDiary) {
+        // Edit flow
+        await updateCareProcessAPI({ id: editingDiary.id, ...payload }, token);
         const localKey = `diaries_${lotId}`;
-        let list = [];
+        const list = currentDiaries.map((d) =>
+          d.id === editingDiary.id ? { ...d, ...payload } : d
+        );
+        if (typeof window !== "undefined") {
+          localStorage.setItem(localKey, JSON.stringify(list));
+        }
+        setLotDiaries((prev) => ({
+          ...prev,
+          [lotId]: list,
+        }));
+        showToast("Đã cập nhật nhật ký thành công!");
+      } else {
+        // Create flow
+        const response = await createCareProcessAPI(payload, token);
+        if (response.status === 200 || response.status === 201) {
+          const localKey = `diaries_${lotId}`;
+          let list = [];
+          if (typeof window !== "undefined") {
+            const existing = localStorage.getItem(localKey);
+            if (existing) {
+              try {
+                list = JSON.parse(existing);
+              } catch (_) {}
+            }
+            const newDiary = {
+              id: response.data?.data?.id || response.data?.data?.ID || Date.now(),
+              ...payload,
+            };
+            list.unshift(newDiary);
+            localStorage.setItem(localKey, JSON.stringify(list));
+          }
+          setLotDiaries((prev) => ({
+            ...prev,
+            [lotId]: list,
+          }));
+          showToast("Đã lưu nhật ký mới thành công!");
+        } else {
+          alert("Không thể lưu nhật ký. Vui lòng thử lại!");
+        }
+      }
+    } catch (error: any) {
+      console.error("Lỗi khi tạo/sửa nhật ký chăm sóc (Chuyển sang LocalStorage cục bộ):", error);
+      const localKey = `diaries_${lotId}`;
+      let list = [];
+      if (editingDiary) {
+        list = currentDiaries.map((d) =>
+          d.id === editingDiary.id ? { ...d, ...payload } : d
+        );
+        showToast("Đã cập nhật nhật ký vào LocalStorage!");
+      } else {
         if (typeof window !== "undefined") {
           const existing = localStorage.getItem(localKey);
           if (existing) {
@@ -77,44 +138,19 @@ export const LotDetail: React.FC<LotDetailProps> = ({
               list = JSON.parse(existing);
             } catch (_) {}
           }
-          const newDiary = {
-            id: response.data?.data?.id || response.data?.data?.ID || Date.now(),
+          const simulatedDiary = {
+            id: Date.now(),
             ...payload,
           };
-          list.unshift(newDiary);
+          list.unshift(simulatedDiary);
           localStorage.setItem(localKey, JSON.stringify(list));
         }
-        setLotDiaries((prev) => ({
-          ...prev,
-          [lotId]: list,
-        }));
-        showToast("Đã lưu nhật ký mới thành công!");
-      } else {
-        alert("Không thể lưu nhật ký. Vui lòng thử lại!");
-      }
-    } catch (error: any) {
-      console.error("Lỗi khi tạo nhật ký chăm sóc (Chuyển sang LocalStorage cục bộ):", error);
-      const localKey = `diaries_${lotId}`;
-      let list = [];
-      if (typeof window !== "undefined") {
-        const existing = localStorage.getItem(localKey);
-        if (existing) {
-          try {
-            list = JSON.parse(existing);
-          } catch (_) {}
-        }
-        const simulatedDiary = {
-          id: Date.now(),
-          ...payload,
-        };
-        list.unshift(simulatedDiary);
-        localStorage.setItem(localKey, JSON.stringify(list));
+        showToast("Đã lưu nhật ký vào Bộ nhớ trình duyệt (LocalStorage)!");
       }
       setLotDiaries((prev) => ({
         ...prev,
         [lotId]: list,
       }));
-      showToast("Đã lưu nhật ký vào Bộ nhớ trình duyệt (LocalStorage)!");
     }
 
     setNewDiaryTitle("");
@@ -123,18 +159,36 @@ export const LotDetail: React.FC<LotDetailProps> = ({
     setNewDiaryStartDate("");
     setNewDiaryFinishedDate("");
     setShowAddDiary(false);
+    setEditingDiary(null);
   };
 
-  const handleDiaryDelete = (diaryId: any) => {
+  const handleDiaryDelete = async (diaryId: any) => {
     if (!lotId) return;
-    const updated = currentDiaries.filter((d) => d.id !== diaryId);
-    if (typeof window !== "undefined") {
-      localStorage.setItem(`diaries_${lotId}`, JSON.stringify(updated));
+    if (!confirm("Bạn có chắc chắn muốn xóa nhật ký chăm sóc này?")) return;
+    const token = getCookie("access_token");
+    try {
+      await deleteCareProcessAPI(diaryId, token);
+      const updated = currentDiaries.filter((d) => d.id !== diaryId);
+      if (typeof window !== "undefined") {
+        localStorage.setItem(`diaries_${lotId}`, JSON.stringify(updated));
+      }
+      setLotDiaries((prev) => ({
+        ...prev,
+        [lotId]: updated,
+      }));
+      showToast("Đã xóa nhật ký chăm sóc thành công!");
+    } catch (error) {
+      console.error("Lỗi khi xóa nhật ký trên backend (Chuyển sang LocalStorage cục bộ):", error);
+      const updated = currentDiaries.filter((d) => d.id !== diaryId);
+      if (typeof window !== "undefined") {
+        localStorage.setItem(`diaries_${lotId}`, JSON.stringify(updated));
+      }
+      setLotDiaries((prev) => ({
+        ...prev,
+        [lotId]: updated,
+      }));
+      showToast("Đã xóa nhật ký từ LocalStorage!");
     }
-    setLotDiaries((prev) => ({
-      ...prev,
-      [lotId]: updated,
-    }));
   };
 
   return (
@@ -274,11 +328,21 @@ export const LotDetail: React.FC<LotDetailProps> = ({
               className="bg-gray-50 p-5 rounded-xl border border-gray-250/60 space-y-4 animate-slide-in"
             >
               <div className="flex items-center justify-between border-b border-gray-200 pb-2">
-                <span className="text-xs font-extrabold text-gray-800">Thêm nhật ký tháng mới</span>
+                <span className="text-xs font-extrabold text-gray-800 font-sans">
+                  {editingDiary ? "Chỉnh sửa nhật ký" : "Thêm nhật ký tháng mới"}
+                </span>
                 <button
                   type="button"
-                  onClick={() => setShowAddDiary(false)}
-                  className="text-gray-400 hover:text-gray-600 text-xs font-bold cursor-pointer"
+                  onClick={() => {
+                    setShowAddDiary(false);
+                    setEditingDiary(null);
+                    setNewDiaryTitle("");
+                    setNewDiaryDesc("");
+                    setNewDiaryMonth(1);
+                    setNewDiaryStartDate("");
+                    setNewDiaryFinishedDate("");
+                  }}
+                  className="text-gray-400 hover:text-gray-650 text-xs font-bold cursor-pointer font-sans"
                 >
                   Hủy
                 </button>
@@ -393,13 +457,22 @@ export const LotDetail: React.FC<LotDetailProps> = ({
                       </span>
                       <span className="text-gray-800 font-black text-xs">{diary.title}</span>
                     </div>
-                    <button
-                      type="button"
-                      onClick={() => handleDiaryDelete(diary.id)}
-                      className="opacity-0 group-hover:opacity-100 transition-opacity text-red-500 hover:text-red-750 text-[10px] font-bold cursor-pointer"
-                    >
-                      Xóa
-                    </button>
+                    <div className="flex gap-2.5">
+                      <button
+                        type="button"
+                        onClick={() => handleDiaryEdit(diary)}
+                        className="opacity-0 group-hover:opacity-100 transition-opacity text-[#13a855] hover:text-[#0f8b44] text-[10px] font-bold cursor-pointer"
+                      >
+                        Sửa
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleDiaryDelete(diary.id)}
+                        className="opacity-0 group-hover:opacity-100 transition-opacity text-red-500 hover:text-red-750 text-[10px] font-bold cursor-pointer"
+                      >
+                        Xóa
+                      </button>
+                    </div>
                   </div>
 
                   {diary.started_date && diary.finished_dat && (

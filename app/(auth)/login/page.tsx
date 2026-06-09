@@ -6,12 +6,23 @@ import { ShieldCheck, ArrowLeft } from "lucide-react";
 import { extractGoogleUserProfile } from "./service";
 import axios from "axios";
 
+function getSafeRedirectPath(value: string | null): string {
+  return value?.startsWith("/") && !value.startsWith("//") ? value : "/";
+}
+
 const Login = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
 
   useEffect(() => {
     const handleCallback = async () => {
+      const requestedPath = getSafeRedirectPath(
+        new URLSearchParams(window.location.search).get("next"),
+      );
+      if (requestedPath !== "/") {
+        sessionStorage.setItem("post_login_redirect", requestedPath);
+      }
+
       const hash = window.location.hash;
       if (!hash) return;
 
@@ -26,8 +37,11 @@ const Login = () => {
           if (profile) {
             // Save profile details into localStorage
             localStorage.setItem("user", JSON.stringify(profile));
-            // Redirect user to home page after a brief delay
-            window.location.href = "/";
+            const redirectPath = getSafeRedirectPath(
+              sessionStorage.getItem("post_login_redirect"),
+            );
+            sessionStorage.removeItem("post_login_redirect");
+            window.location.href = redirectPath;
           } else {
             alert("Đăng nhập thất bại. Không thể lấy hồ sơ người dùng.");
           }
@@ -39,7 +53,8 @@ const Login = () => {
               ? error.message
               : "Loi he thong trong qua trinh dang nhap.";
           setErrorMessage(message);
-        } finally {          setIsLoading(false);
+        } finally {
+          setIsLoading(false);
         }
       }
     };
@@ -50,6 +65,13 @@ const Login = () => {
   const handleGoogleLogin = () => {
     setIsLoading(true);
     setErrorMessage("");
+
+    const requestedPath = getSafeRedirectPath(
+      new URLSearchParams(window.location.search).get("next"),
+    );
+    if (requestedPath !== "/") {
+      sessionStorage.setItem("post_login_redirect", requestedPath);
+    }
 
     // Read from client-side config or defaults
     const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || "your_google_client_id_here.apps.googleusercontent.com";
@@ -92,7 +114,7 @@ const Login = () => {
 
           <div className="space-y-4 my-12 z-10">
             <h2 className="text-3xl font-black leading-tight tracking-tight">
-              Đồng Hành Cùng Nông Nghiệp Xanh
+              Real - World AI & Blockchain Solutions
             </h2>
             <p className="text-sm text-emerald-100 font-medium leading-relaxed">
               Hệ thống quản lý vườn thông minh và nâng tầm nông sản sạch Việt Nam trên thị trường số.
@@ -112,7 +134,7 @@ const Login = () => {
         <div className="p-8 sm:p-10 md:p-12 flex flex-col justify-center">
           <div className="space-y-2.5 mb-10">
             <h1 className="text-2xl sm:text-3xl font-extrabold text-gray-800 tracking-tight">
-              Đăng nhập quản trị
+              Đăng nhập
             </h1>
             <p className="text-xs sm:text-sm text-gray-500 font-medium leading-relaxed">
               Vui lòng sử dụng tài khoản Google doanh nghiệp đã được cấp quyền truy cập để đăng nhập vào hệ thống.

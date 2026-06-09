@@ -2,8 +2,15 @@
 
 import React from "react";
 import { Search, Bell } from "lucide-react";
+import { useAutoLogin } from "@/hooks/useAutoLogin";
 
 const DashboardTopbar: React.FC = () => {
+  const { user, loading } = useAutoLogin();
+
+  const displayName = (user as any)?.FullName || (user as any)?.full_name || (user as any)?.username || "Chủ trang trại";
+  const userRole = (user as any)?.Role || (user as any)?.role || "Chủ trang trại (Farmer)";
+  const initial = displayName.charAt(0).toUpperCase();
+
   return (
     <header className="h-16 border-b border-gray-200/80 bg-white px-6 flex items-center justify-between sticky top-0 z-30 font-sans">
       {/* Left search input */}
@@ -31,12 +38,16 @@ const DashboardTopbar: React.FC = () => {
         {/* Staff User Info */}
         <div className="flex items-center gap-3">
           <div className="text-right hidden sm:block">
-            <p className="text-xs font-bold text-gray-800 leading-tight">Lê Văn Hùng</p>
-            <p className="text-[10px] font-semibold text-gray-400">Chủ trang trại (Farmer)</p>
+            <p className="text-xs font-bold text-gray-800 leading-tight">
+              {loading ? "Đang tải..." : displayName}
+            </p>
+            <p className="text-[10px] font-semibold text-gray-400">
+              {userRole === "FARMER" ? "Chủ trang trại (Farmer)" : userRole}
+            </p>
           </div>
           
           <div className="w-9 h-9 rounded-full bg-emerald-50 border border-emerald-100 flex items-center justify-center text-emerald-700 font-extrabold text-sm select-none">
-            H
+            {loading ? "..." : initial}
           </div>
         </div>
       </div>

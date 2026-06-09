@@ -1,13 +1,33 @@
 "use client";
 
 import React, { useState } from "react";
-import { Star, ShoppingCart, Eye, Heart, ChevronLeft, ChevronRight } from "lucide-react";
+import { Star, ShoppingCart, Eye, Heart, ChevronLeft, ChevronRight, CheckCircle } from "lucide-react";
 import Link from "next/link";
+import { addToCartAPI } from "../cart/service";
+
+function getCookie(name: string): string | undefined {
+    if (typeof document === "undefined") return undefined;
+    const value = `; ${document.cookie}`;
+    const parts = value.split(`; ${name}=`);
+    if (parts.length === 2) return parts.pop()?.split(";").shift();
+    return undefined;
+}
 
 export interface Product {
     id: number;
     name: string;
     category: string;
+    cropLotId?: string | null;
+    cropLot?: {
+        id: string;
+        name: string;
+        area: number;
+        areaUnit: string;
+        startDate: string;
+        expectedHarvestDate: string;
+        status: string;
+        farmId?: string;
+    } | null;
     rating: number;
     reviewsCount?: number;
     soldQuantity: string;
@@ -15,17 +35,22 @@ export interface Product {
     salePrice: number;
     discountPercent: number;
     image: string;
+    images?: string[];
     isBestSeller?: boolean;
     unit: string;
+    farmName?: string;
+    farmId?: string;
+    FarmID?: string;
 }
 
 interface ProductCardProps {
     product: Product;
     viewMode?: "grid" | "list";
+    onAddToCart: (product: Product) => void;
 }
 
 // Reusable single product card component supporting both grid & list viewmodes
-const ProductCard = ({ product, viewMode = "grid" }: ProductCardProps) => {
+const ProductCard = ({ product, viewMode = "grid", onAddToCart }: ProductCardProps) => {
     const [isHovered, setIsHovered] = useState(false);
 
     const formatPrice = (price: number) => {
@@ -54,9 +79,11 @@ const ProductCard = ({ product, viewMode = "grid" }: ProductCardProps) => {
                                 Bán chạy
                             </span>
                         )}
-                        <span className="w-fit px-1.5 py-0.5 text-[8px] font-bold text-white bg-[#13a855] rounded shadow-sm">
-                            -{product.discountPercent}%
-                        </span>
+                        {product.discountPercent > 0 && (
+                            <span className="w-fit px-1.5 py-0.5 text-[8px] font-bold text-white bg-[#13a855] rounded shadow-sm">
+                                -{product.discountPercent}%
+                            </span>
+                        )}
                     </div>
 
                     {/* Quick Action Overlay */}
@@ -84,9 +111,16 @@ const ProductCard = ({ product, viewMode = "grid" }: ProductCardProps) => {
                 {/* Product Info on Right */}
                 <div className="flex flex-col flex-1 justify-between py-1 space-y-2">
                     <div className="space-y-1">
-                        <span className="text-[10px] font-bold text-[#13a855]/90 uppercase tracking-wider">
-                            {product.category}
-                        </span>
+                        <div className="flex items-center gap-2 flex-wrap">
+                            <span className="text-[10px] font-bold text-[#13a855]/90 uppercase tracking-wider">
+                                {product.category}
+                            </span>
+                            {product.farmName && (
+                                <span className="text-[9px] font-extrabold text-blue-600 bg-blue-50 px-2 py-0.5 rounded">
+                                    {product.farmName}
+                                </span>
+                            )}
+                        </div>
 
                         {/* Clickable Title */}
                         <Link href={`/products/detail?id=${product.id}`} className="block group/title cursor-pointer">
@@ -109,9 +143,11 @@ const ProductCard = ({ product, viewMode = "grid" }: ProductCardProps) => {
                     {/* Pricing and Unit */}
                     <div className="flex items-end justify-between pt-2 mt-auto border-t border-gray-50">
                         <div className="flex flex-col">
-                            <span className="text-[10px] text-gray-400 line-through font-medium leading-none">
-                                {formatPrice(product.originalPrice)}
-                            </span>
+                            {product.discountPercent > 0 && (
+                                <span className="text-[10px] text-gray-400 line-through font-medium leading-none">
+                                    {formatPrice(product.originalPrice)}
+                                </span>
+                            )}
                             <span className="text-base sm:text-lg font-extrabold text-[#13a855] leading-tight">
                                 {formatPrice(product.salePrice)}
                                 <span className="text-[10px] text-gray-400 font-normal"> / {product.unit}</span>
@@ -119,7 +155,10 @@ const ProductCard = ({ product, viewMode = "grid" }: ProductCardProps) => {
                         </div>
 
                         {/* Quick Add to Cart Button */}
-                        <button className="flex items-center gap-2 px-4 py-2 bg-[#e8f8f0] hover:bg-[#13a855] text-[#13a855] hover:text-white rounded-lg active:scale-95 transition-all duration-200 cursor-pointer shadow-sm text-xs font-bold">
+                        <button
+                            onClick={() => onAddToCart(product)}
+                            className="flex items-center gap-2 px-4 py-2 bg-[#e8f8f0] hover:bg-[#13a855] text-[#13a855] hover:text-white rounded-lg active:scale-95 transition-all duration-200 cursor-pointer shadow-sm text-xs font-bold"
+                        >
                             <ShoppingCart className="w-4 h-4" />
                             <span>Thêm giỏ hàng</span>
                         </button>
@@ -148,9 +187,11 @@ const ProductCard = ({ product, viewMode = "grid" }: ProductCardProps) => {
                             Bán chạy
                         </span>
                     )}
-                    <span className="px-2 py-0.5 text-[9px] font-bold text-white bg-[#13a855] rounded shadow-sm">
-                        -{product.discountPercent}%
-                    </span>
+                    {product.discountPercent > 0 && (
+                        <span className="px-2 py-0.5 text-[9px] font-bold text-white bg-[#13a855] rounded shadow-sm">
+                            -{product.discountPercent}%
+                        </span>
+                    )}
                 </div>
 
                 {/* Quick Action Overlay */}
@@ -175,11 +216,17 @@ const ProductCard = ({ product, viewMode = "grid" }: ProductCardProps) => {
                 />
             </Link>
 
-            {/* Product Info */}
             <div className="flex flex-col flex-1 p-4 space-y-2">
-                <span className="text-[10px] font-bold text-[#13a855]/90 uppercase tracking-wider">
-                    {product.category}
-                </span>
+                <div className="flex items-center justify-between gap-1 flex-wrap">
+                    <span className="text-[10px] font-bold text-[#13a855]/90 uppercase tracking-wider">
+                        {product.category}
+                    </span>
+                    {product.farmName && (
+                        <span className="text-[8px] font-extrabold text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded max-w-[120px] truncate" title={product.farmName}>
+                            {product.farmName}
+                        </span>
+                    )}
+                </div>
 
                 {/* Clickable Title */}
                 <Link href={`/products/detail?id=${product.id}`} className="block group/title cursor-pointer">
@@ -201,9 +248,11 @@ const ProductCard = ({ product, viewMode = "grid" }: ProductCardProps) => {
                 {/* Pricing and Unit */}
                 <div className="flex items-end justify-between pt-1.5 mt-auto">
                     <div className="flex flex-col">
-                        <span className="text-[10px] text-gray-400 line-through font-medium leading-none">
-                            {formatPrice(product.originalPrice)}
-                        </span>
+                        {product.discountPercent > 0 && (
+                            <span className="text-[10px] text-gray-400 line-through font-medium leading-none">
+                                {formatPrice(product.originalPrice)}
+                            </span>
+                        )}
                         <span className="text-sm sm:text-base font-extrabold text-[#13a855] leading-tight">
                             {formatPrice(product.salePrice)}
                             <span className="text-[10px] text-gray-400 font-normal"> / {product.unit}</span>
@@ -211,7 +260,10 @@ const ProductCard = ({ product, viewMode = "grid" }: ProductCardProps) => {
                     </div>
 
                     {/* Quick Add to Cart Button */}
-                    <button className="p-2 bg-[#e8f8f0] hover:bg-[#13a855] text-[#13a855] hover:text-white rounded-lg active:scale-95 transition-all duration-200 cursor-pointer shadow-sm">
+                    <button
+                        onClick={() => onAddToCart(product)}
+                        className="p-2 bg-[#e8f8f0] hover:bg-[#13a855] text-[#13a855] hover:text-white rounded-lg active:scale-95 transition-all duration-200 cursor-pointer shadow-sm"
+                    >
                         <ShoppingCart className="w-4.5 h-4.5" />
                     </button>
                 </div>
@@ -238,6 +290,61 @@ const ItemProduct = ({
     totalPages,
     onPageChange,
 }: ItemProductProps) => {
+    const [toast, setToast] = useState<{
+        message: string;
+        type: "success" | "error";
+    } | null>(null);
+
+    const showToast = (message: string, type: "success" | "error") => {
+        setToast({ message, type });
+        setTimeout(() => setToast(null), 3000);
+    };
+
+    const handleAddToCart = async (product: Product) => {
+        const token = getCookie("access_token");
+
+        // 1. Call API
+        try {
+            await addToCartAPI(product.id, 1, token);
+        } catch (error) {
+            console.warn("Backend add to cart failed/missing. Falling back to local storage.", error);
+        }
+
+        // 2. Fallback to localStorage
+        if (typeof window !== "undefined") {
+            const localCart = localStorage.getItem("local_cart");
+            let cartItems: any[] = [];
+            if (localCart) {
+                try {
+                    cartItems = JSON.parse(localCart);
+                } catch (_) {}
+            }
+            if (!Array.isArray(cartItems)) {
+                cartItems = [];
+            }
+
+            const existingIndex = cartItems.findIndex((item: any) => item.id === product.id);
+            if (existingIndex > -1) {
+                cartItems[existingIndex].quantity += 1;
+            } else {
+                cartItems.push({
+                    id: product.id,
+                    name: product.name,
+                    category: product.category || "Nông sản sạch",
+                    price: product.salePrice,
+                    originalPrice: product.originalPrice,
+                    quantity: 1,
+                    image: product.image,
+                    unit: product.unit || "kg"
+                });
+            }
+
+            localStorage.setItem("local_cart", JSON.stringify(cartItems));
+            window.dispatchEvent(new Event("cart-updated"));
+        }
+
+        showToast(`Đã thêm "${product.name}" vào giỏ hàng thành công!`, "success");
+    };
 
     // Helper to generate page numbers list
     const getPageNumbers = () => {
@@ -252,6 +359,18 @@ const ItemProduct = ({
 
     return (
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex flex-col min-h-[500px]">
+            {toast && (
+                <div
+                    className={`animate-slide-in fixed top-4 right-4 z-50 flex items-center gap-3 rounded-xl border px-4.5 py-3 text-sm font-bold shadow-xl transition-all duration-300 ${
+                        toast.type === "success"
+                            ? "border-[#cbeed7] bg-[#e8f8f0] text-[#13a855]"
+                            : "border-red-100 bg-red-50 text-red-600"
+                    }`}
+                >
+                    <CheckCircle className="h-5 w-5" />
+                    <span>{toast.message}</span>
+                </div>
+            )}
             <div className="flex-grow">
                 {isLoading ? (
                     /* Loading Skeleton Grid */
@@ -270,13 +389,13 @@ const ItemProduct = ({
                     viewMode === "grid" ? (
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8">
                             {products.map((product) => (
-                                <ProductCard key={product.id} product={product} viewMode="grid" />
+                                <ProductCard key={product.id} product={product} viewMode="grid" onAddToCart={handleAddToCart} />
                             ))}
                         </div>
                     ) : (
                         <div className="flex flex-col gap-5">
                             {products.map((product) => (
-                                <ProductCard key={product.id} product={product} viewMode="list" />
+                                <ProductCard key={product.id} product={product} viewMode="list" onAddToCart={handleAddToCart} />
                             ))}
                         </div>
                     )

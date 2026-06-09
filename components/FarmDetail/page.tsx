@@ -34,7 +34,7 @@ export default function FarmDetailClient({ id }: { id: string }) {
     const [isLoading, setIsLoading] = useState(true);
 
     // YouTube states
-    const [activeTab, setActiveTab] = useState<"home" | "products" | "diary" | "about">("home");
+    const [activeTab, setActiveTab] = useState<"home" | "products" | "about">("home");
     const [isSubscribed, setIsSubscribed] = useState(false);
     const [isJoined, setIsJoined] = useState(false);
     const [likesCount, setLikesCount] = useState(0);
@@ -84,16 +84,21 @@ export default function FarmDetailClient({ id }: { id: string }) {
         fetchDetailData();
     }, [id]);
 
-    // Lọc sản phẩm thuộc nhà vườn này (dựa trên tên hoặc vị trí tương đương)
+    // Lọc sản phẩm thuộc nhà vườn này (dựa trên farm ID hoặc tên tương đương)
     const farmProducts = useMemo(() => {
         if (!farm) return [];
-        // Lọc theo ký tự gần đúng của tên nông dân
-        const nameKeywords = farm.name.split(" ").slice(-2).join(" ").toLowerCase();
-        return products.filter((p: any) =>
-            p.name?.toLowerCase().includes(nameKeywords) ||
-            p.farmer?.toLowerCase().includes(nameKeywords) ||
-            p.description?.toLowerCase().includes(nameKeywords)
-        );
+        return products.filter((p: any) => {
+            const pFarmId = p.cropLot?.farmId || p.cropLot?.farm_id || p.farmId || p.FarmID;
+            if (pFarmId && farm.id) {
+                return String(pFarmId) === String(farm.id);
+            }
+            const nameKeywords = farm.name.split(" ").slice(-2).join(" ").toLowerCase();
+            return (
+                p.name?.toLowerCase().includes(nameKeywords) ||
+                p.farmer?.toLowerCase().includes(nameKeywords) ||
+                p.description?.toLowerCase().includes(nameKeywords)
+            );
+        });
     }, [farm, products]);
 
     const handleShare = () => {
@@ -275,7 +280,6 @@ export default function FarmDetailClient({ id }: { id: string }) {
                 {[
                     { id: "home", label: "Trang chủ" },
                     { id: "products", label: "Sản phẩm" },
-                    { id: "diary", label: "Nhật ký nông hộ" },
                     { id: "about", label: "Giới thiệu" },
                 ].map((tab) => {
                     const isActive = activeTab === tab.id;
@@ -485,71 +489,7 @@ export default function FarmDetailClient({ id }: { id: string }) {
                     </div>
                 )}
 
-                {/* C. DIARY TAB */}
-                {activeTab === "diary" && (
-                    <div className="space-y-6 animate-fade-in">
-                        <h3 className="text-base sm:text-lg font-black text-gray-900 tracking-tight flex items-center gap-1.5">
-                            <Sparkles className="w-5 h-5 text-[#13a855]" />
-                            <span>Nhật Ký Lịch Trình Canh Tác Chi Tiết</span>
-                        </h3>
 
-                        {/* Custom timeline */}
-                        <div className="max-w-3xl space-y-6 relative before:absolute before:left-4 before:top-2 before:bottom-2 before:w-0.5 before:bg-gray-200">
-                            {[
-                                {
-                                    phase: "Vụ Mùa Dâu Tây Mỹ Đá - Giai đoạn 4: Thu hoạch",
-                                    date: "2026-06-01",
-                                    status: "Hoàn thành",
-                                    statusColor: "text-emerald-600 bg-emerald-50 border-emerald-200/60",
-                                    note: "Tiến hành thu hoạch đợt 1 các quả chín đỏ đạt đường kính 3cm trở lên. Đóng hộp mica trực tiếp tại vườn và vận chuyển nhanh bằng xe bảo ôn chuyên dụng."
-                                },
-                                {
-                                    phase: "Vụ Mùa Dâu Tây Mỹ Đá - Giai đoạn 3: Ra hoa & Kết trái",
-                                    date: "2026-05-15",
-                                    status: "Hoàn thành",
-                                    statusColor: "text-emerald-600 bg-emerald-50 border-emerald-200/60",
-                                    note: "Bổ sung lượng lân sinh học hữu cơ bón rễ. Cắt tỉa các lá già kém quang hợp và dọn dẹp các nhánh cỏ xung quanh luống trồng tránh rầy nâu."
-                                },
-                                {
-                                    phase: "Vụ Mùa Dâu Tây Mỹ Đá - Giai đoạn 2: Phát triển cây",
-                                    date: "2026-04-10",
-                                    status: "Hoàn thành",
-                                    statusColor: "text-emerald-600 bg-emerald-50 border-emerald-200/60",
-                                    note: "Cây phát triển chiều cao 15cm cứng cáp. Bắt đầu kích hoạt tưới nhỏ giọt tự động hẹn giờ định kỳ 30 phút mỗi sáng sớm."
-                                },
-                                {
-                                    phase: "Vụ Mùa Dâu Tây Mỹ Đá - Giai đoạn 1: Gieo hạt ươm giống",
-                                    date: "2026-03-01",
-                                    status: "Hoàn thành",
-                                    statusColor: "text-emerald-600 bg-emerald-50 border-emerald-200/60",
-                                    note: "Gieo mầm trong giá thể xơ dừa cao cấp đặt trong khay ươm nhà màng bảo hộ chống tia cực tím đạt tỷ lệ nảy mầm 96%."
-                                }
-                            ].map((lot, idx) => (
-                                <div key={idx} className="pl-10 relative flex flex-col sm:flex-row gap-3 sm:gap-6 items-start">
-                                    <div className="absolute left-2.5 top-1.5 w-3.5 h-3.5 rounded-full bg-[#13a855] border-4 border-[#f8faf9] shadow-md"></div>
-
-                                    <div className="flex-shrink-0 text-xs font-bold text-gray-400 pt-1">
-                                        {new Date(lot.date).toLocaleDateString("vi-VN", {
-                                            year: "numeric", month: "long", day: "numeric"
-                                        })}
-                                    </div>
-
-                                    <div className="bg-white border border-gray-200/80 p-4.5 rounded-2xl flex-1 space-y-2 shadow-sm">
-                                        <div className="flex flex-wrap items-center justify-between gap-2">
-                                            <h4 className="text-xs sm:text-sm font-black text-gray-900">{lot.phase}</h4>
-                                            <span className={`px-2 py-0.5 border rounded text-[9px] font-extrabold uppercase ${lot.statusColor}`}>
-                                                {lot.status}
-                                            </span>
-                                        </div>
-                                        <p className="text-xs text-gray-600 leading-relaxed font-medium">
-                                            {lot.note}
-                                        </p>
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-                    </div>
-                )}
 
                 {/* D. ABOUT TAB */}
                 {activeTab === "about" && (

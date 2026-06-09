@@ -1,12 +1,13 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { Star, ShoppingCart, Eye, Heart, Sparkles } from "lucide-react";
 import { productAPI } from "@/lib/_api/product";
 
 const TopSale = () => {
     const [topSaleProducts, setTopSaleProducts] = useState<any[]>([]);
     const [hoveredCard, setHoveredCard] = useState<number | null>(null);
+    const sectionRef = useRef<HTMLDivElement>(null);
 
     const formatPrice = (price: number) => {
         return new Intl.NumberFormat("vi-VN", {
@@ -28,9 +29,55 @@ const TopSale = () => {
         fetchProduct();
     }, []);
 
+    // Wheel event handler to jump sections
+    useEffect(() => {
+        let isScrolling = false;
+
+        const handleWheel = (e: WheelEvent) => {
+            if (isScrolling) return;
+
+            const rect = sectionRef.current?.getBoundingClientRect();
+            if (!rect) return;
+
+            // Check if this section is currently visible in the viewport
+            const isVisible = rect.top >= -50 && rect.bottom <= window.innerHeight + 50;
+
+            if (isVisible) {
+                if (e.deltaY > 0) {
+                    // Scroll down to TopFarmer
+                    const nextElement = sectionRef.current?.nextElementSibling;
+                    if (nextElement) {
+                        e.preventDefault();
+                        isScrolling = true;
+                        nextElement.scrollIntoView({ behavior: "smooth" });
+                        setTimeout(() => { isScrolling = false; }, 800);
+                    }
+                } else if (e.deltaY < 0) {
+                    // Scroll up to Banner
+                    const prevElement = sectionRef.current?.previousElementSibling;
+                    if (prevElement) {
+                        e.preventDefault();
+                        isScrolling = true;
+                        prevElement.scrollIntoView({ behavior: "smooth" });
+                        setTimeout(() => { isScrolling = false; }, 800);
+                    }
+                }
+            }
+        };
+
+        const element = sectionRef.current;
+        if (element) {
+            element.addEventListener("wheel", handleWheel, { passive: false });
+        }
+        return () => {
+            if (element) {
+                element.removeEventListener("wheel", handleWheel);
+            }
+        };
+    }, []);
 
     return (
-        <section className="w-full py-12 bg-white font-sans">
+        <section ref={sectionRef} className="w-full py-12 bg-white font-sans min-h-[600px]">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
                 {/* Header Section */}
@@ -69,9 +116,11 @@ const TopSale = () => {
                                                 Bán chạy
                                             </span>
                                         )}
-                                        <span className="px-2 py-0.5 text-[10px] font-bold text-white bg-[#13a855] rounded-md shadow-sm">
-                                            -{product.discountPercent}%
-                                        </span>
+                                        {product.discountPercent > 0 && (
+                                            <span className="px-2 py-0.5 text-[10px] font-bold text-white bg-[#13a855] rounded-md shadow-sm">
+                                                -{product.discountPercent}%
+                                            </span>
+                                        )}
                                     </div>
 
                                     {/* Quick Action Overlay (Fade in on hover) */}
@@ -116,9 +165,11 @@ const TopSale = () => {
                                     {/* Pricing and Unit */}
                                     <div className="flex items-end justify-between pt-2 mt-auto">
                                         <div className="flex flex-col">
-                                            <span className="text-xs text-gray-400 line-through font-medium leading-none">
-                                                {formatPrice(product.originalPrice)}
-                                            </span>
+                                            {product.discountPercent > 0 && (
+                                                <span className="text-xs text-gray-400 line-through font-medium leading-none">
+                                                    {formatPrice(product.originalPrice)}
+                                                </span>
+                                            )}
                                             <span className="text-base sm:text-lg font-black text-[#13a855] leading-tight">
                                                 {formatPrice(product.salePrice)}
                                                 <span className="text-xs text-gray-400 font-normal"> / {product.unit}</span>

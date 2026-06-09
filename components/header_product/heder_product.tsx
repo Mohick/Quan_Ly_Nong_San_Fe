@@ -1,16 +1,12 @@
 "use client";
 
-import React, { useEffect, useRef } from "react";
-import { Search, ChevronDown, Filter, X, Grid, List } from "lucide-react";
+import React, { useEffect, useRef, useState } from "react";
+import { ChevronDown, X, Grid, List, Check, RotateCcw } from "lucide-react";
 import gsap from "gsap";
 
 interface HeaderProductProps {
-  searchVal: string;
-  setSearchVal: (val: string) => void;
   selectedCategory: string;
   setSelectedCategory: (val: string) => void;
-  selectedFarmer: string;
-  setSelectedFarmer: (val: string) => void;
   minPrice: string;
   setMinPrice: (val: string) => void;
   maxPrice: string;
@@ -25,12 +21,8 @@ interface HeaderProductProps {
 }
 
 const HeaderProduct = ({
-  searchVal,
-  setSearchVal,
   selectedCategory,
   setSelectedCategory,
-  selectedFarmer,
-  setSelectedFarmer,
   minPrice,
   setMinPrice,
   maxPrice,
@@ -45,312 +37,274 @@ const HeaderProduct = ({
 }: HeaderProductProps) => {
   // GSAP animation refs
   const containerRef = useRef<HTMLDivElement>(null);
-  const filterRowRef = useRef<HTMLDivElement>(null);
-  const tagsRowRef = useRef<HTMLDivElement>(null);
-  const sortRowRef = useRef<HTMLDivElement>(null);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  // States to manage popover dropdowns (similar to TGDD overlay triggers)
+  const [activeDropdown, setActiveDropdown] = useState<"category" | "price" | null>(null);
+
+  // Custom local states for range inputs inside popover
+  const [localMinPrice, setLocalMinPrice] = useState(minPrice);
+  const [localMaxPrice, setLocalMaxPrice] = useState(maxPrice);
 
   useEffect(() => {
-    // GSAP Entrance Animations
-    const tl = gsap.timeline({ defaults: { ease: "power3.out" } });
-
-    tl.fromTo(
+    // Entrance animations
+    gsap.fromTo(
       containerRef.current,
-      { y: -15, opacity: 0 },
-      { y: 0, opacity: 1, duration: 0.45 }
-    )
-      .fromTo(
-        filterRowRef.current ? filterRowRef.current.children : [],
-        { y: 10, opacity: 0 },
-        { y: 0, opacity: 1, stagger: 0.03, duration: 0.4 },
-        "-=0.2"
-      )
-      .fromTo(
-        tagsRowRef.current,
-        { opacity: 0, x: -8 },
-        { opacity: 1, x: 0, duration: 0.3 },
-        "-=0.1"
-      )
-      .fromTo(
-        sortRowRef.current,
-        { opacity: 0, y: 8 },
-        { opacity: 1, y: 0, duration: 0.3 },
-        "-=0.1"
-      );
+      { y: -10, opacity: 0 },
+      { y: 0, opacity: 1, duration: 0.4, ease: "power2.out" }
+    );
   }, []);
+
+  // Close dropdown on click outside
+  useEffect(() => {
+    const handleOutsideClick = (e: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+        setActiveDropdown(null);
+      }
+    };
+    document.addEventListener("mousedown", handleOutsideClick);
+    return () => document.removeEventListener("mousedown", handleOutsideClick);
+  }, []);
+
+  // Category options list
+  const categories = [
+    "Trái cây cao cấp",
+    "Đặc sản Đà Lạt",
+    "Trái cây nhiệt đới",
+    "Đồ khô đóng gói",
+    "Rau củ hữu cơ",
+    "Gia vị & Thảo mộc"
+  ];
+
+  // Price selections
+  const quickPrices = [
+    { label: "Dưới 50.000đ", min: "", max: "50000" },
+    { label: "Từ 50.000đ - 100.000đ", min: "50000", max: "100000" },
+    { label: "Trên 100.000đ", min: "100000", max: "" }
+  ];
 
   // Compute active filter tags dynamically based on props
   const activeTags: { id: string; label: string }[] = [];
   if (selectedCategory !== "all") {
     activeTags.push({ id: "category", label: `Danh mục: ${selectedCategory}` });
   }
-  if (selectedFarmer !== "all") {
-    const farmerLabel =
-      selectedFarmer === "dalat"
-        ? "Đà Lạt"
-        : selectedFarmer === "mientay"
-        ? "Miền Tây"
-        : "HCM";
-    activeTags.push({ id: "farmer", label: `Nhà vườn: ${farmerLabel}` });
-  }
   if (minPrice || maxPrice) {
     const minStr = minPrice ? new Intl.NumberFormat("vi-VN").format(Number(minPrice)) + "đ" : "0đ";
     const maxStr = maxPrice ? new Intl.NumberFormat("vi-VN").format(Number(maxPrice)) + "đ" : "Trở lên";
-    activeTags.push({ id: "price", label: `Giá: ${minStr} – ${maxStr}` });
+    activeTags.push({ id: "price", label: `Giá: ${minStr} - ${maxStr}` });
   }
-  if (searchVal) {
-    activeTags.push({ id: "search", label: `Từ khóa: "${searchVal}"` });
-  }
-
   const removeTag = (id: string) => {
-    const element = document.getElementById(`tag-${id}`);
-    const clearState = () => {
-      if (id === "category") setSelectedCategory("all");
-      if (id === "farmer") setSelectedFarmer("all");
-      if (id === "price") {
-        setMinPrice("");
-        setMaxPrice("");
-      }
-      if (id === "search") setSearchVal("");
-    };
-
-    if (element) {
-      gsap.to(element, {
-        scale: 0.9,
-        opacity: 0,
-        width: 0,
-        marginRight: 0,
-        padding: 0,
-        duration: 0.2,
-        onComplete: () => {
-          clearState();
-        },
-      });
-    } else {
-      clearState();
+    if (id === "category") setSelectedCategory("all");
+    if (id === "price") {
+      setMinPrice("");
+      setMaxPrice("");
     }
   };
 
-  const handleFilterClick = () => {
-    // GSAP button click effect
-    const btn = document.getElementById("filter-submit-btn");
-    if (btn) {
-      gsap.to(btn, { scale: 0.97, duration: 0.08, yoyo: true, repeat: 1 });
+  const handleResetAll = () => {
+    if (onResetFilters) {
+      onResetFilters();
+    } else {
+      setSelectedCategory("all");
+      setMinPrice("");
+      setMaxPrice("");
     }
-    if (onFilterSubmit) onFilterSubmit();
+    setActiveDropdown(null);
   };
 
-  const handleResetFilters = () => {
-    // GSAP clean fade transition for tags
-    const tags = document.querySelectorAll(".filter-tag-pill");
-    if (tags.length > 0) {
-      gsap.to(tags, {
-        scale: 0.95,
-        opacity: 0,
-        stagger: 0.03,
-        duration: 0.15,
-        onComplete: () => {
-          if (onResetFilters) onResetFilters();
-        },
-      });
-    } else {
-      if (onResetFilters) onResetFilters();
+  const handleCustomPriceSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    setMinPrice(localMinPrice);
+    setMaxPrice(localMaxPrice);
+    setActiveDropdown(null);
+  };
+
+  const selectQuickPrice = (min: string, max: string) => {
+    setMinPrice(min);
+    setMaxPrice(max);
+    setActiveDropdown(null);
+  };
+
+  const togglePriceDropdown = () => {
+    const isOpening = activeDropdown !== "price";
+    if (isOpening) {
+      setLocalMinPrice(minPrice);
+      setLocalMaxPrice(maxPrice);
     }
+    setActiveDropdown(isOpening ? "price" : null);
   };
 
   return (
-    <div 
+    <div
       ref={containerRef}
-      className="w-full bg-white rounded-lg border border-gray-200 shadow-md overflow-hidden font-sans select-none max-w-7xl mx-auto my-6"
+      className="relative z-30 mx-auto my-3 w-full max-w-7xl select-none rounded-xl border border-gray-200/80 bg-[#fcfdfe] p-3 font-sans shadow-sm"
     >
-      <div className="p-5 space-y-5">
-        
-        {/* Input Filters Grid */}
-        <div 
-          ref={filterRowRef} 
-          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-3 items-center"
-        >
-          {/* Search Input */}
-          <div className="lg:col-span-3 relative">
-            <input
-              type="text"
-              value={searchVal}
-              onChange={(e) => setSearchVal(e.target.value)}
-              placeholder="Tìm tên sản phẩm..."
-              className="w-full bg-[#f4fbf7]/80 border border-[#c2ecd3] rounded-md py-2 px-3 text-xs sm:text-sm text-gray-800 placeholder-[#8ca496] focus:outline-none focus:ring-1 focus:ring-[#13a855] focus:border-[#13a855] transition-all"
-            />
-            <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-          </div>
+      <div className="space-y-3">
 
-          {/* Category Dropdown - Synchronized with product.json */}
-          <div className="lg:col-span-3 relative">
-            <select
-              value={selectedCategory}
-              onChange={(e) => setSelectedCategory(e.target.value)}
-              className="w-full bg-white border border-gray-300 hover:border-[#13a855]/40 rounded-md py-2.5 px-3 text-xs sm:text-sm text-gray-700 focus:outline-none focus:border-[#13a855] focus:ring-1 focus:ring-[#13a855] appearance-none transition-all cursor-pointer font-bold"
-            >
-              <option value="all">Tất cả danh mục</option>
-              <option value="Trái cây cao cấp">Trái cây cao cấp</option>
-              <option value="Đặc sản Đà Lạt">Đặc sản Đà Lạt</option>
-              <option value="Trái cây nhiệt đới">Trái cây nhiệt đới</option>
-              <option value="Đồ khô đóng gói">Đồ khô đóng gói</option>
-              <option value="Rau củ hữu cơ">Rau củ hữu cơ</option>
-              <option value="Gia vị & Thảo mộc">Gia vị & Thảo mộc</option>
-            </select>
-            <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
-          </div>
+        <div ref={dropdownRef} className="space-y-4">
+            <div className="flex flex-wrap items-center justify-between gap-3">
 
-          {/* Farmer Dropdown */}
-          <div className="lg:col-span-3 relative">
-            <select
-              value={selectedFarmer}
-              onChange={(e) => setSelectedFarmer(e.target.value)}
-              className="w-full bg-white border border-gray-300 hover:border-[#13a855]/40 rounded-md py-2.5 px-3 text-xs sm:text-sm text-gray-700 focus:outline-none focus:border-[#13a855] focus:ring-1 focus:ring-[#13a855] appearance-none transition-all cursor-pointer font-bold"
-            >
-              <option value="all">Tất cả nhà vườn</option>
-              <option value="dalat">Nhà vườn Đà Lạt</option>
-              <option value="hcm">Nhà vườn HCM</option>
-              <option value="mientay">Hợp tác xã Miền Tây</option>
-            </select>
-            <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
-          </div>
+              {/* Price Range Trigger Pill */}
+              <div className="relative">
+                <button
+                  type="button"
+                  onClick={togglePriceDropdown}
+                  className={`flex items-center gap-1.5 px-3.5 py-2 border rounded-xl text-xs font-extrabold transition-all cursor-pointer hover:bg-gray-50 ${minPrice || maxPrice
+                    ? "border-[#13a855] bg-[#e8f8f0] text-[#13a855]"
+                    : "border-gray-250 text-gray-700 bg-white"
+                    }`}
+                >
+                  <span>Mức giá: {minPrice || maxPrice ? "Đã lọc theo giá" : "Tất cả mức giá"}</span>
+                  <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-200 ${activeDropdown === "price" ? "rotate-180" : ""}`} />
+                </button>
 
-          {/* Price Range inputs */}
-          <div className="lg:col-span-3 flex items-center gap-2">
-            <span className="text-xs font-bold text-gray-500 whitespace-nowrap">Giá:</span>
-            <input
-              type="number"
-              value={minPrice}
-              onChange={(e) => setMinPrice(e.target.value)}
-              placeholder="Từ (đ)"
-              className="w-full bg-white border border-gray-300 rounded-md py-2 px-3 text-xs sm:text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:border-[#13a855] focus:ring-1 focus:ring-[#13a855] transition-all"
-            />
-            <span className="text-gray-300">—</span>
-            <input
-              type="number"
-              value={maxPrice}
-              onChange={(e) => setMaxPrice(e.target.value)}
-              placeholder="Đến (đ)"
-              className="w-full bg-white border border-gray-300 rounded-md py-2 px-3 text-xs sm:text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:border-[#13a855] focus:ring-1 focus:ring-[#13a855] transition-all"
-            />
-          </div>
+                {/* Price Range Popover Menu */}
+                {activeDropdown === "price" && (
+                  <div className="absolute left-0 mt-2 w-72 bg-white border border-gray-200 rounded-2xl shadow-xl p-4.5 z-50 space-y-4 animate-fade-in">
+                    <h4 className="text-[10px] font-black uppercase text-gray-400 tracking-wider">Lọc nhanh theo giá</h4>
+
+                    <div className="flex flex-col gap-1.5">
+                      {quickPrices.map((qp) => {
+                        const isActive = minPrice === qp.min && maxPrice === qp.max;
+                        return (
+                          <button
+                            key={qp.label}
+                            type="button"
+                            onClick={() => selectQuickPrice(qp.min, qp.max)}
+                            className={`text-left text-xs p-2 rounded-xl transition-colors font-semibold ${isActive ? "bg-[#e8f8f0] text-[#13a855] font-extrabold" : "hover:bg-gray-50 text-gray-700"
+                              }`}
+                          >
+                            {qp.label}
+                          </button>
+                        );
+                      })}
+                    </div>
+
+                    <div className="border-t border-gray-100 pt-3.5 space-y-3">
+                      <h4 className="text-[10px] font-black uppercase text-gray-400 tracking-wider">Nhập khoảng giá chi tiết</h4>
+                      <form onSubmit={handleCustomPriceSubmit} className="space-y-3.5">
+                        <div className="flex items-center gap-2">
+                          <input
+                            type="number"
+                            value={localMinPrice}
+                            onChange={(e) => setLocalMinPrice(e.target.value)}
+                            placeholder="Từ (đ)"
+                            className="w-full bg-gray-50 border border-gray-200 rounded-xl py-1.5 px-3 text-xs focus:outline-none focus:border-[#13a855]"
+                          />
+                          <span className="text-gray-300">—</span>
+                          <input
+                            type="number"
+                            value={localMaxPrice}
+                            onChange={(e) => setLocalMaxPrice(e.target.value)}
+                            placeholder="Đến (đ)"
+                            className="w-full bg-gray-50 border border-gray-200 rounded-xl py-1.5 px-3 text-xs focus:outline-none focus:border-[#13a855]"
+                          />
+                        </div>
+                        <div className="flex gap-2">
+                          <button
+                            type="button"
+                            onClick={() => { setMinPrice(""); setMaxPrice(""); setLocalMinPrice(""); setLocalMaxPrice(""); setActiveDropdown(null); }}
+                            className="flex-1 py-2 text-xs font-bold border border-gray-350 hover:bg-gray-50 text-gray-700 rounded-xl transition-all"
+                          >
+                            Xóa
+                          </button>
+                          <button
+                            type="submit"
+                            className="flex-1 py-2 text-xs font-bold bg-[#13a855] text-white rounded-xl hover:bg-[#0f8b44] transition-all shadow-sm"
+                          >
+                            Áp dụng
+                          </button>
+                        </div>
+                      </form>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Quick reset button */}
+              {activeTags.length > 0 && (
+                <button
+                  type="button"
+                  onClick={handleResetAll}
+                  className="flex items-center gap-1 px-3 py-2 border border-dashed border-red-300 bg-red-50/40 text-red-600 rounded-xl text-xs font-bold hover:bg-red-50 hover:border-red-400 active:scale-95 transition-all cursor-pointer"
+                >
+                  <RotateCcw className="w-3.5 h-3.5" />
+                  <span>Xóa bộ lọc</span>
+                </button>
+              )}
+            </div>
+
+            {/* TGDD sorting row style */}
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pt-3 border-t border-gray-100">
+              <div className="flex flex-wrap items-center gap-1.5 text-xs">
+                <span className="font-bold text-gray-400 mr-2">Sắp xếp theo:</span>
+                {[
+                  { id: "newest", label: "Mới nhất" },
+                  { id: "bestseller", label: "Bán chạy" },
+                  { id: "price_asc", label: "Giá thấp đến cao" },
+                  { id: "price_desc", label: "Giá cao đến thấp" }
+                ].map((sort) => {
+                  const isActive = activeSort === sort.id;
+                  return (
+                    <button
+                      key={sort.id}
+                      onClick={() => setActiveSort(sort.id)}
+                      className={`px-3.5 py-2 rounded-xl font-bold transition-all duration-150 cursor-pointer border flex items-center gap-1 ${isActive
+                        ? "bg-[#e8f8f0] text-[#13a855] border-[#13a855] shadow-sm font-extrabold"
+                        : "bg-white text-gray-550 border-gray-250 hover:border-gray-400"
+                        }`}
+                    >
+                      {isActive && <Check className="w-3.5 h-3.5" />}
+                      <span>{sort.label}</span>
+                    </button>
+                  );
+                })}
+              </div>
+
+              {/* Grid/List View Toggles */}
+              <div className="flex items-center bg-white border border-gray-250 rounded-xl p-1 shadow-sm gap-0.5 self-end sm:self-auto">
+                <button
+                  onClick={() => setViewMode("grid")}
+                  className={`p-1.5 rounded-lg transition-colors cursor-pointer ${viewMode === "grid"
+                    ? "bg-[#e8f8f0] text-[#13a855]"
+                    : "text-gray-400 hover:text-gray-600"
+                    }`}
+                >
+                  <Grid className="w-4 h-4" />
+                </button>
+                <button
+                  onClick={() => setViewMode("list")}
+                  className={`p-1.5 rounded-lg transition-colors cursor-pointer ${viewMode === "list"
+                    ? "bg-[#e8f8f0] text-[#13a855]"
+                    : "text-gray-400 hover:text-gray-600"
+                    }`}
+                >
+                  <List className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
         </div>
 
-        {/* Action Buttons Row */}
-        <div className="flex items-center gap-3 border-b border-gray-100 pb-4.5">
-          <button
-            id="filter-submit-btn"
-            onClick={handleFilterClick}
-            className="flex items-center gap-2 px-5.5 py-2.5 bg-[#13a855] hover:bg-[#0f8b44] text-white font-bold rounded-lg active:scale-97 shadow-sm text-xs sm:text-sm transition-all cursor-pointer"
-          >
-            <Filter className="w-4 h-4" />
-            <span>Lọc</span>
-          </button>
-          <button
-            onClick={handleResetFilters}
-            className="px-5 py-2.5 bg-white border border-gray-350 hover:border-gray-400 text-gray-650 hover:text-gray-800 font-bold rounded-lg active:scale-97 text-xs sm:text-sm transition-all cursor-pointer shadow-sm"
-          >
-            Xóa bộ lọc
-          </button>
-        </div>
-
-        {/* Active Filters Badges */}
+        {/* Dynamic active filter tag badges underneath (TGDD style) */}
         {activeTags.length > 0 && (
-          <div 
-            ref={tagsRowRef} 
-            className="flex flex-wrap items-center gap-2 text-xs py-0.5"
-          >
-            <span className="font-bold text-gray-400 mr-1.5">Đang lọc:</span>
+          <div className="flex flex-wrap items-center gap-1.5 text-xs py-1 border-t border-gray-100 pt-3">
+            <span className="font-bold text-gray-400 mr-1.5">Đang lọc theo:</span>
             {activeTags.map((tag) => (
               <div
                 key={tag.id}
-                id={`tag-${tag.id}`}
-                className="filter-tag-pill flex items-center gap-1.5 px-3 py-1 bg-[#e8f8f0] text-[#13a855] border border-[#cbeed7] rounded-md font-bold shadow-sm"
+                className="flex items-center gap-1.5 px-3 py-1 bg-[#e8f8f0] text-[#13a855] border border-[#cbeed7] rounded-full font-extrabold shadow-sm"
               >
                 <span>{tag.label}</span>
                 <button
                   onClick={() => removeTag(tag.id)}
-                  className="hover:bg-[#13a855]/10 p-0.5 rounded-full text-[#13a855] transition-colors cursor-pointer"
+                  className="hover:bg-[#13a855]/20 p-0.5 rounded-full text-[#13a855] transition-colors cursor-pointer"
                 >
-                  <X className="w-3.5 h-3.5" />
+                  <X className="w-3 h-3" />
                 </button>
               </div>
             ))}
           </div>
         )}
-
-        {/* Sort & Grid Layout options */}
-        <div 
-          ref={sortRowRef} 
-          className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pt-1.5 border-t border-gray-100"
-        >
-          <div className="flex flex-wrap items-center gap-2 text-xs">
-            <span className="font-bold text-gray-400 mr-2.5">Sắp xếp:</span>
-            <button
-              onClick={() => setActiveSort("newest")}
-              className={`px-4 py-2.5 rounded-md font-bold transition-all duration-150 cursor-pointer ${
-                activeSort === "newest"
-                  ? "bg-[#e8f8f0] text-[#13a855] border-2 border-[#13a855] scale-102 shadow-sm"
-                  : "bg-white text-gray-500 border border-gray-300 hover:border-gray-400"
-              }`}
-            >
-              Mới nhất
-            </button>
-            <button
-              onClick={() => setActiveSort("bestseller")}
-              className={`px-4 py-2.5 rounded-md font-bold transition-all duration-150 cursor-pointer ${
-                activeSort === "bestseller"
-                  ? "bg-[#e8f8f0] text-[#13a855] border-2 border-[#13a855] scale-102 shadow-sm"
-                  : "bg-white text-gray-500 border border-gray-300 hover:border-gray-400"
-              }`}
-            >
-              Bán chạy
-            </button>
-            <button
-              onClick={() => setActiveSort("price_asc")}
-              className={`px-4 py-2.5 rounded-md font-bold transition-all duration-150 cursor-pointer ${
-                activeSort === "price_asc"
-                  ? "bg-[#e8f8f0] text-[#13a855] border-2 border-[#13a855] scale-102 shadow-sm"
-                  : "bg-white text-gray-500 border border-gray-300 hover:border-gray-400"
-              }`}
-            >
-              Giá tăng dần
-            </button>
-            <button
-              onClick={() => setActiveSort("price_desc")}
-              className={`px-4 py-2.5 rounded-md font-bold transition-all duration-150 cursor-pointer ${
-                activeSort === "price_desc"
-                  ? "bg-[#e8f8f0] text-[#13a855] border-2 border-[#13a855] scale-102 shadow-sm"
-                  : "bg-white text-gray-500 border border-gray-300 hover:border-gray-400"
-              }`}
-            >
-              Giá giảm dần
-            </button>
-          </div>
-
-          {/* Grid/List View Toggles */}
-          <div className="flex items-center bg-white border border-gray-250 rounded-md p-1 shadow-sm gap-0.5 self-end sm:self-auto">
-            <button
-              onClick={() => setViewMode("grid")}
-              className={`p-1.5 rounded transition-colors cursor-pointer ${
-                viewMode === "grid"
-                  ? "bg-[#e8f8f0] text-[#13a855]"
-                  : "text-gray-400 hover:text-gray-600"
-              }`}
-            >
-              <Grid className="w-4 h-4" />
-            </button>
-            <button
-              onClick={() => setViewMode("list")}
-              className={`p-1.5 rounded transition-colors cursor-pointer ${
-                viewMode === "list"
-                  ? "bg-[#e8f8f0] text-[#13a855]"
-                  : "text-gray-400 hover:text-gray-600"
-              }`}
-            >
-              <List className="w-4 h-4" />
-            </button>
-          </div>
-        </div>
 
       </div>
     </div>

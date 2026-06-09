@@ -2,7 +2,8 @@
 
 import HeaderProduct from "@/components/header_product/heder_product";
 import ItemProduct, { Product } from "@/components/item_product/item_product";
-import { productAPI } from "@/lib/_api/product";
+import { getProductListAPI } from "@/lib/_api/product";
+import { FarmAPI } from "@/lib/_api/farm";
 import { useEffect, useState } from "react";
 
 function getCookie(name: string): string | undefined {
@@ -18,9 +19,7 @@ export default function Products() {
   const [isLoading, setIsLoading] = useState(true);
 
   // Filter, sort, view and pagination states
-  const [searchVal, setSearchVal] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("all");
-  const [selectedFarmer, setSelectedFarmer] = useState("all");
   const [minPrice, setMinPrice] = useState("");
   const [maxPrice, setMaxPrice] = useState("");
   const [activeSort, setActiveSort] = useState("newest");
@@ -28,17 +27,33 @@ export default function Products() {
   
   // Pagination
   const [currentPage, setCurrentPage] = useState(1);
-  const ITEMS_PER_PAGE = 20;
+  const [totalPages, setTotalPages] = useState(1);
 
-  // Fetch products on load
+  // Fetch products on load and page change
   useEffect(() => {
     const fetchProducts = async () => {
+      setIsLoading(true);
       try {
         const token = getCookie("access_token");
-        const res = await productAPI(token);
-        const data = Array.isArray(res.data) ? res.data : [];
-        setProducts(data);
-        console.log("Danh sách sản phẩm:", data);
+        const [res, farmRes] = await Promise.all([
+          getProductListAPI(currentPage, token),
+          FarmAPI()
+        ]);
+        const farmList = Array.isArray(farmRes.data) ? farmRes.data : [];
+        const mappedProducts = (res.data || []).map((p: any) => {
+          const farmId = p.cropLot?.farmId || p.cropLot?.farm_id || p.farmId || p.FarmID;
+          const matchedFarm = farmList.find((f: any) => (f.id || f.ID) === farmId);
+          if (matchedFarm) {
+            return {
+              ...p,
+              farmName: matchedFarm.name || matchedFarm.Name || matchedFarm.farm_name || matchedFarm.FarmName
+            };
+          }
+          return p;
+        });
+        setProducts(mappedProducts);
+        setTotalPages(res.totalPages || 1);
+        console.log("Danh sách sản phẩm trang", currentPage, ":", mappedProducts);
       } catch (error) {
         console.error("Error fetching products:", error);
       } finally {
@@ -46,71 +61,27 @@ export default function Products() {
       }
     };
     fetchProducts();
-  }, []);
+  }, [currentPage]);
 
   // Reset filters handler
   const handleResetFilters = () => {
-    setSearchVal("");
     setSelectedCategory("all");
-    setSelectedFarmer("all");
     setMinPrice("");
     setMaxPrice("");
   };
 
-  // Reset to page 1 if any filter or search changes
+  // Reset to page 1 if any filter changes
   useEffect(() => {
     setCurrentPage(1);
-  }, [searchVal, selectedCategory, selectedFarmer, minPrice, maxPrice, activeSort]);
-
-  // Helper function to check if a product belongs to a specific region/farmer choice
-  const matchesFarmer = (product: Product, farmerOption: string) => {
-    if (farmerOption === "all") return true;
-    
-    const nameLower = product.name.toLowerCase();
-    const categoryLower = product.category.toLowerCase();
-    
-    const isDalat = 
-      nameLower.includes("đà lạt") || 
-      nameLower.includes("cầu đất") || 
-      categoryLower.includes("đà lạt");
-      
-    const isMienTay = 
-      nameLower.includes("miền tây") || 
-      nameLower.includes("bến tre") || 
-      nameLower.includes("u minh") ||
-      nameLower.includes("huế");
-
-    if (farmerOption === "dalat") {
-      return isDalat;
-    }
-    if (farmerOption === "mientay") {
-      return isMienTay;
-    }
-    if (farmerOption === "hcm") {
-      return !isDalat && !isMienTay;
-    }
-    return true;
-  };
+  }, [selectedCategory, minPrice, maxPrice, activeSort]);
 
   // 1. Filter and sort entire products array first
   const filteredProducts = products
     .filter((product) => {
-      // Search term match
-      if (searchVal) {
-        const query = searchVal.toLowerCase();
-        const matchesSearch =
-          product.name.toLowerCase().includes(query) ||
-          product.category.toLowerCase().includes(query);
-        if (!matchesSearch) return false;
-      }
-
       // Category match
       if (selectedCategory !== "all") {
         if (product.category !== selectedCategory) return false;
       }
-
-      // Farmer / Region match
-      if (!matchesFarmer(product, selectedFarmer)) return false;
 
       // Min Price match
       if (minPrice) {
@@ -145,20 +116,14 @@ export default function Products() {
       return 0;
     });
 
-  // 2. Paginate products
-  const totalPages = Math.ceil(filteredProducts.length / ITEMS_PER_PAGE);
-  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
-  const paginatedProducts = filteredProducts.slice(startIndex, startIndex + ITEMS_PER_PAGE);
+  // 2. Products are already paginated by the backend, we just display the filtered/sorted results of the current page
+  const paginatedProducts = filteredProducts;
 
   return (
     <div className="w-full bg-gray-50/30 min-h-screen">
       <HeaderProduct
-        searchVal={searchVal}
-        setSearchVal={setSearchVal}
         selectedCategory={selectedCategory}
         setSelectedCategory={setSelectedCategory}
-        selectedFarmer={selectedFarmer}
-        setSelectedFarmer={setSelectedFarmer}
         minPrice={minPrice}
         setMinPrice={setMinPrice}
         maxPrice={maxPrice}

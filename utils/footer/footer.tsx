@@ -18,21 +18,12 @@ const Footer = () => {
     <footer className="w-full bg-[#eaf6ed] text-[#334e40] py-12 md:py-16 font-sans">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-12">
-          
+
           {/* Logo and Intro Column */}
           <div className="space-y-4">
-            <Link href="/" className="flex items-center gap-3 select-none">
-              <div className="relative flex items-center justify-center w-9 h-9 bg-white p-1 rounded shadow-sm">
-                {/* 3D Isometric Hexagon Logo */}
-                <svg className="w-8 h-8" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M18 3.5L4 11.5V27.5L18 35.5V19.5L18 3.5Z" fill="#0891b2" />
-                  <path d="M18 3.5L32 11.5V27.5L18 35.5V19.5L18 3.5Z" fill="#0ea5e9" opacity="0.9" />
-                  <path d="M18 3.5L32 11.5L25 15.5L11 7.5L18 3.5Z" fill="#f97316" />
-                  <path d="M18 19.5L32 11.5L18 3.5L4 11.5L18 19.5Z" stroke="white" strokeWidth="1.5" strokeLinejoin="round" />
-                  <path d="M18 19.5V35.5" stroke="white" strokeWidth="1.5" />
-                </svg>
-              </div>
-              <span className="font-extrabold text-[#0a5c36] text-xl tracking-wider">
+            <Link href="/" className="flex shrink-0 items-center gap-2">
+              <img src="/logo.svg" alt="PIONE" className="h-12 w-12 object-contain" />
+              <span className="font-extrabold text-[#0a5c36] text-xl tracking-wider select-none">
                 PIONE GROUP
               </span>
             </Link>
@@ -49,8 +40,8 @@ const Footer = () => {
             <ul className="space-y-2.5">
               {navLinks.map((link) => (
                 <li key={link.name}>
-                  <Link 
-                    href={link.href} 
+                  <Link
+                    href={link.href}
                     className="text-sm text-[#4a5d52] hover:text-[#13a855] transition-colors duration-200"
                   >
                     {link.name}

@@ -1,11 +1,12 @@
 "use client";
 
 import { Suspense, useEffect, useState } from "react";
-import { useSearchParams, useRouter } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, Loader2 } from "lucide-react";
 import ProductDetailView, { Product } from "@/components/productdetail/page";
-import { productAPI } from "@/lib/_api/product";
+import { getProductDetailAPI } from "@/lib/_api/product";
+import { FarmAPI } from "@/lib/_api/farm";
 
 function getCookie(name: string): string | undefined {
   if (typeof document === "undefined") return undefined;
@@ -17,25 +18,31 @@ function getCookie(name: string): string | undefined {
 
 function ProductDetailContent() {
   const searchParams = useSearchParams();
-  const router = useRouter();
   const idParam = searchParams.get("id");
   const [product, setProduct] = useState<Product | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(Boolean(idParam));
 
   useEffect(() => {
-    if (!idParam) {
-      setIsLoading(false);
-      return;
-    }
+    if (!idParam) return;
 
     const fetchProduct = async () => {
       try {
         const token = getCookie("access_token");
-        // Get all products to find the target product matching ID
-        const res = await productAPI(token);
-        const productsList: Product[] = Array.isArray(res.data) ? res.data : [];
-        const found = productsList.find((p) => String(p.id) === idParam);
-        setProduct(found || null);
+        // Fetch product and farms together
+        const [res, farmRes] = await Promise.all([
+          getProductDetailAPI(idParam, token),
+          FarmAPI()
+        ]);
+        const pData = res.data as any;
+        if (pData) {
+          const farmId = pData.cropLot?.farmId || pData.cropLot?.farm_id || pData.farmId || pData.FarmID;
+          const farmList = Array.isArray(farmRes.data) ? farmRes.data : [];
+          const matchedFarm = farmList.find((f: any) => String(f.id || f.ID) === String(farmId));
+          if (matchedFarm) {
+            pData.farmName = matchedFarm.name || matchedFarm.Name || matchedFarm.farm_name || matchedFarm.FarmName;
+          }
+        }
+        setProduct(pData || null);
       } catch (error) {
         console.error("Error fetching product details:", error);
       } finally {
@@ -71,7 +78,7 @@ function ProductDetailContent() {
     );
   }
 
-  return <ProductDetailView product={product} />;
+  return <ProductDetailView key={product.id} product={product} />;
 }
 
 export default function ProductDetailPage() {

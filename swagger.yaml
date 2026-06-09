@@ -1,0 +1,1873 @@
+openapi: 3.0.3
+info:
+  title: Quan Ly Nong San API
+  version: 1.0.0
+  description: API documentation generated from the currently registered Gin routers.
+servers:
+  - url: http://localhost:{port}
+    variables:
+      port:
+        default: "8080"
+tags:
+  - name: Health
+  - name: Auth
+  - name: Farms
+  - name: CropLots
+  - name: CareProcess
+  - name: Products
+  - name: Discounts
+
+paths:
+  /api/v1/:
+    get:
+      tags:
+        - Health
+      summary: Check API status
+      responses:
+        "200":
+          description: API is running
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: Hello World
+
+  /api/v1/auth/login:
+    post:
+      tags:
+        - Auth
+      summary: Login or create a user by email
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginRequest"
+            examples:
+              default:
+                value:
+                  full_name: Nguyen Van A
+                  email: user@example.com
+                  avatar_url: https://example.com/avatar.png
+      responses:
+        "200":
+          description: Login successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LoginResponse"
+        "400":
+          description: Invalid body or repository error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Cannot generate access token
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: Cannot create user
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "503":
+          description: Database repository is not initialized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /api/v1/auth/auto-login:
+    get:
+      tags:
+        - Auth
+      summary: Get current user from bearer token
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Auto login successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AutoLoginResponse"
+        "400":
+          description: Repository error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Unauthorized, token expired, or invalid token
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: Email is missing or invalid in request context
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "503":
+          description: Database repository is not initialized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /api/v1/farms/new-farm:
+    post:
+      tags:
+        - Farms
+      summary: Create a new farm
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              $ref: "#/components/schemas/CreateFarmRequest"
+      responses:
+        "200":
+          description: Farm created successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+        "400":
+          description: Invalid form data, missing image, user not found, or database error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MessageResponse"
+        "401":
+          description: Unauthorized, token expired, or invalid token
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: Email is missing or invalid in request context, or upload failed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /api/v1/farms/get-one:
+    get:
+      tags:
+        - Farms
+      summary: Get current user's farm
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Farm fetched successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FarmResponse"
+        "400":
+          description: Cannot find farm data
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MessageResponse"
+        "401":
+          description: Unauthorized, token expired, or invalid token
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /api/v1/farms/get-all:
+    get:
+      tags:
+        - Farms
+      summary: Get all farms
+      responses:
+        "200":
+          description: Farms fetched successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FarmListResponse"
+        "400":
+          description: Cannot find farm data
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MessageResponse"
+
+  /api/v1/farms/new-crop-lot:
+    post:
+      tags:
+        - CropLots
+      summary: Create a new crop lot
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateCropLotRequest"
+            examples:
+              default:
+                value:
+                  name: Lo rau 1
+                  area: 1000
+                  area_unit: M2
+                  tree_count: 200
+                  start_date: "2026-06-01T00:00:00Z"
+                  expected_harvest_date: "2026-09-01T00:00:00Z"
+                  status: PLANNING
+                  note: Ghi chu
+      responses:
+        "201":
+          description: Crop lot created successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CreateCropLotResponse"
+        "400":
+          description: Invalid request body or user has no farm
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MessageResponse"
+        "401":
+          description: Unauthorized or invalid token
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: Cannot create crop lot or cannot check user's farm
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /api/v1/crop-lot/create:
+    post:
+      tags:
+        - CropLots
+      summary: Create a new crop lot
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateCropLotRequest"
+            examples:
+              default:
+                value:
+                  name: Lo rau 1
+                  area: 1000
+                  area_unit: M2
+                  tree_count: 200
+                  start_date: "2026-06-01T00:00:00Z"
+                  expected_harvest_date: "2026-09-01T00:00:00Z"
+                  status: PROCESS
+                  note: Ghi chu
+      responses:
+        "201":
+          description: Crop lot created successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CreateCropLotResponse"
+        "400":
+          description: Invalid request body or user has no farm
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MessageResponse"
+        "401":
+          description: Unauthorized or invalid token
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: Cannot create crop lot or cannot check user's farm
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /api/v1/crop-lot/get-crop-lot/{id}:
+    get:
+      tags:
+        - CropLots
+      summary: Get crop lots in a farm
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Farm ID
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Crop lots fetched successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CropLotListResponse"
+        "400":
+          description: Farm not found or cannot fetch crop lots
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /api/v1/care-process/create:
+    post:
+      tags:
+        - CareProcess
+      summary: Create a new care process
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateCareProcessRequest"
+            examples:
+              default:
+                value:
+                  crop_lot_id: 550e8400-e29b-41d4-a716-446655440000
+                  title: Cham soc thang 1
+                  description: Tuoi nuoc va bon phan dinh ky
+                  month: 1
+                  started_date: "2026-06-01T00:00:00Z"
+                  finished_dat: "2026-06-30T00:00:00Z"
+      responses:
+        "200":
+          description: Care process created successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+        "400":
+          description: Invalid request body or cannot create care process
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /api/v1/care-process/update:
+    put:
+      tags:
+        - CareProcess
+      summary: Update a care process
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateCareProcessRequest"
+            examples:
+              default:
+                value:
+                  id: 550e8400-e29b-41d4-a716-446655440001
+                  crop_lot_id: 550e8400-e29b-41d4-a716-446655440000
+                  title: Cham soc thang 1 - cap nhat
+                  description: Dieu chinh lich tuoi nuoc va bon phan
+                  month: 1
+                  started_date: "2026-06-01T00:00:00Z"
+                  finished_dat: "2026-06-30T00:00:00Z"
+      responses:
+        "200":
+          description: Care process updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+        "400":
+          description: Invalid request body, care process not found, or cannot update care process
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+
+  /api/v1/auth/create:
+    post:
+      tags:
+        - Auth
+      summary: Create a new user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginRequest"
+      responses:
+        "200":
+          description: Create user successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+        "400":
+          description: Invalid request body or error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /api/v1/auth/profile:
+    get:
+      tags:
+        - Auth
+      summary: Get user profile
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Fetch user profile successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserProfileResponse"
+        "400":
+          description: User profile not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /api/v1/auth/update-profile:
+    put:
+      tags:
+        - Auth
+      summary: Update user profile
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateUserProfileRequest"
+      responses:
+        "200":
+          description: Update profile successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserProfileResponse"
+        "400":
+          description: Invalid request or update failed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /api/v1/auth/deactivate/{id}:
+    delete:
+      tags:
+        - Auth
+      summary: Deactivate user account
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: User ID
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Deactivate user successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+        "400":
+          description: Deactivation failed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /api/v1/farms/update/{id}:
+    put:
+      tags:
+        - Farms
+      summary: Update farm by ID
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Farm ID
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              $ref: "#/components/schemas/UpdateFarmRequest"
+      responses:
+        "200":
+          description: Farm updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FarmResponse"
+        "400":
+          description: Update failed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /api/v1/farms/delete/{id}:
+    delete:
+      tags:
+        - Farms
+      summary: Delete farm by ID
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Farm ID
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Farm deleted successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+        "400":
+          description: Delete failed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /api/v1/crop-lot/get-one/{id}:
+    get:
+      tags:
+        - CropLots
+      summary: Get crop lot by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Crop Lot ID
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Crop lot fetched successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CropLotResponse"
+        "400":
+          description: Fetch failed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /api/v1/crop-lot/update/{id}:
+    put:
+      tags:
+        - CropLots
+      summary: Update crop lot by ID
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Crop Lot ID
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateCropLotRequest"
+      responses:
+        "200":
+          description: Crop lot updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CropLotResponse"
+        "400":
+          description: Update failed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /api/v1/crop-lot/delete/{id}:
+    delete:
+      tags:
+        - CropLots
+      summary: Delete crop lot by ID
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Crop Lot ID
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Crop lot deleted successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+        "400":
+          description: Delete failed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /api/v1/care-process/get-process/{crop_lot_id}:
+    get:
+      tags:
+        - CareProcess
+      summary: Get care process by crop lot ID
+      parameters:
+        - name: crop_lot_id
+          in: path
+          required: true
+          description: Crop Lot ID
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Care process fetched successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CareProcessListResponse"
+        "400":
+          description: Fetch failed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /api/v1/care-process/delete/{id}:
+    delete:
+      tags:
+        - CareProcess
+      summary: Delete care process by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Care Process ID
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Care process deleted successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+        "400":
+          description: Delete failed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /api/v1/products/create:
+    post:
+      tags:
+        - Products
+      summary: Create a new product
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              $ref: "#/components/schemas/CreateProductRequest"
+      responses:
+        "200":
+          description: Product created successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+        "400":
+          description: Create failed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /api/v1/products/get_all:
+    get:
+      tags:
+        - Products
+      summary: Get all products (paginated)
+      parameters:
+        - name: page
+          in: query
+          required: false
+          description: Page number
+          schema:
+            type: integer
+            default: 1
+      responses:
+        "200":
+          description: Products fetched successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProductListResponse"
+        "400":
+          description: Fetch failed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /api/v1/products/update/{id}:
+    put:
+      tags:
+        - Products
+      summary: Update product by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Product ID
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              $ref: "#/components/schemas/UpdateProductRequest"
+      responses:
+        "200":
+          description: Product updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+        "400":
+          description: Update failed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /api/v1/products/delete/{id}:
+    delete:
+      tags:
+        - Products
+      summary: Delete product by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Product ID
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Product deleted successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+        "400":
+          description: Delete failed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /api/v1/products/get_by_id/{id}:
+    get:
+      tags:
+        - Products
+      summary: Get product detail by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Product ID
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Product detail fetched successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProductResponse"
+        "400":
+          description: Fetch failed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /api/v1/products/get_list:
+    get:
+      tags:
+        - Products
+      summary: Get list of products with pagination
+      parameters:
+        - name: page
+          in: query
+          required: false
+          description: Page number
+          schema:
+            type: integer
+            default: 1
+      responses:
+        "200":
+          description: Products fetched successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProductListResponse2"
+        "400":
+          description: Fetch failed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /api/v1/products/add_discount:
+    post:
+      tags:
+        - Products
+      summary: Create a discount for a product
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateDiscountRequest"
+      responses:
+        "200":
+          description: Discount created successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+        "400":
+          description: Create failed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /api/v1/discounts/get-one/{id}:
+    get:
+      tags:
+        - Discounts
+      summary: Get discount by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Discount ID
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Discount fetched successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DiscountResponse"
+        "400":
+          description: Fetch failed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /api/v1/discounts/get-by-product/{product_id}:
+    get:
+      tags:
+        - Discounts
+      summary: Get discount by Product ID
+      parameters:
+        - name: product_id
+          in: path
+          required: true
+          description: Product ID
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Discount fetched successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DiscountResponse"
+        "400":
+          description: Fetch failed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /api/v1/discounts/update/{id}:
+    put:
+      tags:
+        - Discounts
+      summary: Update discount by ID
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Discount ID
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateDiscountRequest"
+      responses:
+        "200":
+          description: Discount updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+        "400":
+          description: Update failed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /api/v1/discounts/delete/{id}:
+    delete:
+      tags:
+        - Discounts
+      summary: Delete discount by ID
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Discount ID
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Discount deleted successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+        "400":
+          description: Delete failed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    LoginRequest:
+      type: object
+      properties:
+        full_name:
+          type: string
+          example: Nguyen Van A
+        email:
+          type: string
+          format: email
+          example: user@example.com
+        avatar_url:
+          type: string
+          format: uri
+          example: https://example.com/avatar.png
+
+    LoginResponse:
+      type: object
+      properties:
+        message:
+          type: string
+          example: Login successfully
+        valid:
+          type: boolean
+          example: true
+        data:
+          type: object
+          properties:
+            access_token:
+              type: string
+              example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+
+    AutoLoginResponse:
+      type: object
+      properties:
+        message:
+          type: string
+          example: Auto login successfully
+        valid:
+          type: boolean
+          example: true
+        data:
+          $ref: "#/components/schemas/User"
+
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: 550e8400-e29b-41d4-a716-446655440000
+        full_name:
+          type: string
+          example: Nguyen Van A
+        email:
+          type: string
+          format: email
+          example: user@example.com
+        phone:
+          type: string
+          example: "0901234567"
+        role:
+          type: string
+          enum:
+            - ADMIN
+            - FARMER
+            - CUSTOMER
+          example: CUSTOMER
+        status:
+          type: boolean
+          example: true
+        avatar_url:
+          type: string
+          example: https://example.com/avatar.png
+        address:
+          type: string
+          example: Ho Chi Minh City
+        verified:
+          type: boolean
+          example: false
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    CreateFarmRequest:
+      type: object
+      required:
+        - farm_name
+        - image
+      properties:
+        farm_name:
+          type: string
+          example: Farm A
+        address:
+          type: string
+          example: Lam Dong
+        phone:
+          type: string
+          example: "0901234567"
+        description:
+          type: string
+          example: Organic vegetable farm
+        image:
+          type: string
+          format: binary
+
+    FarmResponse:
+      type: object
+      properties:
+        message:
+          type: string
+          example: Lay thanh cong du lieu nong trai
+        valid:
+          type: boolean
+          example: true
+        data:
+          $ref: "#/components/schemas/Farm"
+
+    FarmListResponse:
+      type: object
+      properties:
+        message:
+          type: string
+          example: Lay thanh cong du lieu nong trai
+        valid:
+          type: boolean
+          example: true
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/Farm"
+
+    Farm:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: 550e8400-e29b-41d4-a716-446655440000
+        farm_name:
+          type: string
+          example: Farm A
+        description:
+          type: string
+          example: Organic vegetable farm
+        phone:
+          type: string
+          example: "0901234567"
+        status:
+          type: boolean
+          example: true
+        image_url:
+          type: string
+          example: http://localhost:8080/public/uploads/20260602_114600_itc.jpg
+        address:
+          type: string
+          example: Lam Dong
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+        owner_id:
+          type: string
+          format: uuid
+          example: 550e8400-e29b-41d4-a716-446655440001
+
+    CreateCropLotRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          example: Lo rau 1
+        area:
+          type: number
+          format: double
+          example: 1000
+        area_unit:
+          type: string
+          example: M2
+        tree_count:
+          type: integer
+          example: 200
+        start_date:
+          type: string
+          format: date-time
+          example: "2026-06-01T00:00:00Z"
+        expected_harvest_date:
+          type: string
+          format: date-time
+          example: "2026-09-01T00:00:00Z"
+        status:
+          type: string
+          example: PLANNING
+        note:
+          type: string
+          example: Ghi chu
+
+    CreateCropLotResponse:
+      type: object
+      properties:
+        message:
+          type: string
+          example: Tao moi lo thanh cong
+        valid:
+          type: boolean
+          example: true
+        crop_lot_id:
+          type: string
+          format: uuid
+          example: 550e8400-e29b-41d4-a716-446655440001
+
+    CropLotListResponse:
+      type: object
+      properties:
+        message:
+          type: string
+          example: Lay du lieu lo thanh cong
+        valid:
+          type: boolean
+          example: true
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/CropLot"
+
+    CropLot:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: 550e8400-e29b-41d4-a716-446655440001
+        farm_id:
+          type: string
+          format: uuid
+          example: 550e8400-e29b-41d4-a716-446655440000
+        name:
+          type: string
+          example: Lo rau 1
+        area:
+          type: number
+          format: double
+          example: 1000
+        area_unit:
+          type: string
+          enum:
+            - M2
+            - HA
+          example: M2
+        tree_count:
+          type: integer
+          example: 200
+        start_date:
+          type: string
+          format: date-time
+          example: "2026-06-01T00:00:00Z"
+        expected_harvest_date:
+          type: string
+          format: date-time
+          example: "2026-09-01T00:00:00Z"
+        status:
+          type: string
+          enum:
+            - PROCESS
+            - HARVESTED
+          example: PROCESS
+        note:
+          type: string
+          example: Ghi chu
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    CreateCareProcessRequest:
+      type: object
+      required:
+        - crop_lot_id
+        - title
+        - month
+      properties:
+        crop_lot_id:
+          type: string
+          format: uuid
+          example: 550e8400-e29b-41d4-a716-446655440000
+        title:
+          type: string
+          example: Cham soc thang 1
+        description:
+          type: string
+          example: Tuoi nuoc va bon phan dinh ky
+        month:
+          type: integer
+          format: int32
+          minimum: 0
+          maximum: 255
+          example: 1
+        started_date:
+          type: string
+          format: date-time
+          example: "2026-06-01T00:00:00Z"
+        finished_dat:
+          type: string
+          format: date-time
+          example: "2026-06-30T00:00:00Z"
+
+    UpdateCareProcessRequest:
+      allOf:
+        - $ref: "#/components/schemas/CreateCareProcessRequest"
+        - type: object
+          required:
+            - id
+          properties:
+            id:
+              type: string
+              format: uuid
+              example: 550e8400-e29b-41d4-a716-446655440001
+
+    SuccessResponse:
+      type: object
+      properties:
+        message:
+          type: string
+          example: Tao moi thanh cong
+        valid:
+          type: boolean
+          example: true
+
+    MessageResponse:
+      type: object
+      properties:
+        message:
+          oneOf:
+            - type: string
+            - type: object
+        valid:
+          type: boolean
+          example: false
+
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+          example: Invalid token
+        detail:
+          type: string
+          example: Detailed error message
+        message:
+          oneOf:
+            - type: string
+            - type: object
+        valid:
+          type: boolean
+          example: false
+
+    UserProfileResponse:
+      type: object
+      properties:
+        message:
+          type: string
+          example: Lấy thông tin thành công
+        valid:
+          type: boolean
+          example: true
+        data:
+          $ref: "#/components/schemas/User"
+
+    UpdateUserProfileRequest:
+      type: object
+      properties:
+        full_name:
+          type: string
+          example: Nguyen Van A
+        avatar_url:
+          type: string
+          example: https://example.com/avatar.png
+        phone:
+          type: string
+          example: "0901234567"
+        address:
+          type: string
+          example: Ho Chi Minh City
+
+    UpdateFarmRequest:
+      type: object
+      properties:
+        farm_name:
+          type: string
+          example: Farm A Updated
+        description:
+          type: string
+          example: Updated organic vegetable farm
+        address:
+          type: string
+          example: Da Lat
+        phone:
+          type: string
+          example: "0909999999"
+        image:
+          type: string
+          format: binary
+
+    CropLotResponse:
+      type: object
+      properties:
+        message:
+          type: string
+          example: Lấy dữ liệu lô thành công
+        valid:
+          type: boolean
+          example: true
+        data:
+          $ref: "#/components/schemas/CropLot"
+
+    UpdateCropLotRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          example: Lo rau 1 Cap Nhat
+        area:
+          type: number
+          format: double
+          example: 1500
+        area_unit:
+          type: string
+          enum: [M2, HA]
+          example: M2
+        tree_count:
+          type: integer
+          example: 250
+        start_date:
+          type: string
+          format: date-time
+        expected_harvest_date:
+          type: string
+          format: date-time
+        status:
+          type: string
+          enum: [PROCESS, HARVESTED]
+          example: PROCESS
+        note:
+          type: string
+          example: Ghi chu cap nhat
+
+    CareProcessListResponse:
+      type: object
+      properties:
+        message:
+          type: string
+          example: Lấy quá trình chăm sóc thành công
+        valid:
+          type: boolean
+          example: true
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/CareProcess"
+
+    CareProcess:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: 550e8400-e29b-41d4-a716-446655440001
+        crop_lot_id:
+          type: string
+          format: uuid
+          example: 550e8400-e29b-41d4-a716-446655440000
+        title:
+          type: string
+          example: Cham soc thang 1
+        description:
+          type: string
+          example: Tuoi nuoc va bon phan dinh ky
+        month:
+          type: integer
+          example: 1
+        started_date:
+          type: string
+          format: date-time
+        finished_date:
+          type: string
+          format: date-time
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    CreateProductRequest:
+      type: object
+      required:
+        - name
+        - price
+        - stock
+      properties:
+        crop_lot_id:
+          type: string
+          format: uuid
+          example: 550e8400-e29b-41d4-a716-446655440001
+        name:
+          type: string
+          example: Sau Rieng Ri6
+        description:
+          type: string
+          example: Dac san Sau Rieng mien Tay
+        price:
+          type: number
+          format: double
+          example: 85000.00
+        stock:
+          type: integer
+          example: 1000
+        image:
+          type: array
+          items:
+            type: string
+            format: binary
+
+    UpdateProductRequest:
+      type: object
+      properties:
+        crop_lot_id:
+          type: string
+          format: uuid
+          example: 550e8400-e29b-41d4-a716-446655440001
+        name:
+          type: string
+          example: Sau Rieng Ri6 Updated
+        description:
+          type: string
+          example: Dac san Sau Rieng mien Tay ngon
+        price:
+          type: number
+          format: double
+          example: 90000.00
+        stock:
+          type: integer
+          example: 1200
+        image:
+          type: string
+          format: binary
+
+    ProductListResponse:
+      type: object
+      properties:
+        message:
+          type: string
+          example: Lấy dữ liệu thành công
+        valid:
+          type: boolean
+          example: true
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/ProductResponseItem"
+
+    ProductResponseItem:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: 550e8400-e29b-41d4-a716-446655440002
+        crop_lot_id:
+          type: string
+          format: uuid
+        name:
+          type: string
+          example: Sau Rieng Ri6
+        description:
+          type: string
+        price:
+          type: number
+        stock:
+          type: integer
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+        image_url:
+          type: string
+          example: http://localhost:8080/public/uploads/img.jpg
+        discount_price:
+          type: number
+          example: 75000.00
+
+    ProductResponse:
+      type: object
+      properties:
+        message:
+          type: string
+          example: Lấy dữ liệu thành công
+        valid:
+          type: boolean
+          example: true
+        data:
+          $ref: "#/components/schemas/Product"
+
+    Product:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        crop_lot_id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        description:
+          type: string
+        price:
+          type: number
+        stock:
+          type: integer
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+        image_products:
+          type: array
+          items:
+            $ref: "#/components/schemas/ImageProduct"
+        discount:
+          $ref: "#/components/schemas/Discount"
+
+    ImageProduct:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        image_url:
+          type: string
+        product_id:
+          type: string
+          format: uuid
+
+    ProductListResponse2:
+      type: object
+      properties:
+        message:
+          type: string
+          example: Lấy dữ liệu thành công
+        valid:
+          type: boolean
+          example: true
+        data:
+          type: object
+          properties:
+            data:
+              type: array
+              items:
+                $ref: "#/components/schemas/Product"
+            total:
+              type: integer
+              example: 1
+            limit:
+              type: integer
+              example: 10
+            page:
+              type: integer
+              example: 1
+
+    CreateDiscountRequest:
+      type: object
+      required:
+        - name
+        - discount_price
+        - active
+        - amount
+        - percent
+        - start_date
+        - end_date
+        - product_id
+      properties:
+        name:
+          type: string
+          example: Khuyen Mai Mua He
+        description:
+          type: string
+        discount_price:
+          type: number
+          example: 10000.00
+        active:
+          type: boolean
+          example: true
+        amount:
+          type: number
+          example: 100.00
+        percent:
+          type: number
+          example: 10.00
+        start_date:
+          type: string
+          format: date-time
+        end_date:
+          type: string
+          format: date-time
+        product_id:
+          type: string
+          format: uuid
+
+    UpdateDiscountRequest:
+      type: object
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        discount_price:
+          type: number
+        active:
+          type: boolean
+        amount:
+          type: number
+        percent:
+          type: number
+        start_date:
+          type: string
+          format: date-time
+        end_date:
+          type: string
+          format: date-time
+        product_id:
+          type: string
+          format: uuid
+
+    DiscountResponse:
+      type: object
+      properties:
+        message:
+          type: string
+          example: Lấy dữ liệu thành công
+        valid:
+          type: boolean
+          example: true
+        data:
+          $ref: "#/components/schemas/Discount"
+
+    Discount:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        product_id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        description:
+          type: string
+        discount_price:
+          type: number
+        active:
+          type: boolean
+        amount:
+          type: number
+        percent:
+          type: number
+        start_date:
+          type: string
+          format: date-time
+        end_date:
+          type: string
+          format: date-time
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time

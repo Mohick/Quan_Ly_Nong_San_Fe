@@ -124,18 +124,7 @@ export const LotModal: React.FC<LotModalProps> = ({
 
         {/* Modal Form */}
         <form onSubmit={handleSubmit} className="p-6 space-y-4 max-h-[75vh] overflow-y-auto">
-          {/* farm_id display */}
-          <div className="space-y-1">
-            <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">
-              Mã trang trại liên kết
-            </label>
-            <input
-              type="text"
-              readOnly
-              value={farmId}
-              className="w-full bg-gray-50 border border-gray-200 rounded-lg py-2.5 px-3 text-xs sm:text-sm text-gray-500 cursor-not-allowed font-mono tracking-tight font-medium"
-            />
-          </div>
+
 
           {/* name */}
           <div className="space-y-1">
