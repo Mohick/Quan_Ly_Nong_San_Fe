@@ -24,7 +24,7 @@ const Loading = () => {
     ease: "easeInOut",
   };
 
-  const handleAnimationComplete = (definition) => {
+  const handleAnimationComplete = (definition: any) => {
     if (definition === "animate") {
       // Sau khi vẽ xong, delay 0.5s rồi bắt đầu fade out
       setTimeout(() => setIsVisible(false), 500);
@@ -66,7 +66,7 @@ const Loading = () => {
                   variants={pathVariants}
                   initial="initial"
                   animate="animate"
-                  transition={{ ...transition, delay: i * 0.08 }}
+                  transition={{ ...(transition as any), delay: i * 0.08 }}
                   onAnimationComplete={
                     i === 5 ? handleAnimationComplete : undefined
                   }
@@ -123,7 +123,7 @@ const Loading = () => {
                   variants={pathVariants}
                   initial="initial"
                   animate="animate"
-                  transition={{ ...transition, delay: (i + 6) * 0.08 }}
+                  transition={{ ...(transition as any), delay: (i + 6) * 0.08 }}
                 />
               ))}
 
