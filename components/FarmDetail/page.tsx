@@ -84,16 +84,21 @@ export default function FarmDetailClient({ id }: { id: string }) {
         fetchDetailData();
     }, [id]);
 
-    // Lọc sản phẩm thuộc nhà vườn này (dựa trên tên hoặc vị trí tương đương)
+    // Lọc sản phẩm thuộc nhà vườn này (dựa trên farm ID hoặc tên tương đương)
     const farmProducts = useMemo(() => {
         if (!farm) return [];
-        // Lọc theo ký tự gần đúng của tên nông dân
-        const nameKeywords = farm.name.split(" ").slice(-2).join(" ").toLowerCase();
-        return products.filter((p: any) =>
-            p.name?.toLowerCase().includes(nameKeywords) ||
-            p.farmer?.toLowerCase().includes(nameKeywords) ||
-            p.description?.toLowerCase().includes(nameKeywords)
-        );
+        return products.filter((p: any) => {
+            const pFarmId = p.cropLot?.farmId || p.cropLot?.farm_id || p.farmId || p.FarmID;
+            if (pFarmId && farm.id) {
+                return String(pFarmId) === String(farm.id);
+            }
+            const nameKeywords = farm.name.split(" ").slice(-2).join(" ").toLowerCase();
+            return (
+                p.name?.toLowerCase().includes(nameKeywords) ||
+                p.farmer?.toLowerCase().includes(nameKeywords) ||
+                p.description?.toLowerCase().includes(nameKeywords)
+            );
+        });
     }, [farm, products]);
 
     const handleShare = () => {

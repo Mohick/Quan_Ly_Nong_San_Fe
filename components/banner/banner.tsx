@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from "react";
-import { ChevronLeft, ChevronRight, Calendar, MapPin, ArrowRight } from "lucide-react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
+import { ChevronLeft, ChevronRight, Calendar, MapPin, ArrowRight, ChevronDown } from "lucide-react";
 
 interface EventSlide {
   id: number;
@@ -59,6 +59,7 @@ const Banner = () => {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [progress, setProgress] = useState(0);
+  const bannerRef = useRef<HTMLDivElement>(null);
 
   const nextSlide = useCallback(() => {
     if (isTransitioning) return;
@@ -75,6 +76,43 @@ const Banner = () => {
     setCurrentSlide((prev) => (prev === 0 ? slidesData.length - 1 : prev - 1));
     setTimeout(() => setIsTransitioning(false), 500);
   };
+
+  const scrollToNextSection = () => {
+    if (bannerRef.current) {
+      // Find the next element sibling or fallback to window height
+      const nextElement = bannerRef.current.nextElementSibling;
+      if (nextElement) {
+        nextElement.scrollIntoView({ behavior: "smooth" });
+      } else {
+        window.scrollTo({
+          top: window.innerHeight - 80,
+          behavior: "smooth"
+        });
+      }
+    }
+  };
+
+  // Wheel event handler to jump down on scroll down
+  useEffect(() => {
+    const handleWheel = (e: WheelEvent) => {
+      // Check if user is scrolling down and is currently at the top of page
+      if (window.scrollY < 10 && e.deltaY > 0) {
+        e.preventDefault();
+        scrollToNextSection();
+      }
+    };
+
+    const element = bannerRef.current;
+    if (element) {
+      // Set passive to false so preventDefault works
+      element.addEventListener("wheel", handleWheel, { passive: false });
+    }
+    return () => {
+      if (element) {
+        element.removeEventListener("wheel", handleWheel);
+      }
+    };
+  }, []);
 
   // Autoplay functionality
   useEffect(() => {
@@ -96,7 +134,10 @@ const Banner = () => {
   }, [currentSlide, nextSlide]);
 
   return (
-    <section className="relative w-full overflow-hidden bg-gray-900 group h-[260px] sm:h-[300px] lg:h-[340px] font-sans">
+    <section 
+      ref={bannerRef}
+      className="relative w-full overflow-hidden bg-gray-900 group h-[calc(100vh-80px)] min-h-[550px] font-sans"
+    >
       {/* Background Slides */}
       <div className="relative w-full h-full">
         {slidesData.map((slide, index) => (
@@ -107,7 +148,7 @@ const Banner = () => {
             }`}
           >
             {/* Overlay Gradient */}
-            <div className="absolute inset-0 bg-gradient-to-r from-gray-950/85 via-gray-900/60 to-transparent z-10" />
+            <div className="absolute inset-0 bg-gradient-to-r from-gray-950/90 via-gray-900/65 to-transparent z-10" />
             <img
               src={slide.image}
               alt={slide.title}
@@ -119,39 +160,39 @@ const Banner = () => {
             {/* Slide Content */}
             <div className="absolute inset-0 z-20 flex items-center">
               <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
-                <div className="max-w-xl space-y-2 md:space-y-3.5">
+                <div className="max-w-3xl space-y-4 md:space-y-6">
                   {/* Category Badge */}
-                  <span className="inline-block px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-white rounded-full bg-white/10 backdrop-blur-md border border-white/20">
+                  <span className="inline-block px-3.5 py-1 text-xs font-black uppercase tracking-wider text-white rounded-full bg-white/10 backdrop-blur-md border border-white/20 shadow-sm">
                     {slide.category}
                   </span>
 
                   {/* Title */}
-                  <h1 className="text-xl sm:text-2xl lg:text-3xl font-extrabold text-white tracking-tight leading-tight select-none">
+                  <h1 className="text-3xl sm:text-5xl lg:text-6xl font-black text-white tracking-tight leading-[1.15] select-none">
                     {slide.title}
                   </h1>
 
                   {/* Description */}
-                  <p className="text-xs sm:text-sm text-gray-300 font-normal leading-relaxed max-w-lg select-none">
+                  <p className="text-sm sm:text-base md:text-lg text-gray-300 font-normal leading-relaxed max-w-2xl select-none">
                     {slide.description}
                   </p>
 
                   {/* Details and CTA Row */}
-                  <div className="flex flex-wrap items-center gap-3 pt-2">
-                    <div className="flex items-center gap-1.5 text-[11px] text-gray-200 bg-white/5 backdrop-blur-sm border border-white/10 px-2 py-1 rounded-md">
-                      <Calendar className="w-3.5 h-3.5 text-[#10b981]" />
+                  <div className="flex flex-wrap items-center gap-4 pt-3">
+                    <div className="flex items-center gap-2 text-xs md:text-sm text-gray-200 bg-white/5 backdrop-blur-sm border border-white/10 px-3 py-1.5 rounded-lg shadow-sm">
+                      <Calendar className="w-4 h-4 text-[#10b981]" />
                       <span>{slide.date}</span>
                     </div>
-                    <div className="flex items-center gap-1.5 text-[11px] text-gray-200 bg-white/5 backdrop-blur-sm border border-white/10 px-2 py-1 rounded-md">
-                      <MapPin className="w-3.5 h-3.5 text-[#10b981]" />
+                    <div className="flex items-center gap-2 text-xs md:text-sm text-gray-200 bg-white/5 backdrop-blur-sm border border-white/10 px-3 py-1.5 rounded-lg shadow-sm">
+                      <MapPin className="w-4 h-4 text-[#10b981]" />
                       <span>{slide.location}</span>
                     </div>
 
                     <a
                       href={slide.ctaLink}
-                      className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 text-xs text-white font-bold rounded-lg bg-gradient-to-r ${slide.accentColor} hover:shadow-md active:scale-95 transition-all duration-200`}
+                      className={`inline-flex items-center gap-2 px-5 py-2.5 text-xs md:text-sm text-white font-extrabold rounded-xl bg-gradient-to-r ${slide.accentColor} hover:shadow-lg hover:brightness-110 active:scale-95 transition-all duration-200`}
                     >
                       <span>{slide.ctaText}</span>
-                      <ArrowRight className="w-3.5 h-3.5" />
+                      <ArrowRight className="w-4 h-4" />
                     </a>
                   </div>
                 </div>
@@ -164,20 +205,20 @@ const Banner = () => {
       {/* Navigation Arrows */}
       <button
         onClick={prevSlide}
-        className="absolute left-4 top-1/2 -translate-y-1/2 z-30 p-2 rounded-full bg-white/10 hover:bg-white/25 border border-white/20 text-white backdrop-blur-md transition-all duration-200 active:scale-90 cursor-pointer hidden sm:block opacity-0 group-hover:opacity-100"
+        className="absolute left-6 top-1/2 -translate-y-1/2 z-30 p-3 rounded-full bg-white/10 hover:bg-white/25 border border-white/25 text-white backdrop-blur-md transition-all duration-200 active:scale-90 cursor-pointer hidden sm:block opacity-0 group-hover:opacity-100 shadow-md"
       >
-        <ChevronLeft className="w-5 h-5" />
+        <ChevronLeft className="w-6 h-6" />
       </button>
       <button
         onClick={nextSlide}
-        className="absolute right-4 top-1/2 -translate-y-1/2 z-30 p-2 rounded-full bg-white/10 hover:bg-white/25 border border-white/20 text-white backdrop-blur-md transition-all duration-200 active:scale-90 cursor-pointer hidden sm:block opacity-0 group-hover:opacity-100"
+        className="absolute right-6 top-1/2 -translate-y-1/2 z-30 p-3 rounded-full bg-white/10 hover:bg-white/25 border border-white/25 text-white backdrop-blur-md transition-all duration-200 active:scale-90 cursor-pointer hidden sm:block opacity-0 group-hover:opacity-100 shadow-md"
       >
-        <ChevronRight className="w-5 h-5" />
+        <ChevronRight className="w-6 h-6" />
       </button>
 
-      {/* Slide Indicators */}
-      <div className="absolute bottom-4 left-0 right-0 z-30 flex flex-col items-center gap-3">
-        <div className="flex gap-2">
+      {/* Slide Indicators & Scroll Down Indicator */}
+      <div className="absolute bottom-6 left-0 right-0 z-30 flex flex-col items-center gap-6">
+        <div className="flex gap-2.5">
           {slidesData.map((_, index) => (
             <button
               key={index}
@@ -188,16 +229,27 @@ const Banner = () => {
                 setCurrentSlide(index);
                 setTimeout(() => setIsTransitioning(false), 500);
               }}
-              className={`h-2 rounded-full cursor-pointer transition-all duration-300 ${
-                index === currentSlide ? "w-6 bg-[#10b981]" : "w-2 bg-white/40 hover:bg-white/60"
+              className={`h-2.5 rounded-full cursor-pointer transition-all duration-300 ${
+                index === currentSlide ? "w-8 bg-[#10b981]" : "w-2.5 bg-white/40 hover:bg-white/60"
               }`}
             />
           ))}
         </div>
+
+        {/* Scroll Down Hint */}
+        <button
+          onClick={scrollToNextSection}
+          className="flex flex-col items-center text-white/75 hover:text-white transition-colors duration-200 animate-bounce cursor-pointer group/scroll"
+        >
+          <span className="text-[10px] uppercase font-bold tracking-widest mb-1 opacity-80 group-hover/scroll:opacity-100 transition-opacity">
+            Cuộn xuống
+          </span>
+          <ChevronDown className="w-5 h-5 text-[#10b981]" />
+        </button>
       </div>
 
       {/* Bottom Autoplay Progress Bar */}
-      <div className="absolute bottom-0 left-0 w-full h-0.5 bg-white/10 z-30">
+      <div className="absolute bottom-0 left-0 w-full h-1 bg-white/10 z-30">
         <div
           className="h-full bg-gradient-to-r from-[#10b981] to-emerald-500 transition-all duration-100 ease-linear"
           style={{ width: `${progress}%` }}

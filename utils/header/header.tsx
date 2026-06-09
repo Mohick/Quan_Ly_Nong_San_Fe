@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Search, ShoppingCart, Menu, X, LogOut, Settings, FileText } from "lucide-react";
@@ -23,12 +23,11 @@ const Header = () => {
     { name: "Nhà vườn", href: "/farm" },
     { name: "Tin tức", href: "/news" },
     { name: "Liên hệ", href: "/contact" },
-
   ];
 
   const [cartCount, setCartCount] = useState(0);
 
-  React.useEffect(() => {
+  useEffect(() => {
     const updateCount = () => {
       if (typeof window !== "undefined") {
         const localCart = localStorage.getItem("local_cart");
@@ -40,7 +39,7 @@ const Header = () => {
               setCartCount(count);
               return;
             }
-          } catch (_) {}
+          } catch (_) { }
         }
       }
       setCartCount(0);
@@ -55,46 +54,65 @@ const Header = () => {
     };
   }, []);
 
+  const [isVisible, setIsVisible] = useState(true);
+  const [lastScrollY, setLastScrollY] = useState(0);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY;
+
+      // If close to the top, always show header
+      if (currentScrollY < 50) {
+        setIsVisible(true);
+      } else {
+        // Show if scrolling up, hide if scrolling down
+        if (currentScrollY < lastScrollY) {
+          setIsVisible(true);
+        } else {
+          setIsVisible(false);
+        }
+      }
+      setLastScrollY(currentScrollY);
+    };
+
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, [lastScrollY]);
+
   return (
-    <header className="w-full bg-white shadow-sm font-sans">
+    <header className={`sticky top-0 z-50 w-full bg-white/95 backdrop-blur-md shadow-sm font-sans transition-transform duration-300 ${isVisible ? "translate-y-0" : "-translate-y-full"
+      }`}>
       {/* Top Header Bar */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-20 gap-4">
 
           {/* Logo */}
-          <Link href="/" className="flex items-center gap-3 shrink-0">
-            <div className="relative flex items-center justify-center w-10 h-10">
-              {/* Premium 3D Isometric Hexagon Logo matching the image */}
-              <svg className="w-9 h-9" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
-                {/* Left Facet - Dark Cyan/Blue */}
-                <path d="M18 3.5L4 11.5V27.5L18 35.5V19.5L18 3.5Z" fill="#0891b2" />
-                {/* Right Facet - Medium Cyan */}
-                <path d="M18 3.5L32 11.5V27.5L18 35.5V19.5L18 3.5Z" fill="#0ea5e9" opacity="0.9" />
-                {/* Top/Accent Highlights - Orange segment */}
-                <path d="M18 3.5L32 11.5L25 15.5L11 7.5L18 3.5Z" fill="#f97316" />
-                {/* Negative space / 3D cutouts */}
-                <path d="M18 19.5L32 11.5L18 3.5L4 11.5L18 19.5Z" stroke="white" strokeWidth="1.5" strokeLinejoin="round" />
-                <path d="M18 19.5V35.5" stroke="white" strokeWidth="1.5" />
-              </svg>
-            </div>
+          <Link href="/" className="flex shrink-0 items-center gap-2">
+            <img src="/logo.svg" alt="PIONE" className="h-12 w-12 object-contain" />
             <span className="font-extrabold text-[#0a5c36] text-xl tracking-wider select-none">
               PIONE GROUP
             </span>
           </Link>
 
-          {/* Search Bar - Desktop */}
-          <div className="hidden md:flex flex-1 max-w-lg mx-8">
-            <div className="relative w-full">
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Tìm sản phẩm..."
-                className="w-full bg-[#f4fbf7] border border-[#d1f2e0] rounded-full py-2.5 pl-6 pr-12 text-sm text-[#2c3e50] placeholder-[#8ca496] focus:outline-none focus:ring-2 focus:ring-[#13a855]/20 focus:border-[#13a855] transition-all duration-300"
-              />
-              <Search className="absolute right-4.5 top-1/2 -translate-y-1/2 w-5 h-5 text-[#13a855] opacity-70 hover:opacity-100 cursor-pointer transition-opacity" />
-            </div>
-          </div>
+          {/* Navigation Links - Desktop */}
+          <nav className="hidden lg:flex items-center gap-8 mx-auto">
+            {navLinks.map((link) => {
+              const isActive = pathname === link.href;
+              return (
+                <Link
+                  key={link.name}
+                  href={link.href}
+                  className={`text-[15px] font-bold tracking-wide transition-all duration-200 hover:text-[#13a855] relative py-1 ${isActive ? "text-[#13a855]" : "text-gray-800"
+                    }`}
+                >
+                  {link.name}
+                  {isActive && (
+                    <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#13a855] rounded-full" />
+                  )}
+                </Link>
+              );
+            })}
+          </nav>
 
           {/* User Actions & Cart */}
           <div className="flex items-center gap-4">
@@ -184,30 +202,6 @@ const Header = () => {
               {isMobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
             </button>
           </div>
-        </div>
-      </div>
-
-      {/* Navigation Bar - Desktop */}
-      <div className="border-t border-[#e2f8ec] hidden lg:block">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <nav className="flex justify-center items-center py-4 gap-8">
-            {navLinks.map((link) => {
-              const isActive = pathname === link.href;
-              return (
-                <Link
-                  key={link.name}
-                  href={link.href}
-                  className={`text-[15px] font-bold tracking-wide transition-all duration-200 hover:text-[#13a855] relative py-1 ${isActive ? "text-[#13a855]" : "text-gray-800"
-                    }`}
-                >
-                  {link.name}
-                  {isActive && (
-                    <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#13a855] rounded-full" />
-                  )}
-                </Link>
-              );
-            })}
-          </nav>
         </div>
       </div>
 

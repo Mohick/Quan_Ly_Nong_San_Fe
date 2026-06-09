@@ -2,9 +2,9 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import { 
-  Trash2, Plus, Minus, ArrowLeft, ShoppingBag, 
-  Tag, ShieldCheck, Truck, RotateCcw, Check, Loader2 
+import {
+  Trash2, Plus, Minus, ArrowLeft, ShoppingBag,
+  Tag, ShieldCheck, Truck, RotateCcw, Check, Loader2
 } from "lucide-react";
 import { getCartAPI, updateCartItemAPI, removeCartItemAPI, clearCartAPI } from "./service";
 import { productAPI } from "@/lib/_api/product";
@@ -26,6 +26,10 @@ interface CartItem {
   quantity: number;
   image: string;
   unit: string;
+  selectedVariant?: {
+    name: string;
+    options?: any[];
+  } | null;
 }
 
 export default function CartView() {
@@ -44,20 +48,20 @@ export default function CartView() {
         const res = await getCartAPI(token);
         const cartData = res.data?.data || {};
         const items = Array.isArray(cartData.items) ? cartData.items : (Array.isArray(cartData.cart_items) ? cartData.cart_items : []);
-        
+
         const mapped = items.map((item: any) => {
           const prod = item.product || item.Product || {};
           const discount = prod.Discount || prod.discount || {};
           const hasDiscount = discount.Active || discount.active || false;
           const originalPrice = prod.Price || prod.price || 0;
           const price = hasDiscount ? (discount.DiscountPrice || discount.discount_price || originalPrice) : originalPrice;
-          
+
           let image = "/images/placeholder.jpg";
           const imageProducts = prod.ImageProducts || prod.image_products || [];
           if (imageProducts.length > 0) {
             image = imageProducts[0].ImageURL || imageProducts[0].image_url || imageProducts[0].ImageUrl || "";
           }
-          
+
           return {
             id: item.id || item.ID || prod.id || prod.ID,
             name: prod.Name || prod.name || "",
@@ -66,7 +70,8 @@ export default function CartView() {
             originalPrice: originalPrice,
             quantity: item.quantity || item.Quantity || 1,
             image: image,
-            unit: prod.Unit || prod.unit || "kg"
+            unit: prod.Unit || prod.unit || "kg",
+            selectedVariant: item.selectedVariant || item.SelectedVariant || null
           };
         });
 
@@ -76,7 +81,7 @@ export default function CartView() {
         }
       } catch (error) {
         console.warn("Cart API is not supported on Backend (or connection error), falling back to LocalStorage.");
-        
+
         if (typeof window !== "undefined") {
           const localCart = localStorage.getItem("local_cart");
           if (localCart) {
@@ -84,7 +89,7 @@ export default function CartView() {
               setCartItems(JSON.parse(localCart));
               setIsLoading(false);
               return;
-            } catch (_) {}
+            } catch (_) { }
           }
         }
         setCartItems([]);
@@ -103,17 +108,18 @@ export default function CartView() {
   };
 
   // Quantity updates
-  const handleIncrease = async (id: string | number) => {
-    const item = cartItems.find((item) => item.id === id);
+  const handleIncrease = async (id: string | number, variantName?: string) => {
+    const item = cartItems.find((item) => item.id === id && (item.selectedVariant?.name || "") === (variantName || ""));
     if (!item) return;
     const newQty = item.quantity + 1;
-    
+
     const updatedItems = cartItems.map((item) =>
-      item.id === id ? { ...item, quantity: newQty } : item
+      item.id === id && (item.selectedVariant?.name || "") === (variantName || "") ? { ...item, quantity: newQty } : item
     );
     setCartItems(updatedItems);
     if (typeof window !== "undefined") {
       localStorage.setItem("local_cart", JSON.stringify(updatedItems));
+      window.dispatchEvent(new Event("cart-updated"));
     }
 
     try {
@@ -124,17 +130,18 @@ export default function CartView() {
     }
   };
 
-  const handleDecrease = async (id: string | number) => {
-    const item = cartItems.find((item) => item.id === id);
+  const handleDecrease = async (id: string | number, variantName?: string) => {
+    const item = cartItems.find((item) => item.id === id && (item.selectedVariant?.name || "") === (variantName || ""));
     if (!item || item.quantity <= 1) return;
     const newQty = item.quantity - 1;
 
     const updatedItems = cartItems.map((item) =>
-      item.id === id ? { ...item, quantity: newQty } : item
+      item.id === id && (item.selectedVariant?.name || "") === (variantName || "") ? { ...item, quantity: newQty } : item
     );
     setCartItems(updatedItems);
     if (typeof window !== "undefined") {
       localStorage.setItem("local_cart", JSON.stringify(updatedItems));
+      window.dispatchEvent(new Event("cart-updated"));
     }
 
     try {
@@ -145,12 +152,13 @@ export default function CartView() {
     }
   };
 
-  const handleRemove = async (id: string | number) => {
+  const handleRemove = async (id: string | number, variantName?: string) => {
     if (confirm("Xóa sản phẩm này khỏi giỏ hàng?")) {
-      const updatedItems = cartItems.filter((item) => item.id !== id);
+      const updatedItems = cartItems.filter((item) => !(item.id === id && (item.selectedVariant?.name || "") === (variantName || "")));
       setCartItems(updatedItems);
       if (typeof window !== "undefined") {
         localStorage.setItem("local_cart", JSON.stringify(updatedItems));
+        window.dispatchEvent(new Event("cart-updated"));
       }
 
       try {
@@ -197,6 +205,7 @@ export default function CartView() {
       setCartItems([]);
       if (typeof window !== "undefined") {
         localStorage.removeItem("local_cart");
+        window.dispatchEvent(new Event("cart-updated"));
       }
       setIsCheckoutLoading(false);
     }
@@ -235,7 +244,7 @@ export default function CartView() {
   return (
     <div className="w-full bg-[#f8faf9] min-h-screen py-10 font-sans select-none text-gray-800 animate-fade-in">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-        
+
         {/* Navigation Breadcrumb */}
         <div className="mb-6">
           <Link
@@ -260,12 +269,12 @@ export default function CartView() {
 
         {cartItems.length > 0 ? (
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-            
+
             {/* Left Column: Cart items table list (8 cols) */}
             <div className="lg:col-span-8 space-y-4">
               {cartItems.map((item) => (
-                <div 
-                  key={item.id}
+                <div
+                  key={`${item.id}-${item.selectedVariant?.name || "default"}`}
                   className="bg-white rounded-2xl border border-gray-200 shadow-sm p-4 sm:p-5 flex flex-col sm:flex-row items-center gap-4 sm:gap-6 hover:shadow-md transition-shadow"
                 >
                   {/* Item Image */}
@@ -280,22 +289,31 @@ export default function CartView() {
                     <span className="block text-[10px] font-bold text-[#13a855]/95 uppercase tracking-wider">
                       {item.category}
                     </span>
-                    <Link 
+                    <Link
                       href={`/products/detail?id=${item.id}`}
                       className="block font-extrabold text-gray-850 text-sm sm:text-base hover:text-[#13a855] transition-colors leading-snug cursor-pointer"
                     >
                       {item.name}
                     </Link>
+                    {item.selectedVariant && (
+                      <div className="text-[11px] text-[#13a855] font-bold bg-[#e8f8f0] border border-[#cbeed7] px-2 py-0.5 rounded-md mt-1 inline-block">
+                        <span>Phân loại: {item.selectedVariant.name}</span>
+                        {item.selectedVariant.options && item.selectedVariant.options.length > 0 && (
+                          <span className="text-gray-500 font-semibold ml-1.5">
+                            ({item.selectedVariant.options.map((o: any) => `${o.key || o.name || ""}: ${o.value || ""}`).join(", ")})
+                          </span>
+                        )}
+                      </div>
+                    )}
                     <span className="block text-[10px] text-gray-400">Đơn vị: {item.unit}</span>
                   </div>
 
                   {/* Quantity selector & price details */}
                   <div className="flex flex-col sm:flex-row items-center gap-4 sm:gap-6 flex-shrink-0 w-full sm:w-auto justify-between sm:justify-end">
-                    
                     {/* Quantity selectors */}
                     <div className="flex items-center border border-gray-300 rounded-lg p-0.5 bg-white shadow-sm">
                       <button
-                        onClick={() => handleDecrease(item.id)}
+                        onClick={() => handleDecrease(item.id, item.selectedVariant?.name)}
                         className="p-1.5 text-gray-500 hover:text-[#13a855] hover:bg-[#e8f8f0] rounded-md transition-colors cursor-pointer"
                       >
                         <Minus className="w-3.5 h-3.5" />
@@ -304,7 +322,7 @@ export default function CartView() {
                         {item.quantity}
                       </span>
                       <button
-                        onClick={() => handleIncrease(item.id)}
+                        onClick={() => handleIncrease(item.id, item.selectedVariant?.name)}
                         className="p-1.5 text-gray-500 hover:text-[#13a855] hover:bg-[#e8f8f0] rounded-md transition-colors cursor-pointer"
                       >
                         <Plus className="w-3.5 h-3.5" />
@@ -313,9 +331,9 @@ export default function CartView() {
 
                     {/* Price details */}
                     <div className="text-right flex flex-row sm:flex-col items-center sm:items-end gap-3 sm:gap-0">
-                      <span className="text-xs text-gray-400 line-through font-medium">
+                      {/* <span className="text-xs text-gray-400 line-through font-medium">
                         {formatPrice(item.originalPrice * item.quantity)}
-                      </span>
+                      </span> */}
                       <span className="text-sm sm:text-base font-extrabold text-[#13a855]">
                         {formatPrice(item.price * item.quantity)}
                       </span>
@@ -323,7 +341,7 @@ export default function CartView() {
 
                     {/* Trash remove button */}
                     <button
-                      onClick={() => handleRemove(item.id)}
+                      onClick={() => handleRemove(item.id, item.selectedVariant?.name)}
                       className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg border border-transparent hover:border-red-100 transition-colors cursor-pointer active:scale-90"
                       title="Xóa sản phẩm"
                     >
@@ -336,14 +354,14 @@ export default function CartView() {
 
             {/* Right Column: Checkout Summary Card (4 cols) */}
             <div className="lg:col-span-4 space-y-5">
-              
+
               {/* Promo Code Input Card */}
               <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-5 space-y-4">
                 <div className="flex items-center gap-2 text-gray-850 font-extrabold text-sm sm:text-base">
                   <Tag className="w-4.5 h-4.5 text-[#13a855]" />
                   <span>Mã Giảm Giá</span>
                 </div>
-                
+
                 <form onSubmit={handleApplyPromo} className="flex gap-2">
                   <input
                     type="text"
@@ -377,7 +395,7 @@ export default function CartView() {
                     <span>Tổng tiền hàng</span>
                     <span className="text-gray-800">{formatPrice(tempTotal)}</span>
                   </div>
-                  
+
                   {savedAmount > 0 && (
                     <div className="flex justify-between text-emerald-600">
                       <span>Đã tiết kiệm</span>
@@ -398,7 +416,7 @@ export default function CartView() {
                       <span>-{formatPrice(promoDiscount)}</span>
                     </div>
                   )}
-                  
+
                   {shippingFee > 0 && (
                     <p className="text-[10px] text-gray-400 font-semibold leading-normal">
                       * Mua thêm <span className="text-[#13a855]">{formatPrice(300000 - tempTotal)}</span> để được miễn phí vận chuyển 2H.

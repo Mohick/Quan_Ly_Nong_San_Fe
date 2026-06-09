@@ -15,7 +15,20 @@ function mapSingleProduct(item: any) {
             startDate: (item.crop_lot || item.CropLot).start_date || (item.crop_lot || item.CropLot).StartDate || "",
             expectedHarvestDate: (item.crop_lot || item.CropLot).expected_harvest_date || (item.crop_lot || item.CropLot).ExpectedHarvestDate || "",
             status: (item.crop_lot || item.CropLot).status || (item.crop_lot || item.CropLot).Status || "",
+            farmId: (item.crop_lot || item.CropLot).farm_id || (item.crop_lot || item.CropLot).FarmID || "",
         } : null,
+        farmName: (() => {
+            const fName = item.FarmName || item.farm_name || 
+                          (item.crop_lot || item.CropLot)?.FarmName || 
+                          (item.crop_lot || item.CropLot)?.farm_name ||
+                          (item.crop_lot || item.CropLot)?.Farm?.FarmName ||
+                          (item.crop_lot || item.CropLot)?.Farm?.farm_name ||
+                          (item.crop_lot || item.CropLot)?.Farm?.Name ||
+                          (item.crop_lot || item.CropLot)?.Farm?.name ||
+                          item.Farm?.FarmName || item.Farm?.farm_name ||
+                          item.Farm?.Name || item.Farm?.name;
+            return fName || "";
+        })(),
         description: item.Description || item.description || "",
         stock: item.Stock || item.stock || 0,
         rating: item.Rating || 5.0,
@@ -96,7 +109,8 @@ function mapSingleProduct(item: any) {
             return list;
         })(),
         isBestSeller: item.IsBestSeller || false,
-        unit: item.Unit || "sp"
+        unit: item.Unit || "sp",
+        product_variants: item.ProductVariants || item.product_variants || []
     };
 }
 

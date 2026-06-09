@@ -26,6 +26,7 @@ export interface Product {
         startDate: string;
         expectedHarvestDate: string;
         status: string;
+        farmId?: string;
     } | null;
     rating: number;
     reviewsCount?: number;
@@ -37,6 +38,9 @@ export interface Product {
     images?: string[];
     isBestSeller?: boolean;
     unit: string;
+    farmName?: string;
+    farmId?: string;
+    FarmID?: string;
 }
 
 interface ProductCardProps {
@@ -107,9 +111,16 @@ const ProductCard = ({ product, viewMode = "grid", onAddToCart }: ProductCardPro
                 {/* Product Info on Right */}
                 <div className="flex flex-col flex-1 justify-between py-1 space-y-2">
                     <div className="space-y-1">
-                        <span className="text-[10px] font-bold text-[#13a855]/90 uppercase tracking-wider">
-                            {product.category}
-                        </span>
+                        <div className="flex items-center gap-2 flex-wrap">
+                            <span className="text-[10px] font-bold text-[#13a855]/90 uppercase tracking-wider">
+                                {product.category}
+                            </span>
+                            {product.farmName && (
+                                <span className="text-[9px] font-extrabold text-blue-600 bg-blue-50 px-2 py-0.5 rounded">
+                                    {product.farmName}
+                                </span>
+                            )}
+                        </div>
 
                         {/* Clickable Title */}
                         <Link href={`/products/detail?id=${product.id}`} className="block group/title cursor-pointer">
@@ -205,11 +216,17 @@ const ProductCard = ({ product, viewMode = "grid", onAddToCart }: ProductCardPro
                 />
             </Link>
 
-            {/* Product Info */}
             <div className="flex flex-col flex-1 p-4 space-y-2">
-                <span className="text-[10px] font-bold text-[#13a855]/90 uppercase tracking-wider">
-                    {product.category}
-                </span>
+                <div className="flex items-center justify-between gap-1 flex-wrap">
+                    <span className="text-[10px] font-bold text-[#13a855]/90 uppercase tracking-wider">
+                        {product.category}
+                    </span>
+                    {product.farmName && (
+                        <span className="text-[8px] font-extrabold text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded max-w-[120px] truncate" title={product.farmName}>
+                            {product.farmName}
+                        </span>
+                    )}
+                </div>
 
                 {/* Clickable Title */}
                 <Link href={`/products/detail?id=${product.id}`} className="block group/title cursor-pointer">
