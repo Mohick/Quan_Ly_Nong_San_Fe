@@ -477,9 +477,15 @@ export default function FarmDetailClient({ id }: { id: string }) {
                             <div className="md:col-span-2 space-y-6">
                                 <div className="space-y-2">
                                     <h3 className="text-base sm:text-lg font-black text-gray-900 tracking-tight">Về Trang Trại Chúng Tôi</h3>
-                                    <p className="text-xs sm:text-sm text-gray-600 leading-relaxed font-medium">
+                                    <p className={`text-xs sm:text-sm text-gray-600 leading-relaxed font-medium ${descExpanded ? "" : "line-clamp-3"}`}>
                                         {farm.description} Toàn bộ cơ sở vật chất nhà màng, lưới che phủ côn trùng được nhập khẩu trực tiếp từ Israel. Chúng tôi nỗ lực tối đa để mang lại những dòng nông sản có hàm lượng dinh dưỡng nguyên bản, tuyệt đối không lạm dụng chất hóa học tăng trưởng gây hại cho đất và con người.
                                     </p>
+                                    <button
+                                        onClick={() => setDescExpanded(!descExpanded)}
+                                        className="text-[#13a855] hover:text-[#0f8b44] font-black text-[11px] bg-transparent border-none outline-none cursor-pointer"
+                                    >
+                                        {descExpanded ? "ẩn bớt" : "...xem thêm"}
+                                    </button>
                                 </div>
 
                                 <div className="space-y-2">
