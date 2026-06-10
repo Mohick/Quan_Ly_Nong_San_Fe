@@ -261,7 +261,7 @@ export default function FarmDetailClient({ id }: { id: string }) {
             </div>
 
             {/* 3. YouTube Tabs Navigation Menu */}
-            <div className="max-w-6xl mx-auto px-4 sm:px-6 md:px-8 border-b border-gray-200 flex overflow-x-auto gap-6 sm:gap-8 scrollbar-none">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8 border-b border-gray-200 flex overflow-x-auto gap-6 sm:gap-8 scrollbar-none">
                 {[
                     { id: "home", label: "Trang chủ" },
                     { id: "products", label: "Sản phẩm" },
@@ -284,7 +284,7 @@ export default function FarmDetailClient({ id }: { id: string }) {
             </div>
 
             {/* 4. Dynamic Tab Contents */}
-            <div className="max-w-6xl mx-auto px-4 sm:px-6 md:px-8 pt-8">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8 pt-8">
 
                 {/* A. HOME TAB */}
                 {activeTab === "home" && (
