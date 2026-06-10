@@ -242,17 +242,11 @@ const Header = () => {
               );
             })}
           </nav>
-        </div>
 
-        {/* Drawer Footer / User Actions */}
-        <div className="border-t border-gray-100 p-5 bg-gray-50/50">
-          {loading ? (
-            <div className="flex justify-center py-2">
-              <div className="w-6 h-6 rounded-full border-2 border-t-transparent border-[#13a855] animate-spin" />
-            </div>
-          ) : user ? (
-            <div className="space-y-3">
-              <div 
+          {/* Account Section - inline after links */}
+          {!loading && user && (
+            <div className="px-3 pt-4 mt-2 border-t border-gray-100 space-y-2">
+              <div
                 onClick={() => {
                   setIsMobileMenuOpen(false);
                   setIsProfileDrawerOpen(true);
@@ -260,40 +254,44 @@ const Header = () => {
                 className="flex items-center gap-3 px-3 py-2 bg-white border border-gray-100 rounded-2xl shadow-sm cursor-pointer hover:bg-gray-50 transition-colors"
               >
                 {avatarUrl ? (
-                  <img src={avatarUrl} alt={displayName} className="w-10 h-10 rounded-full object-cover" />
+                  <img src={avatarUrl} alt={displayName} className="w-8 h-8 rounded-full object-cover" />
                 ) : (
-                  <div className="w-10 h-10 rounded-full bg-[#13a855] text-white flex items-center justify-center font-bold">
+                  <div className="w-8 h-8 rounded-full bg-[#13a855] text-white flex items-center justify-center font-bold text-xs">
                     {displayName.charAt(0).toUpperCase()}
                   </div>
                 )}
-                <div className="text-left">
-                  <p className="text-sm font-black text-gray-800 leading-tight truncate max-w-[130px]">{displayName}</p>
-                  <p className="text-[10px] text-emerald-600 font-extrabold tracking-wider">{userRole}</p>
+                <div className="text-left flex-1 min-w-0">
+                  <p className="text-xs font-black text-gray-800 leading-tight truncate max-w-[130px]">{displayName}</p>
+                  <p className="text-[9px] text-emerald-600 font-extrabold tracking-wider">{userRole}</p>
                 </div>
+                <button
+                  onClick={(e) => { e.stopPropagation(); logout(); }}
+                  className="flex items-center gap-1 px-2.5 py-1.5 bg-red-50 hover:bg-red-100 text-red-500 text-[10px] font-bold rounded-lg transition-all cursor-pointer shrink-0"
+                >
+                  <LogOut className="w-3 h-3" />
+                  <span>Đăng xuất</span>
+                </button>
               </div>
-              <button
-                onClick={logout}
-                className="w-full py-2.5 bg-red-50 hover:bg-red-100 text-red-600 text-xs font-bold rounded-xl transition-all flex items-center justify-center gap-2 cursor-pointer"
-              >
-                <LogOut className="w-4 h-4" />
-                <span>Đăng xuất</span>
-              </button>
             </div>
-          ) : (
-            <div className="flex flex-col gap-2">
-              <Link href="/login" onClick={() => setIsMobileMenuOpen(false)} className="w-full">
-                <button className="w-full py-2.5 border border-[#13a855] text-[#13a855] text-xs font-bold rounded-xl hover:bg-[#e8f8f0] cursor-pointer">
-                  Đăng nhập
-                </button>
+          )}
+          {!loading && !user && (
+            <div className="px-3 pt-4 mt-2 border-t border-gray-100 flex gap-2">
+              <Link href="/login" onClick={() => setIsMobileMenuOpen(false)} className="flex-1">
+                <button className="w-full py-2 border border-[#13a855] text-[#13a855] text-xs font-bold rounded-xl hover:bg-[#e8f8f0] cursor-pointer">Đăng nhập</button>
               </Link>
-              <Link href="/dang-ky" onClick={() => setIsMobileMenuOpen(false)} className="w-full">
-                <button className="w-full py-2.5 bg-[#13a855] text-white text-xs font-bold rounded-xl hover:bg-[#0f8b44] cursor-pointer">
-                  Đăng ký
-                </button>
+              <Link href="/dang-ky" onClick={() => setIsMobileMenuOpen(false)} className="flex-1">
+                <button className="w-full py-2 bg-[#13a855] text-white text-xs font-bold rounded-xl hover:bg-[#0f8b44] cursor-pointer">Đăng ký</button>
               </Link>
             </div>
           )}
         </div>
+
+        {/* Drawer Footer / Loading indicator only */}
+        {loading && (
+          <div className="border-t border-gray-100 p-4 bg-gray-50/50 flex justify-center">
+            <div className="w-6 h-6 rounded-full border-2 border-t-transparent border-[#13a855] animate-spin" />
+          </div>
+        )}
       </div>
 
       {/* Profile Drawer Backdrop */}
