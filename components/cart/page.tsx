@@ -163,8 +163,19 @@ export default function CartView() {
     const item = cartItems.find((item) => item.id === id && (item.selectedVariant?.name || "") === (variantName || ""));
     if (!item) return;
 
+    if (value === "") {
+      const updatedItems = cartItems.map((item) =>
+        item.id === id && (item.selectedVariant?.name || "") === (variantName || "") ? { ...item, quantity: "" as any } : item
+      );
+      setCartItems(updatedItems);
+      return;
+    }
+
     let parsedVal = parseInt(value, 10);
-    if (isNaN(parsedVal) || parsedVal < 1) {
+    if (isNaN(parsedVal)) {
+      return;
+    }
+    if (parsedVal < 1) {
       parsedVal = 1;
     }
 
@@ -188,6 +199,27 @@ export default function CartView() {
       await updateCartItemAPI(id, parsedVal, token);
     } catch (err) {
       // Ignore backend error in fallback mode
+    }
+  };
+
+  const handleQuantityBlur = async (id: string | number, variantName?: string) => {
+    const item = cartItems.find((item) => item.id === id && (item.selectedVariant?.name || "") === (variantName || ""));
+    if (!item) return;
+
+    if (item.quantity === ("" as any) || isNaN(item.quantity) || item.quantity < 1) {
+      const updatedItems = cartItems.map((el) =>
+        el.id === id && (el.selectedVariant?.name || "") === (variantName || "") ? { ...el, quantity: 1 } : el
+      );
+      setCartItems(updatedItems);
+      if (typeof window !== "undefined") {
+        localStorage.setItem("local_cart", JSON.stringify(updatedItems));
+        window.dispatchEvent(new Event("cart-updated"));
+      }
+
+      try {
+        const token = getCookie("access_token");
+        await updateCartItemAPI(id, 1, token);
+      } catch (err) {}
     }
   };
 
@@ -362,6 +394,7 @@ export default function CartView() {
                         min="1"
                         value={item.quantity}
                         onChange={(e) => handleQuantityChange(item.id, e.target.value, item.selectedVariant?.name)}
+                        onBlur={() => handleQuantityBlur(item.id, item.selectedVariant?.name)}
                         className="w-10 text-center font-extrabold text-xs sm:text-sm text-gray-800 bg-transparent border-none focus:outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                       />
                       <button

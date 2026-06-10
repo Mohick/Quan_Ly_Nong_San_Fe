@@ -249,10 +249,16 @@ export default function ProductDetailView({ product }: ProductDetailViewProps) {
   const handleDecrease = () => setQuantity((prev) => (prev > 1 ? prev - 1 : 1));
 
   const handleQuantityInputChange = (value: string) => {
-    let parsedVal = parseInt(value, 10);
-    if (isNaN(parsedVal) || parsedVal < 1) {
-      setQuantity(1);
+    if (value === "") {
+      setQuantity("" as any);
       return;
+    }
+    let parsedVal = parseInt(value, 10);
+    if (isNaN(parsedVal)) {
+      return;
+    }
+    if (parsedVal < 1) {
+      parsedVal = 1;
     }
     const stockLimit = getStockLimit();
     if (parsedVal > stockLimit) {
@@ -260,6 +266,12 @@ export default function ProductDetailView({ product }: ProductDetailViewProps) {
       parsedVal = stockLimit;
     }
     setQuantity(parsedVal);
+  };
+
+  const handleQuantityInputBlur = () => {
+    if (quantity === ("" as any) || isNaN(Number(quantity)) || Number(quantity) < 1) {
+      setQuantity(1);
+    }
   };
 
   const handleTabChange = (tab: "info" | "process") => {
@@ -531,6 +543,7 @@ export default function ProductDetailView({ product }: ProductDetailViewProps) {
                             min="1"
                             value={quantity}
                             onChange={(e) => handleQuantityInputChange(e.target.value)}
+                            onBlur={handleQuantityInputBlur}
                             className="w-14 text-center text-lg font-black text-gray-900 bg-transparent border-none focus:outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                           />
                           <button
