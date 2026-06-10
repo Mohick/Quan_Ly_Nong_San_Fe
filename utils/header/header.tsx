@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Search, ShoppingCart, Menu, X, LogOut, Settings } from "lucide-react";
+import { Search, ShoppingCart, Menu, X, LogOut, Settings, LayoutDashboard } from "lucide-react";
 import { useAutoLogin } from "@/hooks/useAutoLogin";
 
 // Stable helper outside component so it's never re-created
@@ -31,6 +31,8 @@ const Header = () => {
   const avatarUrl = (user as any)?.AvatarURL || (user as any)?.avatar_url || (user as any)?.image || "";
   const userRole = (user as any)?.Role || (user as any)?.role || "MEMBER";
 
+  const showDashboard = userRole.toUpperCase() === "ADMIN" || userRole.toUpperCase() === "FARMER" || userRole.toUpperCase() === "NHA_VUON" || userRole.toUpperCase() === "NHÀ VƯỜN";
+
   const navLinks = [
     { name: "Trang chủ", href: "/" },
     { name: "Sản phẩm", href: "/products" },
@@ -38,6 +40,10 @@ const Header = () => {
     { name: "Tin tức", href: "/news" },
     { name: "Liên hệ", href: "/contact" },
   ];
+
+  if (showDashboard) {
+    navLinks.push({ name: "Dashboard", href: "/dashboard" });
+  }
 
   const [cartCount, setCartCount] = useState(0);
 
@@ -180,9 +186,10 @@ const Header = () => {
             {/* Mobile Menu Button */}
             <button
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className="lg:hidden p-2 text-zinc-300 hover:text-[#00ff88] transition-colors"
+              className="lg:hidden p-3.5 text-white hover:text-[#00ff88] transition-colors relative z-50 cursor-pointer"
+              aria-label="Menu"
             >
-              {isMobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+              {isMobileMenuOpen ? <X className="w-7 h-7" /> : <Menu className="w-7 h-7" />}
             </button>
           </div>
         </div>
@@ -334,6 +341,17 @@ const Header = () => {
 
           {/* Account Links */}
           <nav className="flex flex-col space-y-1">
+            {showDashboard && (
+              <Link
+                href="/dashboard"
+                onClick={() => setIsProfileDrawerOpen(false)}
+                className="flex items-center gap-3 px-4 py-3 text-sm font-bold text-[#13a855] hover:bg-[#f0f9f4] rounded-xl transition-all"
+              >
+                <LayoutDashboard className="w-4.5 h-4.5 shrink-0" />
+                <span>Trang quản trị (Dashboard)</span>
+              </Link>
+            )}
+
             <Link
               href="/settings"
               onClick={() => setIsProfileDrawerOpen(false)}

@@ -6,7 +6,7 @@ import {
   Package, ShoppingBag, AlertTriangle, Tag,
   TrendingUp, CheckCircle, HelpCircle
 } from "lucide-react";
-import { productAPI, createProductAPI, deleteProductAPI, updateProductAPI, addDiscountAPI } from "@/lib/_api/product";
+import { productAPI, createProductAPI, deleteProductAPI, updateProductAPI, addDiscountAPI, getProductsByFarmerAPI } from "@/lib/_api/product";
 import { getDiscountByProductIdAPI, updateDiscountAPI, deleteDiscountAPI } from "@/lib/_api/discount";
 import { FarmAPI } from "@/lib/_api/farm";
 import { lotsAPI } from "@/lib/_api/lots";
@@ -15,6 +15,7 @@ import dynamic from 'next/dynamic';
 const ReactQuill = dynamic(() => import('react-quill-new'), { ssr: false });
 import 'react-quill-new/dist/quill.snow.css';
 import { toast } from "react-toastify";
+import { autoLoginAPI } from "@/lib/_api/auto_login";
 
 function getCookie(name: string): string | undefined {
   if (typeof document === "undefined") return undefined;
@@ -97,7 +98,19 @@ export default function DashboardProducts() {
   const loadProductsList = async () => {
     try {
       const token = getCookie("access_token");
-      const res = await productAPI(token);
+      
+      // Lấy thông tin tài khoản đăng nhập để trích xuất farmer ID hoặc userID
+      const loginRes = await autoLoginAPI(token);
+      const userData = loginRes.data?.data || loginRes.data;
+      const farmerId = userData?.ID || userData?.id;
+      
+      let res;
+      if (farmerId && userData?.Role !== "ADMIN") {
+        res = await getProductsByFarmerAPI(farmerId, token);
+      } else {
+        res = await productAPI(token);
+      }
+      
       const data = Array.isArray(res.data) ? res.data : [];
       setProducts(data);
     } catch (error) {

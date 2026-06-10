@@ -157,6 +157,26 @@ async function productAPI(token?: string, page: number = 1) {
     return { data: mapped };
 }
 
+async function getProductsByFarmerAPI(farmerId: string | number, token?: string) {
+    const headers: Record<string, string> = {};
+    if (token) {
+        headers["Authorization"] = token.startsWith("Bearer ") ? token : `Bearer ${token}`;
+    }
+    const res = await axiosInstance.get(`/products/get_by_farmer/${farmerId}`, { headers });
+    let rawData: any[] = [];
+    if (res.data) {
+        if (Array.isArray(res.data)) {
+            rawData = res.data;
+        } else if (res.data.data) {
+            rawData = Array.isArray(res.data.data) 
+                ? res.data.data 
+                : (Array.isArray(res.data.data.data) ? res.data.data.data : []);
+        }
+    }
+    const mapped = rawData.map(mapSingleProduct).filter(Boolean) as any[];
+    return { data: mapped };
+}
+
 async function createProductAPI(formData: FormData, token?: string) {
     const headers: Record<string, string> = {
         "Content-Type": "multipart/form-data",
@@ -252,6 +272,7 @@ async function getProductListAPI(page: number = 1, token?: string) {
 
 export { 
     productAPI, 
+    getProductsByFarmerAPI,
     createProductAPI, 
     getProductDetailAPI, 
     deleteProductAPI, 

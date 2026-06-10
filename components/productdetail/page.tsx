@@ -290,41 +290,41 @@ export default function ProductDetailView({ product }: ProductDetailViewProps) {
   const nextProductId = product.id < 25 ? product.id + 1 : 1;
 
   return (
-    <div className="min-h-screen w-full bg-[linear-gradient(180deg,#f0f8f2_0%,#f8faf9_320px)] py-6 font-sans text-gray-800 animate-fade-in sm:py-10">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen w-full bg-[linear-gradient(180deg,#f0f8f2_0%,#f8faf9_320px)] py-3 sm:py-10 font-sans text-gray-800 animate-fade-in">
+      <div className="mx-auto max-w-7xl px-3 sm:px-6 lg:px-8">
 
         {/* Navigation Breadcrumbs */}
-        <div className="mb-5 flex items-center justify-between gap-3">
+        <div className="mb-3 sm:mb-5 flex items-center justify-between gap-3">
           <Link
             href="/products"
-            className="group inline-flex min-h-11 items-center gap-2 rounded-xl bg-white px-3 text-sm font-bold text-gray-600 shadow-sm ring-1 ring-gray-200 transition-colors hover:text-[#0d8d49]"
+            className="group inline-flex min-h-9 sm:min-h-11 items-center gap-2 rounded-xl bg-white px-3 text-xs sm:text-sm font-bold text-gray-600 shadow-sm ring-1 ring-gray-200 transition-colors hover:text-[#0d8d49]"
           >
-            <ArrowLeft className="w-4 h-4 transform group-hover:-translate-x-1 transition-transform" />
+            <ArrowLeft className="w-3.5 h-3.5 sm:w-4 sm:h-4 transform group-hover:-translate-x-1 transition-transform" />
             <span>Quay lại cửa hàng</span>
           </Link>
         </div>
 
         {/* 2 MAIN TABS HEADER PLACED AT THE TOP OF THE PAGE */}
-        <div className="mb-5 inline-flex max-w-full gap-1.5 rounded-xl bg-white p-1.5 shadow-sm ring-1 ring-gray-200">
+        <div className="mb-3 sm:mb-5 inline-flex max-w-full gap-1.5 rounded-xl bg-white p-1 sm:p-1.5 shadow-sm ring-1 ring-gray-200">
           <button
             onClick={() => handleTabChange("info")}
-            className={`flex min-h-10 items-center justify-center gap-1.5 rounded-lg px-3 text-xs font-extrabold transition-all sm:text-sm ${activeTab === "info"
+            className={`flex min-h-8 sm:min-h-10 items-center justify-center gap-1.5 rounded-lg px-2.5 sm:px-3 text-xs font-extrabold transition-all sm:text-sm ${activeTab === "info"
               ? "bg-[#0f8f4a] text-white shadow-sm"
               : "text-gray-600 hover:bg-emerald-50 hover:text-[#0f8f4a]"
               }`}
           >
-            <Sparkles className="h-4 w-4 shrink-0" />
+            <Sparkles className="h-3.5 w-3.5 sm:h-4 sm:w-4 shrink-0" />
             <span>Thông tin mua hàng</span>
           </button>
 
           <button
             onClick={() => handleTabChange("process")}
-            className={`flex min-h-10 items-center justify-center gap-1.5 rounded-lg px-3 text-xs font-extrabold transition-all sm:text-sm ${activeTab === "process"
+            className={`flex min-h-8 sm:min-h-10 items-center justify-center gap-1.5 rounded-lg px-2.5 sm:px-3 text-xs font-extrabold transition-all sm:text-sm ${activeTab === "process"
               ? "bg-[#0f8f4a] text-white shadow-sm"
               : "text-gray-600 hover:bg-emerald-50 hover:text-[#0f8f4a]"
               }`}
           >
-            <Sprout className="h-4 w-4 shrink-0" />
+            <Sprout className="h-3.5 w-3.5 sm:h-4 sm:w-4 shrink-0" />
             <span>Nguồn gốc canh tác</span>
           </button>
         </div>
@@ -335,22 +335,17 @@ export default function ProductDetailView({ product }: ProductDetailViewProps) {
 
           {/* TAB 1: ALL PRODUCT INFO & COMMENTS CONSOLIDATED */}
           {activeTab === "info" && (
-            <div className="space-y-8 animate-fade-in">
+            <div className="space-y-4 sm:space-y-8 animate-fade-in">
               {/* Main Product Card */}
-              <div className="grid grid-cols-1 gap-7 overflow-hidden rounded-3xl bg-white p-4 shadow-lg shadow-emerald-950/5 ring-1 ring-gray-200 sm:p-6 md:grid-cols-12 lg:gap-10 lg:p-8">
+              <div className="grid grid-cols-1 gap-2 sm:gap-7 overflow-hidden rounded-3xl bg-white p-2.5 sm:p-6 md:grid-cols-12 lg:gap-10 lg:p-8 shadow-lg shadow-emerald-950/5 ring-1 ring-gray-200">
                 {/* Left: Image & Thumbnails */}
-                <div className="flex flex-col gap-4 md:col-span-6">
-                  <div className="group relative mx-auto flex aspect-square w-4/5 items-center justify-center overflow-hidden rounded-2xl bg-[#f4f7f4] ring-1 ring-gray-200">
+                <div className="flex flex-row sm:flex-col gap-3 sm:gap-4 md:col-span-6 items-center sm:items-stretch">
+                  <div className="group relative flex aspect-square w-1/3 sm:w-4/5 items-center justify-center overflow-hidden rounded-xl bg-[#f4f7f4] ring-1 ring-gray-200 shrink-0">
                     {/* Badges */}
-                    <div className="absolute top-4 left-4 z-20 flex flex-col gap-2">
-                      {product.isBestSeller && (
-                        <span className="px-3 py-1.5 text-[9px] font-extrabold text-white bg-gradient-to-r from-red-500 to-orange-500 rounded shadow-md tracking-wider uppercase">
-                          Được nhiều người chọn
-                        </span>
-                      )}
+                    <div className="absolute top-1 left-1 sm:top-4 sm:left-4 z-20 flex flex-col gap-1">
                       {product.discountPercent > 0 && (
-                        <span className="w-fit px-2.5 py-1 text-[9px] font-extrabold text-white bg-[#13a855] rounded shadow-md">
-                          Giảm {product.discountPercent}%
+                        <span className="w-fit px-1 py-0.5 text-[7px] sm:text-[9px] font-extrabold text-white bg-[#13a855] rounded shadow-md">
+                          -{product.discountPercent}%
                         </span>
                       )}
                     </div>
@@ -358,12 +353,12 @@ export default function ProductDetailView({ product }: ProductDetailViewProps) {
                     {/* Favorite */}
                     <button
                       onClick={() => setIsLiked(!isLiked)}
-                      className={`absolute top-4 right-4 z-20 p-2.5 rounded-full border shadow-md active:scale-90 transition-all cursor-pointer ${isLiked
+                      className={`absolute top-1 right-1 z-20 p-1 sm:p-2.5 rounded-full border shadow-md active:scale-90 transition-all cursor-pointer ${isLiked
                         ? "bg-red-50 border-red-200 text-red-500"
                         : "bg-white border-gray-200 text-gray-400 hover:text-gray-650"
                         }`}
                     >
-                      <Heart className={`w-4.5 h-4.5 ${isLiked ? "fill-red-500" : ""}`} />
+                      <Heart className={`w-3 h-3 sm:w-4.5 sm:h-4.5 ${isLiked ? "fill-red-500" : ""}`} />
                     </button>
 
                     <img
@@ -373,16 +368,16 @@ export default function ProductDetailView({ product }: ProductDetailViewProps) {
                     />
                   </div>
 
-                  {/* Thumbnail Selector */}
+                  {/* Thumbnail Selector - Hide on mobile, show on sm */}
                   {productImages.length > 1 && (
-                    <div className="flex flex-wrap items-center gap-3 justify-center">
+                    <div className="hidden sm:flex flex-wrap items-center gap-2 sm:gap-3 justify-center">
                       {productImages.map((imgUrl, index) => {
                         const isActive = imgUrl === activeImage;
                         return (
                           <button
                             key={index}
                             onClick={() => setSelectedImage(imgUrl)}
-                            className={`w-16 h-16 rounded-lg overflow-hidden border-2 bg-gray-55 transition-all cursor-pointer ${isActive
+                            className={`w-12 h-12 sm:w-16 sm:h-16 rounded-lg overflow-hidden border-2 bg-gray-55 transition-all cursor-pointer ${isActive
                               ? "border-[#13a855] shadow-md scale-105"
                               : "border-gray-200 hover:border-gray-300"
                               }`}
@@ -397,8 +392,7 @@ export default function ProductDetailView({ product }: ProductDetailViewProps) {
                       })}
                     </div>
                   )}
-
-                  <div className="grid grid-cols-1 gap-3 pt-3 text-sm font-bold text-gray-700 sm:grid-cols-3">
+                  <div className="hidden sm:grid grid-cols-3 gap-3 pt-3 text-sm font-bold text-gray-700">
                     <div className="flex items-center gap-3 rounded-xl border border-[#d5f3e0] bg-[#f4fbf7] p-3">
                       <ShieldCheck className="h-6 w-6 shrink-0 text-[#13a855]" />
                       <span>Nguồn gốc rõ ràng</span>
@@ -412,51 +406,81 @@ export default function ProductDetailView({ product }: ProductDetailViewProps) {
                       <span>Hỗ trợ đổi trả</span>
                     </div>
                   </div>
+                  
+                  {/* On Mobile, show title and info next to image */}
+                  <div className="flex sm:hidden flex-col flex-1 min-w-0 justify-between self-stretch py-1">
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-1">
+                        <span className="inline-block bg-emerald-50 px-1.5 py-0.5 text-[8px] font-extrabold text-emerald-700 rounded ring-1 ring-emerald-100">
+                          {product.category}
+                        </span>
+                      </div>
+                      <h1 className="text-sm font-black leading-tight text-gray-950 line-clamp-2">
+                        {product.name}
+                      </h1>
+                      <div className="flex items-center gap-2 text-[10px] font-bold text-gray-500">
+                        <span className="flex items-center gap-0.5 text-amber-500">
+                          <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
+                          {product.rating || 5}
+                        </span>
+                        <span>Đã bán {product.soldQuantity || 0}</span>
+                      </div>
+                    </div>
+                    <div className="bg-[#f0faf4] px-2 py-1 rounded-lg border border-[#cdebd8]">
+                      <span className="text-xs font-black text-[#0d8d49]">
+                        {formatPrice(currentPrice)}
+                      </span>
+                      <span className="text-[9px] text-gray-500 ml-0.5">/ {product.unit}</span>
+                    </div>
+                  </div>
                 </div>
 
                 {/* Right: Info Panel */}
-                <div className="flex flex-col justify-between space-y-6 md:col-span-6">
-                  <div className="space-y-5">
-                    <div className="flex flex-wrap items-center gap-2">
-                      <span className="inline-flex items-center rounded-full bg-emerald-50 px-3 py-1.5 text-sm font-extrabold text-emerald-700 ring-1 ring-emerald-200">
-                        {product.category}
-                      </span>
-                      <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-50 px-3 py-1.5 text-sm font-bold text-amber-800 ring-1 ring-amber-200">
-                        <Award className="h-4 w-4" />
-                        Nông sản có truy xuất
-                      </span>
-                    </div>
-
-                    <h1 className="text-3xl font-black leading-tight text-gray-950 sm:text-4xl">
-                      {product.name}
-                    </h1>
-
-                    <div className="flex flex-wrap items-center gap-x-5 gap-y-2 text-sm font-bold text-gray-600">
-                      <span className="flex items-center gap-1.5">
-                        <Star className="h-5 w-5 fill-amber-400 text-amber-400" />
-                        {product.rating || 5} điểm
-                      </span>
-                      <span>Đã bán {product.soldQuantity || 0}</span>
-                    </div>
-
-                    {/* Price */}
-                    <div className="rounded-2xl bg-[#f0faf4] p-4 ring-1 ring-[#cdebd8]">
-                      <p className="mb-1 text-sm font-bold text-gray-600">Giá bán tại vườn</p>
-                      <div className="flex flex-wrap items-baseline gap-3">
-                        <span className="text-3xl font-black text-[#0d8d49] sm:text-4xl">
-                          {formatPrice(currentPrice)}
-                          <span className="ml-1 text-base font-bold text-gray-600">/ {product.unit}</span>
+                <div className="flex flex-col justify-between space-y-2.5 sm:space-y-6 md:col-span-6">
+                  <div className="space-y-2.5 sm:space-y-5">
+                    {/* Hide top title on mobile as it is placed next to image */}
+                    <div className="hidden sm:block space-y-3 sm:space-y-5">
+                      <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
+                        <span className="inline-flex items-center rounded-full bg-emerald-50 px-2 py-1 text-xs sm:text-sm font-extrabold text-emerald-700 ring-1 ring-emerald-200">
+                          {product.category}
                         </span>
-                        {product.discountPercent > 0 && selectedVariantIdx === null && (
-                          <span className="text-base font-medium text-gray-400 line-through">
-                            {formatPrice(product.originalPrice)}
+                        <span className="inline-flex items-center gap-1 rounded-full bg-amber-50 px-2 py-1 text-xs sm:text-sm font-bold text-amber-800 ring-1 ring-amber-200">
+                          <Award className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                          Nông sản có truy xuất
+                        </span>
+                      </div>
+
+                      <h1 className="text-xl font-black leading-tight text-gray-950 sm:text-3xl md:text-4xl">
+                        {product.name}
+                      </h1>
+
+                      <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs sm:text-sm font-bold text-gray-600">
+                        <span className="flex items-center gap-1">
+                          <Star className="h-4 w-4 sm:h-5 sm:w-5 fill-amber-400 text-amber-400" />
+                          {product.rating || 5} điểm
+                        </span>
+                        <span>Đã bán {product.soldQuantity || 0}</span>
+                      </div>
+
+                      {/* Price */}
+                      <div className="rounded-2xl bg-[#f0faf4] p-3 sm:p-4 ring-1 ring-[#cdebd8]">
+                        <p className="mb-0.5 text-xs sm:text-sm font-bold text-gray-600">Giá bán tại vườn</p>
+                        <div className="flex flex-wrap items-baseline gap-2 sm:gap-3">
+                          <span className="text-2xl font-black text-[#0d8d49] sm:text-4xl">
+                            {formatPrice(currentPrice)}
+                            <span className="ml-1 text-xs sm:text-base font-bold text-gray-600">/ {product.unit}</span>
                           </span>
-                        )}
+                          {product.discountPercent > 0 && selectedVariantIdx === null && (
+                            <span className="text-sm sm:text-base font-medium text-gray-400 line-through">
+                              {formatPrice(product.originalPrice)}
+                            </span>
+                          )}
+                        </div>
                       </div>
                     </div>
 
                     {(product.farmName || product.cropLot?.name) && (
-                      <div className="rounded-2xl border border-amber-200 bg-amber-50/70 p-4">
+                      <div className="hidden sm:block rounded-2xl border border-amber-200 bg-amber-50/70 p-4">
                         <h2 className="mb-3 flex items-center gap-2 text-base font-black text-gray-900">
                           <Sprout className="h-5 w-5 text-[#0d8d49]" />
                           Nguồn gốc sản phẩm
@@ -486,11 +510,11 @@ export default function ProductDetailView({ product }: ProductDetailViewProps) {
 
                     {/* Variant Selector UI */}
                     {parsedVariants.length > 0 && (
-                      <div className="space-y-2.5 pt-2">
-                        <label className="block text-base font-black text-gray-900">
+                      <div className="space-y-1 sm:space-y-2.5 pt-0.5">
+                        <label className="block text-[11px] sm:text-base font-black text-gray-900">
                           Chọn loại sản phẩm
                         </label>
-                        <div className="flex flex-wrap gap-2.5">
+                        <div className="flex flex-wrap gap-1 sm:gap-2.5">
                           {parsedVariants.map((v, idx) => {
                             const isSelected = selectedVariantIdx === idx;
                             return (
@@ -498,18 +522,13 @@ export default function ProductDetailView({ product }: ProductDetailViewProps) {
                                 key={idx}
                                 type="button"
                                 onClick={() => setSelectedVariantIdx(idx)}
-                                className={`flex min-h-16 min-w-[145px] flex-col gap-1 rounded-xl border px-4 py-3 text-left text-sm shadow-sm transition-all ${isSelected
+                                className={`flex min-h-10 sm:min-h-16 min-w-[90px] sm:min-w-[145px] flex-col gap-0 rounded-lg border px-2 py-1 text-left text-[11px] sm:text-sm shadow-sm transition-all ${isSelected
                                   ? "border-[#13a855] bg-[#e8f8f0] text-[#13a855] scale-102 ring-1 ring-[#13a855]/20 font-extrabold"
-                                  : "border-gray-250 bg-white hover:border-gray-350 text-gray-700 hover:bg-gray-50/50 font-semibold"
+                                  : "border-gray-250 bg-white hover:border-gray-350 text-gray-700 hover:bg-gray-55/50 font-semibold"
                                   }`}
                               >
                                 <span className="font-extrabold">{v.name}</span>
-                                {v.options && v.options.length > 0 && (
-                                  <span className="max-w-[170px] truncate text-xs font-semibold text-gray-500">
-                                    {v.options.map((o: any) => `${o.key}: ${o.value}`).join(", ")}
-                                  </span>
-                                )}
-                                <span className={`mt-0.5 font-black ${isSelected ? "text-[#13a855]" : "text-emerald-700"}`}>
+                                <span className={`mt-0.5 font-black text-[10px] sm:text-xs ${isSelected ? "text-[#13a855]" : "text-emerald-700"}`}>
                                   {formatPrice(v.price)}
                                 </span>
                               </button>
@@ -520,23 +539,21 @@ export default function ProductDetailView({ product }: ProductDetailViewProps) {
                     )}
 
                     {/* Quantity selector */}
-                    <div className="rounded-2xl border border-gray-200 bg-gray-50 p-4">
-                      <div className="mb-3 flex items-center justify-between">
-                        <span className="text-base font-black text-gray-900">Số lượng cần mua</span>
-                        <div className="text-xs font-bold text-gray-500 flex items-center gap-3">
-                          <span>Trong kho: <strong className="text-emerald-700 font-black">{getStockLimit()}</strong> {product.unit}</span>
-                          <span className="text-gray-300">|</span>
-                          <span>Đơn vị: {product.unit}</span>
+                    <div className="rounded-xl border border-gray-200 bg-gray-50 p-2 sm:p-4">
+                      <div className="mb-1 flex items-center justify-between">
+                        <span className="text-[11px] sm:text-base font-black text-gray-900">Số lượng cần mua</span>
+                        <div className="text-[9px] sm:text-xs font-bold text-gray-500 flex items-center gap-1.5">
+                          <span>Kho: <strong className="text-emerald-700 font-black">{getStockLimit()}</strong> {product.unit}</span>
                         </div>
                       </div>
-                      <div className="flex flex-wrap items-center justify-between gap-4">
-                        <div className="flex items-center rounded-xl border border-gray-300 bg-white p-1 shadow-sm">
+                      <div className="flex items-center justify-between gap-2">
+                        <div className="flex items-center rounded-lg border border-gray-300 bg-white p-0.5 shadow-sm">
                           <button
                             onClick={handleDecrease}
                             aria-label="Giảm số lượng"
-                            className="flex h-11 w-11 items-center justify-center rounded-lg text-gray-700 transition-colors hover:bg-emerald-50 hover:text-[#13a855]"
+                            className="flex h-7 w-7 sm:h-11 sm:w-11 items-center justify-center rounded-md text-gray-700 transition-colors hover:bg-emerald-50 hover:text-[#13a855]"
                           >
-                            <Minus className="w-4.5 h-4.5" />
+                            <Minus className="w-3 h-3 sm:w-4.5 sm:h-4.5" />
                           </button>
                           <input
                             type="number"
@@ -544,19 +561,19 @@ export default function ProductDetailView({ product }: ProductDetailViewProps) {
                             value={quantity}
                             onChange={(e) => handleQuantityInputChange(e.target.value)}
                             onBlur={handleQuantityInputBlur}
-                            className="w-14 text-center text-lg font-black text-gray-900 bg-transparent border-none focus:outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                            className="w-8 sm:w-14 text-center text-xs sm:text-lg font-black text-gray-900 bg-transparent border-none focus:outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                           />
                           <button
                             onClick={handleIncrease}
                             aria-label="Tăng số lượng"
-                            className="flex h-11 w-11 items-center justify-center rounded-lg text-gray-700 transition-colors hover:bg-emerald-50 hover:text-[#13a855]"
+                            className="flex h-7 w-7 sm:h-11 sm:w-11 items-center justify-center rounded-md text-gray-700 transition-colors hover:bg-emerald-50 hover:text-[#13a855]"
                           >
-                            <Plus className="w-4.5 h-4.5" />
+                            <Plus className="w-3 h-3 sm:w-4.5 sm:h-4.5" />
                           </button>
                         </div>
-                        <div className="text-right text-sm font-bold text-gray-600">
+                        <div className="text-right text-[10px] sm:text-sm font-bold text-gray-600">
                           Tạm tính
-                          <span className="block text-xl font-black text-[#0d8d49]">{formatPrice(subtotal)}</span>
+                          <span className="block text-xs sm:text-xl font-black text-[#0d8d49]">{formatPrice(subtotal)}</span>
                         </div>
                       </div>
                     </div>
@@ -564,17 +581,17 @@ export default function ProductDetailView({ product }: ProductDetailViewProps) {
                   </div>
 
                   {/* CTA Buttons */}
-                  <div className="flex flex-col gap-3 border-t border-gray-100 pt-5 sm:flex-row">
+                  <div className="flex flex-row gap-2 border-t border-gray-100 pt-2 sm:pt-5">
                     <button
                       onClick={handleAddToCart}
-                      className="flex min-h-14 flex-1 items-center justify-center gap-2 rounded-xl bg-[#0f8f4a] px-6 text-base font-black text-white shadow-md transition-all hover:bg-[#0b713b] active:scale-[0.98]"
+                      className="flex min-h-9 sm:min-h-14 flex-1 items-center justify-center gap-1.5 rounded-lg bg-[#0f8f4a] px-2 sm:px-6 text-xs sm:text-base font-black text-white shadow-md transition-all hover:bg-[#0b713b] active:scale-[0.98]"
                     >
-                      <ShoppingCart className="w-4.5 h-4.5" />
-                      <span>Thêm vào giỏ</span>
+                      <ShoppingCart className="w-3.5 h-3.5 sm:w-4.5 sm:h-4.5" />
+                      <span>Thêm giỏ hàng</span>
                     </button>
                     <button
                       onClick={handleBuyNow}
-                      className="flex min-h-14 flex-1 items-center justify-center rounded-xl border-2 border-[#0f8f4a] bg-white px-6 text-base font-black text-[#0f8f4a] transition-all hover:bg-emerald-50 active:scale-[0.98]"
+                      className="flex min-h-9 sm:min-h-14 flex-1 items-center justify-center rounded-lg border border-[#0f8f4a] bg-white px-2 sm:px-6 text-xs sm:text-base font-black text-[#0f8f4a] transition-all hover:bg-emerald-50 active:scale-[0.98]"
                     >
                       <span>Mua ngay</span>
                     </button>
