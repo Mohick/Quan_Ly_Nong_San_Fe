@@ -355,9 +355,9 @@ const ItemProduct = ({
             <div className="flex-grow">
                 {isLoading ? (
                     /* Loading Skeleton Grid */
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8">
+                    <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-8">
                         {[1, 2, 3, 4].map((id) => (
-                            <div key={id} className="animate-pulse bg-white border border-gray-200 rounded-lg p-5 space-y-4 h-[350px]">
+                            <div key={id} className="animate-pulse bg-white border border-gray-200 rounded-lg p-3 sm:p-5 space-y-4 h-[300px] sm:h-[350px]">
                                 <div className="bg-gray-200 aspect-square w-full rounded-md" />
                                 <div className="h-4 bg-gray-200 rounded w-1/3" />
                                 <div className="h-6 bg-gray-200 rounded w-5/6" />
@@ -368,7 +368,7 @@ const ItemProduct = ({
                 ) : products.length > 0 ? (
                     /* Loaded Products Display */
                     viewMode === "grid" ? (
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8">
+                        <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-8">
                             {products.map((product) => (
                                 <ProductCard key={product.id} product={product} viewMode="grid" onAddToCart={handleAddToCart} />
                             ))}
