@@ -1,10 +1,24 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Search, ShoppingCart, Menu, X, LogOut, Settings } from "lucide-react";
 import { useAutoLogin } from "@/hooks/useAutoLogin";
+
+// Stable helper outside component so it's never re-created
+function readCartCount(): number {
+  if (typeof window === "undefined") return 0;
+  try {
+    const raw = localStorage.getItem("local_cart");
+    if (!raw) return 0;
+    const items = JSON.parse(raw);
+    if (!Array.isArray(items)) return 0;
+    return items.reduce((acc: number, item: any) => acc + (Number(item.quantity) || 0), 0);
+  } catch {
+    return 0;
+  }
+}
 
 const Header = () => {
   const pathname = usePathname();
@@ -27,32 +41,21 @@ const Header = () => {
 
   const [cartCount, setCartCount] = useState(0);
 
-  useEffect(() => {
-    const updateCount = () => {
-      if (typeof window !== "undefined") {
-        const localCart = localStorage.getItem("local_cart");
-        if (localCart) {
-          try {
-            const items = JSON.parse(localCart);
-            if (Array.isArray(items)) {
-              const count = items.reduce((acc, item) => acc + (item.quantity || 0), 0);
-              setCartCount(count);
-              return;
-            }
-          } catch (_) { }
-        }
-      }
-      setCartCount(0);
-    };
-
-    updateCount();
-    window.addEventListener("cart-updated", updateCount);
-    window.addEventListener("storage", updateCount);
-    return () => {
-      window.removeEventListener("cart-updated", updateCount);
-      window.removeEventListener("storage", updateCount);
-    };
+  const syncCart = useCallback(() => {
+    setCartCount(readCartCount());
   }, []);
+
+  useEffect(() => {
+    // Read immediately after mount
+    syncCart();
+
+    window.addEventListener("cart-updated", syncCart);
+    window.addEventListener("storage", syncCart);
+    return () => {
+      window.removeEventListener("cart-updated", syncCart);
+      window.removeEventListener("storage", syncCart);
+    };
+  }, [syncCart]);
 
   const [isVisible, setIsVisible] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);

@@ -333,7 +333,7 @@ const ItemProduct = ({
             }
 
             localStorage.setItem("local_cart", JSON.stringify(cartItems));
-            window.dispatchEvent(new Event("cart-updated"));
+            queueMicrotask(() => window.dispatchEvent(new Event("cart-updated")));
         }
 
         toast.success(`Đã thêm "${product.name}" vào giỏ hàng thành công!`);

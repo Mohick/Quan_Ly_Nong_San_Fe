@@ -193,7 +193,7 @@ export default function ProductDetailView({ product }: ProductDetailViewProps) {
       }
 
       localStorage.setItem("local_cart", JSON.stringify(cartItems));
-      window.dispatchEvent(new Event("cart-updated"));
+      queueMicrotask(() => window.dispatchEvent(new Event("cart-updated")));
     }
 
     const varNameStr = selectedVariantIdx !== null && parsedVariants[selectedVariantIdx]
