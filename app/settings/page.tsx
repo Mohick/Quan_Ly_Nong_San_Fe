@@ -188,7 +188,7 @@ export default function ProfileSettings() {
       console.error("Lỗi khởi tạo trang trại:", error);
       toast.error(
         error.response?.data?.message ||
-          "Lỗi hệ thống khi khởi tạo trang trại."
+        "Lỗi hệ thống khi khởi tạo trang trại."
       );
     } finally {
       setIsSubmitting(false);
@@ -233,9 +233,9 @@ export default function ProfileSettings() {
                 <div className="flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-tr from-[#13a855] to-[#0a5c36] text-lg font-extrabold text-white shadow-inner">
                   {userDisplayName
                     ? userDisplayName
-                        .split(" ")
-                        .map((n: string) => n[0])
-                        .join("")
+                      .split(" ")
+                      .map((n: string) => n[0])
+                      .join("")
                     : "A"}
                 </div>
                 <div className="border-gray-150 absolute -right-1 -bottom-1 cursor-pointer rounded-full border bg-white p-1 shadow-sm transition-colors hover:bg-gray-50">
@@ -255,11 +255,10 @@ export default function ProfileSettings() {
             <nav className="flex flex-col gap-1 text-xs font-bold sm:text-sm">
               <button
                 onClick={() => setActiveTab("profile")}
-                className={`flex cursor-pointer items-center gap-3 rounded-xl px-4 py-3 transition-all ${
-                  activeTab === "profile"
+                className={`flex cursor-pointer items-center gap-3 rounded-xl px-4 py-3 transition-all ${activeTab === "profile"
                     ? "border-l-4 border-[#13a855] bg-[#e8f8f0] text-[#13a855]"
                     : "text-gray-500 hover:bg-gray-50 hover:text-gray-800"
-                }`}
+                  }`}
               >
                 <User className="h-4.5 w-4.5" />
                 <span>Thông tin tài khoản</span>
@@ -267,11 +266,10 @@ export default function ProfileSettings() {
 
               <button
                 onClick={() => setActiveTab("farm")}
-                className={`flex cursor-pointer items-center gap-3 rounded-xl px-4 py-3 transition-all ${
-                  activeTab === "farm"
+                className={`flex cursor-pointer items-center gap-3 rounded-xl px-4 py-3 transition-all ${activeTab === "farm"
                     ? "border-l-4 border-[#13a855] bg-[#e8f8f0] text-[#13a855]"
                     : "text-gray-500 hover:bg-gray-50 hover:text-gray-800"
-                }`}
+                  }`}
               >
                 <Landmark className="h-4.5 w-4.5" />
                 <span>{myFarm ? "Quản lý trang trại" : "Đăng ký mở Trang trại"}</span>
@@ -279,11 +277,10 @@ export default function ProfileSettings() {
 
               <button
                 onClick={() => setActiveTab("security")}
-                className={`flex cursor-pointer items-center gap-3 rounded-xl px-4 py-3 transition-all ${
-                  activeTab === "security"
+                className={`flex cursor-pointer items-center gap-3 rounded-xl px-4 py-3 transition-all ${activeTab === "security"
                     ? "border-l-4 border-[#13a855] bg-[#e8f8f0] text-[#13a855]"
                     : "text-gray-500 hover:bg-gray-50 hover:text-gray-800"
-                }`}
+                  }`}
               >
                 <Shield className="h-4.5 w-4.5" />
                 <span>Bảo mật tài khoản</span>

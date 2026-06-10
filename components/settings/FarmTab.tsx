@@ -119,7 +119,7 @@ export default function FarmTab({
                 </div>
 
                 <div className="pt-4 border-t border-gray-100 flex justify-end">
-                    <Link href="/dashboard" className="block w-full sm:w-auto">
+                    <Link href="/dashboard/farm" className="block w-full sm:w-auto">
                         <button className="w-full sm:w-auto px-6 py-3.5 bg-[#13a855] hover:bg-[#0f8b44] text-white text-xs sm:text-sm font-bold rounded-xl shadow-md transition-all active:scale-95 flex items-center justify-center gap-2 cursor-pointer">
                             <span>Truy cập Cổng quản trị trang trại</span>
                             <ArrowLeft className="w-4 h-4 rotate-180" />

@@ -1,6 +1,5 @@
 "use client";
 import { AnimatePresence, motion } from "framer-motion";
-import { exit } from "process";
 import { useState, useEffect } from "react";
 
 const pathVariants = {
@@ -17,16 +16,19 @@ const containerVariants = {
 };
 
 const Loading = () => {
-  const [isVisible, setIsVisible] = useState(true);
-
-  useEffect(() => {
-    // Kiểm tra xem đã hiển thị loading trong phiên này chưa
-    const hasLoaded = sessionStorage.getItem("hasLoaded");
-    if (hasLoaded) {
-      setIsVisible(false);
-    } else {
+  const [isVisible, setIsVisible] = useState(() => {
+    if (typeof window !== "undefined") {
+      const hasLoaded = sessionStorage.getItem("hasLoaded");
+      if (hasLoaded) {
+        return false;
+      }
       sessionStorage.setItem("hasLoaded", "true");
     }
+    return true;
+  });
+
+  useEffect(() => {
+    // Session storage is initialized lazily during state setup to avoid set-state-in-effect
   }, []);
 
   const transition = {

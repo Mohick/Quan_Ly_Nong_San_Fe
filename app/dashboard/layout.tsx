@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { LayoutDashboard, Sprout, ShoppingBag, Package, Layers } from "lucide-react";
+import { LayoutDashboard, Sprout, ShoppingBag, Package, Layers, Landmark, House } from "lucide-react";
 import { usePathname } from "next/navigation";
 import DashboardSidebar from "@/components/dashboard/dashboard_sidebar";
 import DashboardTopbar from "@/components/dashboard/dashboard_topbar";
@@ -18,9 +18,10 @@ export default function DashboardLayout({
     { name: "Tổng Quan", href: "/dashboard", icon: LayoutDashboard },
     { name: "Sản Phẩm", href: "/dashboard/products", icon: Package },
     { name: "Lô Canh Tác", href: "/dashboard/lots", icon: Layers },
+    { name: "Thông Tin Trang Trại", href: "/dashboard/farm", icon: Landmark },
     { name: "Doanh Thu", href: "/dashboard/revenue", icon: Sprout },
     { name: "Quản Lý Đơn Hàng", href: "/dashboard/orders", icon: ShoppingBag },
-    { name: "Về trang chủ", href: "/", icon: ShoppingBag },
+    { name: "Về trang chủ", href: "/", icon: House },
   ];
 
   return (
@@ -36,7 +37,7 @@ export default function DashboardLayout({
       {/* Main dynamic children panel */}
       <main className="flex-1 flex flex-col min-h-screen transition-all duration-300">
         <DashboardTopbar />
-        
+
         {/* Dashboard Content Container */}
         <section className="p-6 md:p-8 flex-1 bg-[#fafafb]">
           {children}

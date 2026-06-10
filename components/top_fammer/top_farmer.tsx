@@ -104,19 +104,19 @@ const TopFarmer = () => {
 
                                     {/* Name and Rating */}
                                     <div className="flex items-center justify-between gap-2 mt-1">
-                                        <h3 className="font-extrabold text-gray-800 text-lg hover:text-[#13a855] transition-colors leading-tight">
-                                            {farmer.name}
+                                        <h3 className="font-extrabold text-gray-800 text-lg hover:text-[#13a855] transition-colors leading-tight" title={farmer.name}>
+                                            {farmer.name.length > 25 ? `${farmer.name.slice(0, 25)}...` : farmer.name}
                                         </h3>
-                                        <div className="flex items-center gap-1 text-xs font-bold text-amber-500 bg-amber-50 border border-amber-200/50 px-2 py-0.5 rounded-md">
+                                        <div className="flex items-center gap-1 text-xs font-bold text-amber-500 bg-amber-50 border border-amber-200/50 px-2 py-0.5 rounded-md shrink-0">
                                             <span>★</span>
                                             <span>{farmer.rating}</span>
                                         </div>
                                     </div>
 
                                     {/* Location info */}
-                                    <div className="flex items-center gap-1.5 text-xs text-gray-500 mt-2 font-medium">
+                                    <div className="flex items-center gap-1.5 text-xs text-gray-500 mt-2 font-medium" title={farmer.location}>
                                         <MapPin className="w-3.5 h-3.5 text-red-500 shrink-0" />
-                                        <span>{farmer.location}</span>
+                                        <span className="truncate">{farmer.location.length > 35 ? `${farmer.location.slice(0, 35)}...` : farmer.location}</span>
                                     </div>
 
                                     {/* Specialties tags */}
@@ -124,8 +124,8 @@ const TopFarmer = () => {
                                         <span className="text-[11px] font-bold text-[#13a855] uppercase tracking-wider">
                                             Mô hình chuyên canh:
                                         </span>
-                                        <p className="text-xs text-gray-600 font-medium leading-relaxed">
-                                            {farmer.specialty}
+                                        <p className="text-xs text-gray-600 font-medium leading-relaxed" title={farmer.specialty}>
+                                            {farmer.specialty.length > 80 ? `${farmer.specialty.slice(0, 80)}...` : farmer.specialty}
                                         </p>
                                     </div>
 
