@@ -137,7 +137,7 @@ const HeaderProduct = ({
   return (
     <div
       ref={containerRef}
-      className="relative z-30 mx-auto my-3 w-full max-w-7xl select-none rounded-xl bg-[#fcfdfe] p-3 font-sans"
+      className="relative z-30 mx-auto my-3 w-full max-w-7xl select-none rounded-xl bg-[#fcfdfe] px-4 sm:px-6 lg:px-8 py-3 font-sans"
     >
       <div className="space-y-3">
 
