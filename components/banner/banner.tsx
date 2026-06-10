@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useCallback, useRef } from "react";
-import { ChevronLeft, ChevronRight, Calendar, ArrowRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, Calendar, MapPin, ArrowRight, ChevronDown } from "lucide-react";
 
 interface EventSlide {
   id: number;
@@ -77,6 +77,43 @@ const Banner = () => {
     setTimeout(() => setIsTransitioning(false), 500);
   };
 
+  const scrollToNextSection = () => {
+    if (bannerRef.current) {
+      // Find the next element sibling or fallback to window height
+      const nextElement = bannerRef.current.nextElementSibling;
+      if (nextElement) {
+        nextElement.scrollIntoView({ behavior: "smooth" });
+      } else {
+        window.scrollTo({
+          top: window.innerHeight - 80,
+          behavior: "smooth"
+        });
+      }
+    }
+  };
+
+  // Wheel event handler to jump down on scroll down
+  useEffect(() => {
+    const handleWheel = (e: WheelEvent) => {
+      // Check if user is scrolling down and is currently at the top of page
+      if (window.scrollY < 10 && e.deltaY > 0) {
+        e.preventDefault();
+        scrollToNextSection();
+      }
+    };
+
+    const element = bannerRef.current;
+    if (element) {
+      // Set passive to false so preventDefault works
+      element.addEventListener("wheel", handleWheel, { passive: false });
+    }
+    return () => {
+      if (element) {
+        element.removeEventListener("wheel", handleWheel);
+      }
+    };
+  }, []);
+
   // Autoplay functionality
   useEffect(() => {
     const duration = 5000; // 5 seconds per slide
@@ -99,7 +136,7 @@ const Banner = () => {
   return (
     <section
       ref={bannerRef}
-      className="relative w-full overflow-hidden bg-gray-900 group font-sans h-[33vh] min-h-[220px]"
+      className="relative w-full overflow-hidden bg-gray-900 group h-[33vh] min-h-[220px] font-sans"
     >
       {/* Background Slides */}
       <div className="relative w-full h-full">
@@ -121,29 +158,39 @@ const Banner = () => {
             {/* Slide Content */}
             <div className="absolute inset-0 z-20 flex items-center">
               <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
-                <div className="space-y-2 max-w-2xl">
+                <div className="max-w-3xl space-y-2 md:space-y-3">
                   {/* Category Badge */}
-                  <span className="inline-block px-3 py-1 text-[10px] font-black uppercase tracking-wider text-white rounded-full bg-white/10 backdrop-blur-md border border-white/20 shadow-sm">
+                  <span className="inline-block px-2.5 py-0.5 text-[10px] font-black uppercase tracking-wider text-white rounded-full bg-white/10 backdrop-blur-md border border-white/20 shadow-sm">
                     {slide.category}
                   </span>
 
                   {/* Title */}
-                  <h1 className="text-xl sm:text-2xl font-black text-white tracking-tight leading-[1.15] select-none">
+                  <h1 className="text-xl sm:text-3xl lg:text-4xl font-black text-white tracking-tight leading-[1.15] select-none">
                     {slide.title}
                   </h1>
 
+                  {/* Description */}
+                  <p className="text-xs sm:text-sm text-gray-300 font-normal leading-relaxed max-w-2xl select-none line-clamp-2">
+                    {slide.description}
+                  </p>
+
                   {/* Details and CTA Row */}
-                  <div className="flex flex-wrap items-center gap-2 pt-1">
-                    <div className="flex items-center gap-1.5 text-xs text-gray-200 bg-white/5 backdrop-blur-sm border border-white/10 px-2.5 py-1 rounded-lg shadow-sm">
-                      <Calendar className="w-3 h-3 text-[#10b981]" />
+                  <div className="flex flex-wrap items-center gap-3 pt-1">
+                    <div className="flex items-center gap-1.5 text-[10px] md:text-xs text-gray-200 bg-white/5 backdrop-blur-sm border border-white/10 px-2 py-1 rounded-lg shadow-sm">
+                      <Calendar className="w-3.5 h-3.5 text-[#10b981]" />
                       <span>{slide.date}</span>
                     </div>
+                    <div className="flex items-center gap-1.5 text-[10px] md:text-xs text-gray-200 bg-white/5 backdrop-blur-sm border border-white/10 px-2 py-1 rounded-lg shadow-sm">
+                      <MapPin className="w-3.5 h-3.5 text-[#10b981]" />
+                      <span>{slide.location}</span>
+                    </div>
+
                     <a
                       href={slide.ctaLink}
-                      className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 text-xs text-white font-extrabold rounded-lg bg-gradient-to-r ${slide.accentColor} hover:shadow-lg hover:brightness-110 active:scale-95 transition-all duration-200`}
+                      className={`inline-flex items-center gap-1.5 px-4 py-2 text-[10px] md:text-xs text-white font-extrabold rounded-lg bg-gradient-to-r ${slide.accentColor} hover:shadow-lg hover:brightness-110 active:scale-95 transition-all duration-200`}
                     >
                       <span>{slide.ctaText}</span>
-                      <ArrowRight className="w-3 h-3" />
+                      <ArrowRight className="w-3.5 h-3.5" />
                     </a>
                   </div>
                 </div>
@@ -156,20 +203,20 @@ const Banner = () => {
       {/* Navigation Arrows */}
       <button
         onClick={prevSlide}
-        className="absolute left-6 top-1/2 -translate-y-1/2 z-30 p-3 rounded-full bg-white/10 hover:bg-white/25 border border-white/25 text-white backdrop-blur-md transition-all duration-200 active:scale-90 cursor-pointer hidden sm:block opacity-0 group-hover:opacity-100 shadow-md"
+        className="absolute left-4 top-1/2 -translate-y-1/2 z-30 p-2 rounded-full bg-white/10 hover:bg-white/25 border border-white/25 text-white backdrop-blur-md transition-all duration-200 active:scale-90 cursor-pointer hidden sm:block opacity-0 group-hover:opacity-100 shadow-md"
       >
-        <ChevronLeft className="w-6 h-6" />
+        <ChevronLeft className="w-5 h-5" />
       </button>
       <button
         onClick={nextSlide}
-        className="absolute right-6 top-1/2 -translate-y-1/2 z-30 p-3 rounded-full bg-white/10 hover:bg-white/25 border border-white/25 text-white backdrop-blur-md transition-all duration-200 active:scale-90 cursor-pointer hidden sm:block opacity-0 group-hover:opacity-100 shadow-md"
+        className="absolute right-4 top-1/2 -translate-y-1/2 z-30 p-2 rounded-full bg-white/10 hover:bg-white/25 border border-white/25 text-white backdrop-blur-md transition-all duration-200 active:scale-90 cursor-pointer hidden sm:block opacity-0 group-hover:opacity-100 shadow-md"
       >
-        <ChevronRight className="w-6 h-6" />
+        <ChevronRight className="w-5 h-5" />
       </button>
 
       {/* Slide Indicators */}
-      <div className="absolute bottom-3 left-0 right-0 z-30 flex justify-center">
-        <div className="flex gap-1.5">
+      <div className="absolute bottom-4 left-0 right-0 z-30 flex flex-col items-center gap-2">
+        <div className="flex gap-2">
           {slidesData.map((_, index) => (
             <button
               key={index}
@@ -180,7 +227,7 @@ const Banner = () => {
                 setCurrentSlide(index);
                 setTimeout(() => setIsTransitioning(false), 500);
               }}
-              className={`h-1.5 rounded-full cursor-pointer transition-all duration-300 ${index === currentSlide ? "w-5 bg-[#10b981]" : "w-1.5 bg-white/40 hover:bg-white/60"
+              className={`h-2 rounded-full cursor-pointer transition-all duration-300 ${index === currentSlide ? "w-6 bg-[#10b981]" : "w-2 bg-white/40 hover:bg-white/60"
                 }`}
             />
           ))}
