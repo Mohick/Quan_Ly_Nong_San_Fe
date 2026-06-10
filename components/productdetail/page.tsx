@@ -249,7 +249,7 @@ export default function ProductDetailView({ product }: ProductDetailViewProps) {
     <div className="min-h-screen w-full bg-[linear-gradient(180deg,#f0f8f2_0%,#f8faf9_320px)] py-6 font-sans text-gray-800 animate-fade-in sm:py-10">
       <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
 
-        {/* Navigation Breadcrumbs & Dynamic Prev/Next Page Switcher */}
+        {/* Navigation Breadcrumbs */}
         <div className="mb-5 flex items-center justify-between gap-3">
           <Link
             href="/products"
@@ -258,27 +258,6 @@ export default function ProductDetailView({ product }: ProductDetailViewProps) {
             <ArrowLeft className="w-4 h-4 transform group-hover:-translate-x-1 transition-transform" />
             <span>Quay lại cửa hàng</span>
           </Link>
-
-          {/* Dynamic Prev/Next Navigation Switcher */}
-          <div className="flex items-center gap-2.5 font-sans">
-            <Link
-              href={`/products/detail?id=${prevProductId}`}
-              className="flex items-center gap-1.5 px-3 py-1.8 bg-white hover:bg-[#e8f8f0] text-gray-500 hover:text-[#13a855] border border-gray-250 hover:border-[#13a855]/40 rounded-lg text-xs font-bold transition-all active:scale-95 shadow-sm cursor-pointer"
-              title="Sản phẩm trước đó"
-            >
-              <ChevronLeft className="w-3.5 h-3.5" />
-              <span className="hidden sm:inline">Trước đó</span>
-            </Link>
-            <span className="text-xs text-gray-300 font-bold hidden sm:inline">|</span>
-            <Link
-              href={`/products/detail?id=${nextProductId}`}
-              className="flex items-center gap-1.5 px-3 py-1.8 bg-white hover:bg-[#e8f8f0] text-gray-500 hover:text-[#13a855] border border-gray-250 hover:border-[#13a855]/40 rounded-lg text-xs font-bold transition-all active:scale-95 shadow-sm cursor-pointer"
-              title="Sản phẩm tiếp theo"
-            >
-              <span className="hidden sm:inline">Tiếp theo</span>
-              <ChevronRight className="w-3.5 h-3.5" />
-            </Link>
-          </div>
         </div>
 
         {/* 2 MAIN TABS HEADER PLACED AT THE TOP OF THE PAGE */}
