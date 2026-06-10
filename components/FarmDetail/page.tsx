@@ -251,22 +251,6 @@ export default function FarmDetailClient({ id }: { id: string }) {
                     </div>
                 </div>
 
-                {/* Bio & Specialties below the Avatar/Name row */}
-                <div className="mt-5 pt-4 border-t border-gray-200/60 max-w-4xl space-y-2.5">
-                    {/* Expansible description snippet */}
-                    <div className="text-xs font-medium text-gray-600 leading-relaxed">
-                        <p className={descExpanded ? "" : "line-clamp-2"}>
-                            {farm.description} Lâm Đồng chuyên trồng nông sản chất lượng cao theo phương pháp nông nghiệp hữu cơ bền vững. Toàn bộ cây trồng được cấp nước tưới tự động, giảm thiểu phân bón hóa học và theo sát quy trình kiểm duyệt VietGAP chuẩn xuất khẩu.
-                        </p>
-                        <button
-                            onClick={() => setDescExpanded(!descExpanded)}
-                            className="text-gray-900 hover:text-[#13a855] font-black mt-1 bg-transparent border-none outline-none cursor-pointer text-[11px]"
-                        >
-                            {descExpanded ? "ẩn bớt" : "...xem thêm"}
-                        </button>
-                    </div>
-
-                </div>
             </div>
 
             {/* 3. YouTube Tabs Navigation Menu */}
