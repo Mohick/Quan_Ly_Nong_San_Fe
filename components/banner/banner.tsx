@@ -203,20 +203,20 @@ const Banner = () => {
       {/* Navigation Arrows */}
       <button
         onClick={prevSlide}
-        className="absolute left-4 top-1/2 -translate-y-1/2 z-30 p-2 rounded-full bg-white/10 hover:bg-white/25 border border-white/25 text-white backdrop-blur-md transition-all duration-200 active:scale-90 cursor-pointer hidden sm:block opacity-0 group-hover:opacity-100 shadow-md"
+        className="absolute left-4 md:left-6 top-1/2 -translate-y-1/2 z-30 p-2 md:p-3 rounded-full bg-white/10 hover:bg-white/25 border border-white/25 text-white backdrop-blur-md transition-all duration-200 active:scale-90 cursor-pointer hidden sm:block opacity-0 group-hover:opacity-100 shadow-md"
       >
-        <ChevronLeft className="w-5 h-5" />
+        <ChevronLeft className="w-5 h-5 md:w-6 md:h-6" />
       </button>
       <button
         onClick={nextSlide}
-        className="absolute right-4 top-1/2 -translate-y-1/2 z-30 p-2 rounded-full bg-white/10 hover:bg-white/25 border border-white/25 text-white backdrop-blur-md transition-all duration-200 active:scale-90 cursor-pointer hidden sm:block opacity-0 group-hover:opacity-100 shadow-md"
+        className="absolute right-4 md:right-6 top-1/2 -translate-y-1/2 z-30 p-2 md:p-3 rounded-full bg-white/10 hover:bg-white/25 border border-white/25 text-white backdrop-blur-md transition-all duration-200 active:scale-90 cursor-pointer hidden sm:block opacity-0 group-hover:opacity-100 shadow-md"
       >
-        <ChevronRight className="w-5 h-5" />
+        <ChevronRight className="w-5 h-5 md:w-6 md:h-6" />
       </button>
 
-      {/* Slide Indicators */}
-      <div className="absolute bottom-4 left-0 right-0 z-30 flex flex-col items-center gap-2">
-        <div className="flex gap-2">
+      {/* Slide Indicators & Scroll Down Indicator */}
+      <div className="absolute bottom-4 md:bottom-6 left-0 right-0 z-30 flex flex-col items-center gap-2 md:gap-6">
+        <div className="flex gap-2 md:gap-2.5">
           {slidesData.map((_, index) => (
             <button
               key={index}
@@ -227,11 +227,22 @@ const Banner = () => {
                 setCurrentSlide(index);
                 setTimeout(() => setIsTransitioning(false), 500);
               }}
-              className={`h-2 rounded-full cursor-pointer transition-all duration-300 ${index === currentSlide ? "w-6 bg-[#10b981]" : "w-2 bg-white/40 hover:bg-white/60"
+              className={`h-2 md:h-2.5 rounded-full cursor-pointer transition-all duration-300 ${index === currentSlide ? "w-6 md:w-8 bg-[#10b981]" : "w-2 md:w-2.5 bg-white/40 hover:bg-white/60"
                 }`}
             />
           ))}
         </div>
+
+        {/* Scroll Down Hint (Only visible on desktop/md layout) */}
+        <button
+          onClick={scrollToNextSection}
+          className="hidden md:flex flex-col items-center text-white/75 hover:text-white transition-colors duration-200 animate-bounce cursor-pointer group/scroll"
+        >
+          <span className="text-[10px] uppercase font-bold tracking-widest mb-1 opacity-80 group-hover/scroll:opacity-100 transition-opacity">
+            Cuộn xuống
+          </span>
+          <ChevronDown className="w-5 h-5 text-[#10b981]" />
+        </button>
       </div>
 
       {/* Bottom Autoplay Progress Bar */}
