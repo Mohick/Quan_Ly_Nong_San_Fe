@@ -146,13 +146,20 @@ export default function FarmDetailClient({ id }: { id: string }) {
         );
     }
 
-    const farmHandle = `@${farm.name.toLowerCase().replace(/[\sàáạảãâầấậẩẫăằắặẳẵèéẹẻẽêềếệểễìíịỉĩòóọỏõôồốộổỗơờớợởỡùúụủũưừứựửữỳýỵỷỹđ]/g, "a")}`;
+    const cleanName = farm.name
+        .toLowerCase()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .replace(/đ/g, "d")
+        .replace(/\s+/g, "")
+        .replace(/[^a-z0-9]/g, "");
+    const farmHandle = `@${cleanName}`;
 
     return (
         <div className="min-h-screen bg-[#f8faf9] text-gray-700 font-sans selection:bg-[#13a855]/20 selection:text-[#13a855] pb-16">
 
             {/* 1. YouTube-style Top Horizontal Banner Cover */}
-            <div className="w-full max-w-6xl mx-auto px-0 sm:px-4 md:px-8 mt-2">
+            <div className="w-full max-w-7xl mx-auto px-0 sm:px-4 md:px-8 mt-2">
                 <div className="h-28 sm:h-44 md:h-52 w-full overflow-hidden rounded-none sm:rounded-2xl bg-gray-200 relative group shadow-md">
                     <img
                         src={farm.coverImage}
@@ -181,7 +188,7 @@ export default function FarmDetailClient({ id }: { id: string }) {
             </div>
 
             {/* 2. Facebook-style Channel Info Header (Only Avatar overlaps banner, Text sits safely below) */}
-            <div className="max-w-6xl mx-auto px-4 sm:px-6 md:px-8 relative z-10 pb-6">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8 relative z-10 pb-6">
                 <div className="flex flex-col md:flex-row gap-5 md:gap-7 items-start md:items-end justify-between">
                     <div className="flex flex-col sm:flex-row gap-5 sm:gap-7 items-start sm:items-end w-full md:w-auto">
                         {/* Avatar */}
@@ -205,11 +212,11 @@ export default function FarmDetailClient({ id }: { id: string }) {
                             <div className="flex flex-wrap items-center justify-start gap-x-2 gap-y-1 text-xs font-bold text-gray-500">
                                 <span className="text-gray-800">{farmHandle}</span>
                                 <span>•</span>
-                                <span>{likesCount + (isSubscribed ? 1 : 0)} người đăng ký</span>
+                                <span>{likesCount + (isSubscribed ? 1 : 0)} người theo dõi</span>
                                 <span>•</span>
-                                <span>{farm.experience}</span>
+                                <span>{farm.experience} kinh nghiệm</span>
                                 <span>•</span>
-                                <span>{farm.landArea} canh tác</span>
+                                <span>{farm.landArea} diện tích</span>
                             </div>
                         </div>
                     </div>
@@ -220,18 +227,18 @@ export default function FarmDetailClient({ id }: { id: string }) {
                             onClick={handleSubscribeToggle}
                             className={`flex-1 md:flex-none flex items-center justify-center gap-1.5 px-6 py-2.5 text-xs font-black rounded-full transition-all active:scale-95 cursor-pointer shadow-sm border ${isSubscribed
                                 ? "bg-gray-150 hover:bg-gray-250 text-gray-800 border-gray-300/60"
-                                : "bg-gray-900 hover:bg-gray-800 text-white border-transparent"
+                                : "bg-[#13a855] hover:bg-[#0f8b44] text-white border-transparent"
                                 }`}
                         >
                             {isSubscribed ? (
                                 <>
                                     <CheckCircle className="w-4 h-4 text-emerald-600" />
-                                    <span>Đã đăng ký</span>
+                                    <span>Đã theo dõi</span>
                                 </>
                             ) : (
                                 <>
                                     <Plus className="w-4 h-4" />
-                                    <span>Đăng ký mua</span>
+                                    <span>Theo dõi</span>
                                 </>
                             )}
                         </button>
