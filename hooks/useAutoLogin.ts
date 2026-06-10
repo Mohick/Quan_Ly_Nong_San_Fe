@@ -46,16 +46,40 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     try {
       set({ loading: true });
       const token = getCookie("access_token");
+      
+      // Fallback: Read Google user profile from localStorage first
+      let localUser: any = null;
+      if (typeof window !== "undefined") {
+        const rawLocal = localStorage.getItem("user");
+        if (rawLocal) {
+          try {
+            localUser = JSON.parse(rawLocal);
+          } catch (_) {}
+        }
+      }
+
       if (!token) {
         set({ user: null, initialized: true });
         localStorage.removeItem("user");
         return;
       }
 
+      // If we have local user profile details, temporarily populate state to prevent UI flicker
+      if (localUser) {
+        set({ user: localUser });
+      }
+
       const response = await autoLoginAPI(token);
 
       if (response.data && response.data.valid && response.data.data) {
         const userData = response.data.data;
+        // Merge local data details (like Google image URL) if backend returns empty avatar_url
+        if (!userData.avatar_url && localUser?.image) {
+          userData.avatar_url = localUser.image;
+        }
+        if (!userData.avatar_url && localUser?.avatar_url) {
+          userData.avatar_url = localUser.avatar_url;
+        }
         set({ user: userData, initialized: true });
         localStorage.setItem("user", JSON.stringify(userData));
       } else {
