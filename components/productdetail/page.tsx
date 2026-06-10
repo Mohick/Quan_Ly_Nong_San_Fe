@@ -9,6 +9,7 @@ import {
   Sparkles, Sprout, MessageSquare, ChevronLeft, ChevronRight,
   Droplet, Calendar, Award, CheckCircle, Loader2, MapPin
 } from "lucide-react";
+import { toast } from "react-toastify";
 import { addToCartAPI } from "../cart/service";
 import { getCareProcessesAPI } from "@/lib/_api/care_process";
 import { productAPI } from "@/lib/_api/product";
@@ -61,10 +62,6 @@ export default function ProductDetailView({ product }: ProductDetailViewProps) {
   const router = useRouter();
   const [quantity, setQuantity] = useState(1);
   const [isLiked, setIsLiked] = useState(false);
-  const [toast, setToast] = useState<{
-    message: string;
-    type: "success" | "error";
-  } | null>(null);
 
   const [diaries, setDiaries] = useState<any[]>([]);
   const [isDiariesLoading, setIsDiariesLoading] = useState(false);
@@ -133,10 +130,7 @@ export default function ProductDetailView({ product }: ProductDetailViewProps) {
     fetchDiaries();
   }, [product.cropLot?.id]);
 
-  const showToast = (message: string, type: "success" | "error") => {
-    setToast({ message, type });
-    setTimeout(() => setToast(null), 3000);
-  };
+
 
   const handleAddToCart = async () => {
     if (parsedVariants.length > 0 && selectedVariantIdx === null) {
@@ -205,7 +199,7 @@ export default function ProductDetailView({ product }: ProductDetailViewProps) {
     const varNameStr = selectedVariantIdx !== null && parsedVariants[selectedVariantIdx]
       ? ` (${parsedVariants[selectedVariantIdx].name})`
       : "";
-    showToast(`Đã thêm ${quantity} "${product.name}${varNameStr}" vào giỏ hàng thành công!`, "success");
+    toast.success(`Đã thêm ${quantity} "${product.name}${varNameStr}" vào giỏ hàng thành công!`);
   };
 
   const handleBuyNow = async () => {
@@ -253,17 +247,6 @@ export default function ProductDetailView({ product }: ProductDetailViewProps) {
 
   return (
     <div className="min-h-screen w-full bg-[linear-gradient(180deg,#f0f8f2_0%,#f8faf9_320px)] py-6 font-sans text-gray-800 animate-fade-in sm:py-10">
-      {toast && (
-        <div
-          className={`animate-slide-in fixed top-4 right-4 z-50 flex items-center gap-3 rounded-lg border px-4.5 py-3 text-sm font-bold shadow-xl transition-all duration-300 ${toast.type === "success"
-            ? "border-[#cbeed7] bg-[#e8f8f0] text-[#13a855]"
-            : "border-red-100 bg-red-50 text-red-600"
-            }`}
-        >
-          <CheckCircle className="h-5 w-5" />
-          <span>{toast.message}</span>
-        </div>
-      )}
       <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
 
         {/* Navigation Breadcrumbs & Dynamic Prev/Next Page Switcher */}
@@ -855,7 +838,7 @@ export default function ProductDetailView({ product }: ProductDetailViewProps) {
               <button
                 onClick={async () => {
                   if (selectedVariantIdx === null) {
-                    showToast("Vui lòng chọn một phân loại!", "error");
+                    toast.error("Vui lòng chọn một phân loại!");
                     return;
                   }
                   setIsVariantModalOpen(false);

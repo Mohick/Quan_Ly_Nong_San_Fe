@@ -3,6 +3,7 @@
 import React, { useEffect, useState, useRef } from "react";
 import { Star, ShoppingCart, Eye, Heart, Sparkles } from "lucide-react";
 import { productAPI } from "@/lib/_api/product";
+import Link from "next/link";
 
 const TopSale = () => {
     const [topSaleProducts, setTopSaleProducts] = useState<any[]>([]);
@@ -108,7 +109,7 @@ const TopSale = () => {
                                 className="group relative flex flex-col bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-xl hover:border-[#13a855]/20 transition-all duration-300 overflow-hidden"
                             >
                                 {/* Image Container */}
-                                <div className="relative aspect-square w-full overflow-hidden bg-gray-50">
+                                <Link href={`/products/detail?id=${product.id}`} className="relative aspect-square w-full overflow-hidden bg-gray-50 block cursor-pointer">
                                     {/* Badges */}
                                     <div className="absolute top-3.5 left-3.5 z-20 flex flex-col gap-1.5">
                                         {product.isBestSeller && (
@@ -140,7 +141,7 @@ const TopSale = () => {
                                         alt={product.name}
                                         className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500"
                                     />
-                                </div>
+                                </Link>
 
                                 {/* Product Info */}
                                 <div className="flex flex-col flex-1 p-4 sm:p-5 space-y-2.5">
@@ -148,9 +149,11 @@ const TopSale = () => {
                                         {product.category}
                                     </span>
 
-                                    <h3 className="font-bold text-gray-800 text-sm sm:text-base line-clamp-2 min-h-[40px] sm:min-h-[48px] hover:text-[#13a855] transition-colors leading-snug">
-                                        {product.name}
-                                    </h3>
+                                    <Link href={`/products/detail?id=${product.id}`} className="block group/title cursor-pointer">
+                                        <h3 className="font-bold text-gray-800 text-sm sm:text-base line-clamp-2 min-h-[40px] sm:min-h-[48px] group-hover/title:text-[#13a855] transition-colors leading-snug">
+                                            {product.name}
+                                        </h3>
+                                    </Link>
 
                                     {/* Rating & Sold Volume */}
                                     <div className="flex items-center gap-2 text-xs">

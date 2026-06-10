@@ -49,7 +49,7 @@ export default function FarmDetailClient({ id }: { id: string }) {
                 // Fetch Farm info from backend
                 const farmRes = await getAllFarmAPI();
                 const responseData = farmRes.data;
-                const farmData = Array.isArray(responseData.data) ? responseData.data : [];
+                const farmData = Array.isArray(responseData.data) ? responseData.data : (Array.isArray(responseData) ? responseData : []);
                 const foundFarm = farmData.find((f: any) => (f.id || f.ID) === id);
                 if (foundFarm) {
                     const mappedFarm: Farm = {

@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import { Star, ShoppingCart, Eye, Heart, ChevronLeft, ChevronRight, CheckCircle } from "lucide-react";
 import Link from "next/link";
 import { addToCartAPI } from "../cart/service";
+import { toast } from "react-toastify";
 
 function getCookie(name: string): string | undefined {
     if (typeof document === "undefined") return undefined;
@@ -290,15 +291,7 @@ const ItemProduct = ({
     totalPages,
     onPageChange,
 }: ItemProductProps) => {
-    const [toast, setToast] = useState<{
-        message: string;
-        type: "success" | "error";
-    } | null>(null);
-
-    const showToast = (message: string, type: "success" | "error") => {
-        setToast({ message, type });
-        setTimeout(() => setToast(null), 3000);
-    };
+    // Helper to generate page numbers list
 
     const handleAddToCart = async (product: Product) => {
         const token = getCookie("access_token");
@@ -343,7 +336,7 @@ const ItemProduct = ({
             window.dispatchEvent(new Event("cart-updated"));
         }
 
-        showToast(`Đã thêm "${product.name}" vào giỏ hàng thành công!`, "success");
+        toast.success(`Đã thêm "${product.name}" vào giỏ hàng thành công!`);
     };
 
     // Helper to generate page numbers list
@@ -359,18 +352,6 @@ const ItemProduct = ({
 
     return (
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex flex-col min-h-[500px]">
-            {toast && (
-                <div
-                    className={`animate-slide-in fixed top-4 right-4 z-50 flex items-center gap-3 rounded-xl border px-4.5 py-3 text-sm font-bold shadow-xl transition-all duration-300 ${
-                        toast.type === "success"
-                            ? "border-[#cbeed7] bg-[#e8f8f0] text-[#13a855]"
-                            : "border-red-100 bg-red-50 text-red-600"
-                    }`}
-                >
-                    <CheckCircle className="h-5 w-5" />
-                    <span>{toast.message}</span>
-                </div>
-            )}
             <div className="flex-grow">
                 {isLoading ? (
                     /* Loading Skeleton Grid */

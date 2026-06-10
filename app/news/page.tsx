@@ -143,7 +143,7 @@ export default function NewsPage() {
                     </Link>
                   </h3>
                   <p className="text-xs sm:text-sm text-gray-500 font-medium leading-relaxed line-clamp-4">
-                    {featuredPost.excerpt}
+                    {featuredPost.excerpt.length > 180 ? `${featuredPost.excerpt.slice(0, 180)}...` : featuredPost.excerpt}
                   </p>
                 </div>
 
@@ -253,7 +253,7 @@ export default function NewsPage() {
 
                     {/* Excerpt */}
                     <p className="text-xs text-gray-500 font-medium leading-relaxed line-clamp-3">
-                      {post.excerpt}
+                      {post.excerpt.length > 100 ? `${post.excerpt.slice(0, 100)}...` : post.excerpt}
                     </p>
                   </div>
 

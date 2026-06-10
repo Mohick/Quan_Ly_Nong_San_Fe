@@ -36,7 +36,6 @@ const TopFarmer = () => {
     return (
         <section className="w-full py-16 bg-[#f7fbf8] font-sans">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-
                 {/* Header Section */}
                 <div className="flex flex-col md:flex-row md:items-end md:justify-between mb-12 gap-4">
                     <div className="space-y-2">
@@ -47,23 +46,17 @@ const TopFarmer = () => {
                         <h2 className="text-3xl sm:text-4xl font-extrabold text-[#0a5c36] tracking-tight">
                             Top Nhà Vườn Đạt Chuẩn Xanh PIONE
                         </h2>
-                        <p className="text-gray-500 text-sm sm:text-base max-w-2xl">
-                            Gặp gỡ những người nông dân tận tụy đứng sau những sản phẩm nông sản sạch chất lượng cao, cam kết canh tác bền vững vì sức khỏe cộng đồng.
-                        </p>
                     </div>
-
                     <button className="flex items-center gap-2 text-sm font-bold text-[#13a855] hover:text-[#0f8b44] transition-colors self-start md:self-auto group cursor-pointer">
                         <span>Tất cả nhà vườn</span>
                         <ArrowRight className="w-4 h-4 group-hover:translate-x-1.5 transition-transform" />
                     </button>
                 </div>
-
                 {/* Farmers Grid */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                     {topFarmers.map((farmer) => {
                         const isHovered = hoveredCard === farmer.id;
                         const isLiked = !!likedFarmers[farmer.id];
-
                         return (
                             <div
                                 key={farmer.id}
@@ -168,10 +161,8 @@ const TopFarmer = () => {
                         );
                     })}
                 </div>
-
             </div>
         </section>
     );
 };
-
 export default TopFarmer;

@@ -98,17 +98,11 @@ const Login = () => {
           {/* Background Decorative Circles */}
           <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl -mr-20 -mt-20 pointer-events-none" />
           <div className="absolute bottom-0 left-0 w-64 h-64 bg-white/10 rounded-full blur-3xl -ml-20 -mb-20 pointer-events-none" />
-
-          <Link href="/" className="flex items-center gap-2.5 z-10 select-none">
-            <div className="flex items-center justify-center w-8 h-8 bg-white p-1 rounded-lg">
-              <svg className="w-7 h-7" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M18 3.5L4 11.5V27.5L18 35.5V19.5L18 3.5Z" fill="#0891b2" />
-                <path d="M18 3.5L32 11.5V27.5L18 35.5V19.5L18 3.5Z" fill="#0ea5e9" opacity="0.9" />
-                <path d="M18 3.5L32 11.5L25 15.5L11 7.5L18 3.5Z" fill="#f97316" />
-              </svg>
-            </div>
-            <span className="font-extrabold text-white text-lg tracking-wider">
-              PIONE GROUP
+          <Link href="/" className="flex shrink-0 items-center gap-3.5">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/logo.svg" alt="PIONE GROUP" className="h-16 sm:h-20 w-auto object-contain" />
+            <span className="font-extrabold text-2xl sm:text-3xl tracking-wider text-white uppercase select-none">
+              Pione Group
             </span>
           </Link>
 
