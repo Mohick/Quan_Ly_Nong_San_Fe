@@ -92,27 +92,7 @@ const Banner = () => {
     }
   };
 
-  // Wheel event handler to jump down on scroll down
-  useEffect(() => {
-    const handleWheel = (e: WheelEvent) => {
-      // Check if user is scrolling down and is currently at the top of page
-      if (window.scrollY < 10 && e.deltaY > 0) {
-        e.preventDefault();
-        scrollToNextSection();
-      }
-    };
 
-    const element = bannerRef.current;
-    if (element) {
-      // Set passive to false so preventDefault works
-      element.addEventListener("wheel", handleWheel, { passive: false });
-    }
-    return () => {
-      if (element) {
-        element.removeEventListener("wheel", handleWheel);
-      }
-    };
-  }, []);
 
   // Autoplay functionality
   useEffect(() => {

@@ -30,52 +30,7 @@ const TopSale = () => {
         fetchProduct();
     }, []);
 
-    // Wheel event handler to jump sections
-    useEffect(() => {
-        let isScrolling = false;
 
-        const handleWheel = (e: WheelEvent) => {
-            if (isScrolling) return;
-
-            const rect = sectionRef.current?.getBoundingClientRect();
-            if (!rect) return;
-
-            // Check if this section is currently visible in the viewport
-            const isVisible = rect.top >= -50 && rect.bottom <= window.innerHeight + 50;
-
-            if (isVisible) {
-                if (e.deltaY > 0) {
-                    // Scroll down to TopFarmer
-                    const nextElement = sectionRef.current?.nextElementSibling;
-                    if (nextElement) {
-                        e.preventDefault();
-                        isScrolling = true;
-                        nextElement.scrollIntoView({ behavior: "smooth" });
-                        setTimeout(() => { isScrolling = false; }, 800);
-                    }
-                } else if (e.deltaY < 0) {
-                    // Scroll up to Banner
-                    const prevElement = sectionRef.current?.previousElementSibling;
-                    if (prevElement) {
-                        e.preventDefault();
-                        isScrolling = true;
-                        prevElement.scrollIntoView({ behavior: "smooth" });
-                        setTimeout(() => { isScrolling = false; }, 800);
-                    }
-                }
-            }
-        };
-
-        const element = sectionRef.current;
-        if (element) {
-            element.addEventListener("wheel", handleWheel, { passive: false });
-        }
-        return () => {
-            if (element) {
-                element.removeEventListener("wheel", handleWheel);
-            }
-        };
-    }, []);
 
     return (
         <section ref={sectionRef} className="w-full py-12 bg-white font-sans min-h-[600px]">
