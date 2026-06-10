@@ -227,8 +227,40 @@ export default function ProductDetailView({ product }: ProductDetailViewProps) {
     }).format(price);
   };
 
-  const handleIncrease = () => setQuantity((prev) => prev + 1);
+  const getStockLimit = () => {
+    if (selectedVariantIdx !== null && parsedVariants[selectedVariantIdx]) {
+      return parsedVariants[selectedVariantIdx].stock ?? 100;
+    }
+    return 100; // default stock fallback
+  };
+
+  const handleIncrease = () => {
+    const stockLimit = getStockLimit();
+    setQuantity((prev) => {
+      const nextVal = prev + 1;
+      if (nextVal > stockLimit) {
+        alert(`Rất tiếc, số lượng sản phẩm trong kho chỉ còn tối đa ${stockLimit} ${product.unit}.`);
+        return prev;
+      }
+      return nextVal;
+    });
+  };
+
   const handleDecrease = () => setQuantity((prev) => (prev > 1 ? prev - 1 : 1));
+
+  const handleQuantityInputChange = (value: string) => {
+    let parsedVal = parseInt(value, 10);
+    if (isNaN(parsedVal) || parsedVal < 1) {
+      setQuantity(1);
+      return;
+    }
+    const stockLimit = getStockLimit();
+    if (parsedVal > stockLimit) {
+      alert(`Rất tiếc, số lượng sản phẩm trong kho chỉ còn tối đa ${stockLimit} ${product.unit}.`);
+      parsedVal = stockLimit;
+    }
+    setQuantity(parsedVal);
+  };
 
   const handleTabChange = (tab: "info" | "process") => {
     if (tab === activeTab) return;
@@ -479,7 +511,11 @@ export default function ProductDetailView({ product }: ProductDetailViewProps) {
                     <div className="rounded-2xl border border-gray-200 bg-gray-50 p-4">
                       <div className="mb-3 flex items-center justify-between">
                         <span className="text-base font-black text-gray-900">Số lượng cần mua</span>
-                        <span className="text-sm font-bold text-gray-500">Đơn vị: {product.unit}</span>
+                        <div className="text-xs font-bold text-gray-500 flex items-center gap-3">
+                          <span>Trong kho: <strong className="text-emerald-700 font-black">{getStockLimit()}</strong> {product.unit}</span>
+                          <span className="text-gray-300">|</span>
+                          <span>Đơn vị: {product.unit}</span>
+                        </div>
                       </div>
                       <div className="flex flex-wrap items-center justify-between gap-4">
                         <div className="flex items-center rounded-xl border border-gray-300 bg-white p-1 shadow-sm">
@@ -490,9 +526,13 @@ export default function ProductDetailView({ product }: ProductDetailViewProps) {
                           >
                             <Minus className="w-4.5 h-4.5" />
                           </button>
-                          <span className="w-14 text-center text-xl font-black text-gray-900">
-                            {quantity}
-                          </span>
+                          <input
+                            type="number"
+                            min="1"
+                            value={quantity}
+                            onChange={(e) => handleQuantityInputChange(e.target.value)}
+                            className="w-14 text-center text-lg font-black text-gray-900 bg-transparent border-none focus:outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                          />
                           <button
                             onClick={handleIncrease}
                             aria-label="Tăng số lượng"
