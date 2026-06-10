@@ -110,7 +110,7 @@ const Header = () => {
           {/* Navigation Links - Desktop */}
           <nav className="hidden lg:flex items-center gap-8 mx-auto">
             {navLinks.map((link) => {
-              const isActive = pathname === link.href;
+              const isActive = link.href === "/" ? pathname === "/" : pathname?.startsWith(link.href);
               return (
                 <Link
                   key={link.name}
@@ -229,7 +229,7 @@ const Header = () => {
           {/* Links */}
           <nav className="flex flex-col space-y-1.5 px-3">
             {navLinks.map((link) => {
-              const isActive = pathname === link.href;
+              const isActive = link.href === "/" ? pathname === "/" : pathname?.startsWith(link.href);
               return (
                 <Link
                   key={link.name}
