@@ -14,7 +14,7 @@ function readCartCount(): number {
     if (!raw) return 0;
     const items = JSON.parse(raw);
     if (!Array.isArray(items)) return 0;
-    return items.reduce((acc: number, item: any) => acc + (Number(item.quantity) || 0), 0);
+    return items.length;
   } catch {
     return 0;
   }
