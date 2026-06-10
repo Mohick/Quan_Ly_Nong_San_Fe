@@ -231,7 +231,7 @@ export default function FarmListPage() {
                   </button>
 
                   <Link
-                    href={`/farm/${farm.id}`}
+                    href={`/farm/detail/?id=${farm.id}`}
                     className="flex items-center gap-1.5 px-4 py-2 bg-[#13a855] hover:bg-[#0f8b44] text-white text-xs font-black rounded-xl shadow-md transition-all active:scale-97 cursor-pointer"
                   >
                     <span>Vào nhà vườn</span>

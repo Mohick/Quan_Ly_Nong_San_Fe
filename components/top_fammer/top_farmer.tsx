@@ -105,7 +105,7 @@ const TopFarmer = () => {
 
                                     {/* Name and Rating */}
                                     <div className="flex items-center justify-between gap-2 mt-1">
-                                        <Link href={`/farm/${farmer.id}`} className="font-extrabold text-gray-800 text-lg hover:text-[#13a855] transition-colors leading-tight" title={farmer.name}>
+                                        <Link href={`/farm/detail/?id=${farmer.id}`} className="font-extrabold text-gray-800 text-lg hover:text-[#13a855] transition-colors leading-tight" title={farmer.name}>
                                             {farmer.name.length > 25 ? `${farmer.name.slice(0, 25)}...` : farmer.name}
                                         </Link>
                                         <div className="flex items-center gap-1 text-xs font-bold text-amber-500 bg-amber-50 border border-amber-200/50 px-2 py-0.5 rounded-md shrink-0">
@@ -150,7 +150,7 @@ const TopFarmer = () => {
 
                                     {/* Action Link */}
                                     <div className="mt-6 pt-2">
-                                        <Link href={`/farm/${farmer.id}`} className="w-full flex items-center justify-center gap-2 py-2.5 bg-[#e8f8f0] hover:bg-[#13a855] text-[#13a855] hover:text-white font-bold rounded-xl active:scale-98 transition-all duration-200 cursor-pointer text-xs">
+                                        <Link href={`/farm/detail/?id=${farmer.id}`} className="w-full flex items-center justify-center gap-2 py-2.5 bg-[#e8f8f0] hover:bg-[#13a855] text-[#13a855] hover:text-white font-bold rounded-xl active:scale-98 transition-all duration-200 cursor-pointer text-xs">
                                             <span>Ghé thăm & Xem Nhật Ký</span>
                                             <ArrowRight className="w-4 h-4" />
                                         </Link>
