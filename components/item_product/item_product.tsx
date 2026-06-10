@@ -174,12 +174,12 @@ const ProductCard = ({ product, viewMode = "grid", onAddToCart }: ProductCardPro
         <div
             onMouseEnter={() => setIsHovered(true)}
             onMouseLeave={() => setIsHovered(false)}
-            className="group relative flex flex-col bg-white rounded-lg border border-gray-200 shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden font-sans"
+            className="group relative flex flex-col bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden font-sans p-2 sm:p-3"
         >
             {/* Clickable Image Container */}
             <Link
                 href={`/products/detail?id=${product.id}`}
-                className="relative aspect-square w-full overflow-hidden bg-gray-50/30 block cursor-pointer"
+                className="relative aspect-square w-full overflow-hidden bg-gray-50/30 block cursor-pointer rounded-lg"
             >
                 {/* Badges */}
                 <div className="absolute top-3 left-3 z-20 flex flex-col gap-1.5">
@@ -217,7 +217,7 @@ const ProductCard = ({ product, viewMode = "grid", onAddToCart }: ProductCardPro
                 />
             </Link>
 
-            <div className="flex flex-col flex-1 p-4 space-y-2">
+            <div className="flex flex-col flex-1 pt-3 pb-1 px-1 sm:pt-4 sm:pb-2 sm:px-2 space-y-2">
                 <div className="flex items-center justify-between gap-1 flex-wrap">
                     <span className="text-[10px] font-bold text-[#13a855]/90 uppercase tracking-wider">
                         {product.category}
