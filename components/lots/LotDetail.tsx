@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import { X, Plus, Calendar, CheckCircle2 } from "lucide-react";
 import { CropLot } from "@/app/dashboard/(farm)/lots/page";
-import { createCareProcessAPI, updateCareProcessAPI, deleteCareProcessAPI } from "@/lib/_api/care_process";
+import { createCareProcessAPI, updateCareProcessAPI, deleteCareProcessAPI, getCareProcessesAPI } from "@/lib/_api/care_process";
 
 interface LotDetailProps {
   selectedLot: CropLot;
@@ -80,77 +80,24 @@ export const LotDetail: React.FC<LotDetailProps> = ({
       if (editingDiary) {
         // Edit flow
         await updateCareProcessAPI({ id: editingDiary.id, ...payload }, token);
-        const localKey = `diaries_${lotId}`;
-        const list = currentDiaries.map((d) =>
-          d.id === editingDiary.id ? { ...d, ...payload } : d
-        );
-        if (typeof window !== "undefined") {
-          localStorage.setItem(localKey, JSON.stringify(list));
-        }
-        setLotDiaries((prev) => ({
-          ...prev,
-          [lotId]: list,
-        }));
         showToast("Đã cập nhật nhật ký thành công!");
       } else {
         // Create flow
-        const response = await createCareProcessAPI(payload, token);
-        if (response.status === 200 || response.status === 201) {
-          const localKey = `diaries_${lotId}`;
-          let list = [];
-          if (typeof window !== "undefined") {
-            const existing = localStorage.getItem(localKey);
-            if (existing) {
-              try {
-                list = JSON.parse(existing);
-              } catch (_) {}
-            }
-            const newDiary = {
-              id: response.data?.data?.id || response.data?.data?.ID || Date.now(),
-              ...payload,
-            };
-            list.unshift(newDiary);
-            localStorage.setItem(localKey, JSON.stringify(list));
-          }
-          setLotDiaries((prev) => ({
-            ...prev,
-            [lotId]: list,
-          }));
-          showToast("Đã lưu nhật ký mới thành công!");
-        } else {
-          alert("Không thể lưu nhật ký. Vui lòng thử lại!");
-        }
+        await createCareProcessAPI(payload, token);
+        showToast("Đã lưu nhật ký mới thành công!");
+      }
+      
+      // Refresh list from backend directly
+      const res = await getCareProcessesAPI(lotId, token);
+      if (res && Array.isArray(res.data)) {
+        setLotDiaries((prev) => ({
+          ...prev,
+          [lotId]: res.data,
+        }));
       }
     } catch (error: any) {
-      console.error("Lỗi khi tạo/sửa nhật ký chăm sóc (Chuyển sang LocalStorage cục bộ):", error);
-      const localKey = `diaries_${lotId}`;
-      let list = [];
-      if (editingDiary) {
-        list = currentDiaries.map((d) =>
-          d.id === editingDiary.id ? { ...d, ...payload } : d
-        );
-        showToast("Đã cập nhật nhật ký vào LocalStorage!");
-      } else {
-        if (typeof window !== "undefined") {
-          const existing = localStorage.getItem(localKey);
-          if (existing) {
-            try {
-              list = JSON.parse(existing);
-            } catch (_) {}
-          }
-          const simulatedDiary = {
-            id: Date.now(),
-            ...payload,
-          };
-          list.unshift(simulatedDiary);
-          localStorage.setItem(localKey, JSON.stringify(list));
-        }
-        showToast("Đã lưu nhật ký vào Bộ nhớ trình duyệt (LocalStorage)!");
-      }
-      setLotDiaries((prev) => ({
-        ...prev,
-        [lotId]: list,
-      }));
+      console.error("Lỗi khi tạo/sửa nhật ký chăm sóc:", error);
+      alert("Lỗi khi lưu nhật ký lên máy chủ!");
     }
 
     setNewDiaryTitle("");
@@ -168,26 +115,19 @@ export const LotDetail: React.FC<LotDetailProps> = ({
     const token = getCookie("access_token");
     try {
       await deleteCareProcessAPI(diaryId, token);
-      const updated = currentDiaries.filter((d) => d.id !== diaryId);
-      if (typeof window !== "undefined") {
-        localStorage.setItem(`diaries_${lotId}`, JSON.stringify(updated));
-      }
-      setLotDiaries((prev) => ({
-        ...prev,
-        [lotId]: updated,
-      }));
       showToast("Đã xóa nhật ký chăm sóc thành công!");
-    } catch (error) {
-      console.error("Lỗi khi xóa nhật ký trên backend (Chuyển sang LocalStorage cục bộ):", error);
-      const updated = currentDiaries.filter((d) => d.id !== diaryId);
-      if (typeof window !== "undefined") {
-        localStorage.setItem(`diaries_${lotId}`, JSON.stringify(updated));
+      
+      // Refresh list from backend directly
+      const res = await getCareProcessesAPI(lotId, token);
+      if (res && Array.isArray(res.data)) {
+        setLotDiaries((prev) => ({
+          ...prev,
+          [lotId]: res.data,
+        }));
       }
-      setLotDiaries((prev) => ({
-        ...prev,
-        [lotId]: updated,
-      }));
-      showToast("Đã xóa nhật ký từ LocalStorage!");
+    } catch (error) {
+      console.error("Lỗi khi xóa nhật ký trên backend:", error);
+      alert("Lỗi khi xóa nhật ký trên máy chủ!");
     }
   };
 

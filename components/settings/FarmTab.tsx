@@ -85,8 +85,8 @@ export default function FarmTab({
                         <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
                         <div className="absolute top-4 right-4">
                             <span className={`px-3 py-1 text-[10px] font-black uppercase rounded-full shadow-md tracking-wider border ${status
-                                    ? "bg-emerald-50 text-emerald-600 border-emerald-200"
-                                    : "bg-red-50 text-red-600 border-red-200"
+                                ? "bg-emerald-50 text-emerald-600 border-emerald-200"
+                                : "bg-red-50 text-red-600 border-red-200"
                                 }`}>
                                 {status ? "Đang hoạt động" : "Tạm dừng"}
                             </span>
@@ -115,7 +115,7 @@ export default function FarmTab({
                 </div>
 
                 <div className="pt-4 border-t border-gray-100 flex justify-end">
-                    <Link href="/dashboard/farm" className="block w-full sm:w-auto">
+                    <Link href="/dashboard/" className="block w-full sm:w-auto">
                         <button className="w-full sm:w-auto px-6 py-3.5 bg-[#13a855] hover:bg-[#0f8b44] text-white text-xs sm:text-sm font-bold rounded-xl shadow-md transition-all active:scale-95 flex items-center justify-center gap-2 cursor-pointer">
                             <span>Truy cập Cổng quản trị trang trại</span>
                             <ArrowLeft className="w-4 h-4 rotate-180" />

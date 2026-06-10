@@ -139,7 +139,7 @@ export default function PurchaseHistoryComponent() {
 
           <div className="flex justify-center lg:justify-end">
             <Link
-              href="/"
+              href="/products"
               className="inline-flex items-center gap-2 px-5 py-2.5 bg-white hover:bg-gray-50 border border-gray-200 text-xs sm:text-sm font-black text-gray-700 rounded-2xl shadow-sm transition-all group cursor-pointer"
             >
               <ArrowLeft className="w-4 h-4 transform group-hover:-translate-x-0.5 transition-transform" />

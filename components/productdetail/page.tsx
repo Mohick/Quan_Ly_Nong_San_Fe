@@ -109,7 +109,7 @@ export default function ProductDetailView({ product }: ProductDetailViewProps) {
   }, [product.id]);
 
   useEffect(() => {
-    const cropLotId = product.cropLot?.id;
+    const cropLotId = product.cropLot?.id || product.cropLotId;
     if (!cropLotId) return;
 
     const fetchDiaries = async () => {
@@ -128,7 +128,7 @@ export default function ProductDetailView({ product }: ProductDetailViewProps) {
       }
     };
     fetchDiaries();
-  }, [product.cropLot?.id]);
+  }, [product.cropLot?.id, product.cropLotId]);
 
 
 
