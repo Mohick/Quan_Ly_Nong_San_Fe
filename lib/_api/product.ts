@@ -37,17 +37,31 @@ function mapSingleProduct(item: any) {
         originalPrice: item.Price || item.price || item.originalPrice || 0,
         salePrice: (() => {
             const base = item.Price || item.price || item.originalPrice || 0;
-            const disc = item.discount_price || item.DiscountPrice || item.discountPrice || 0;
-            if (disc > 0 && disc < base) {
-                return disc;
+            // Check if there is a discount nested model
+            const discount = item.Discount || item.discount || {};
+            const hasDiscount = discount.Active || discount.active || false;
+            const discPrice = discount.DiscountPrice || discount.discount_price || discount.Discount_price || 0;
+            if (hasDiscount && discPrice > 0 && discPrice < base) {
+                return discPrice;
+            }
+            // Fallback: check direct discount properties if any
+            const directDisc = item.discount_price || item.DiscountPrice || item.discountPrice || 0;
+            if (directDisc > 0 && directDisc < base) {
+                return directDisc;
             }
             return base;
         })(),
         discountPercent: (() => {
             const base = item.Price || item.price || item.originalPrice || 0;
-            const disc = item.discount_price || item.DiscountPrice || item.discountPrice || 0;
-            if (disc > 0 && disc < base && base > 0) {
-                return Math.round(((base - disc) / base) * 100);
+            const discount = item.Discount || item.discount || {};
+            const hasDiscount = discount.Active || discount.active || false;
+            const discPrice = discount.DiscountPrice || discount.discount_price || discount.Discount_price || 0;
+            if (hasDiscount && discPrice > 0 && discPrice < base && base > 0) {
+                return Math.round(((base - discPrice) / base) * 100);
+            }
+            const directDisc = item.discount_price || item.DiscountPrice || item.discountPrice || 0;
+            if (directDisc > 0 && directDisc < base && base > 0) {
+                return Math.round(((base - directDisc) / base) * 100);
             }
             return 0;
         })(),
