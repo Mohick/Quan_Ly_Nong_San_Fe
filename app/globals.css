@@ -1,6 +1,6 @@
 @import "tailwindcss";
 html {
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: 'Be Vietnam Pro', var(--font-sans), Arial, Helvetica, sans-serif;
 }
 
 @custom-variant dark (&:is(.dark *));

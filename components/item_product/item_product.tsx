@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import { Star, ShoppingCart, Eye, Heart, ChevronLeft, ChevronRight, CheckCircle } from "lucide-react";
 import Link from "next/link";
 import { addToCartAPI } from "../cart/service";
+import { toast } from "react-toastify";
 
 function getCookie(name: string): string | undefined {
     if (typeof document === "undefined") return undefined;
@@ -173,12 +174,12 @@ const ProductCard = ({ product, viewMode = "grid", onAddToCart }: ProductCardPro
         <div
             onMouseEnter={() => setIsHovered(true)}
             onMouseLeave={() => setIsHovered(false)}
-            className="group relative flex flex-col bg-white rounded-lg border border-gray-200 shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden font-sans"
+            className="group relative flex flex-col bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden font-sans p-2 sm:p-3"
         >
             {/* Clickable Image Container */}
             <Link
                 href={`/products/detail?id=${product.id}`}
-                className="relative aspect-square w-full overflow-hidden bg-gray-50/30 block cursor-pointer"
+                className="relative aspect-square w-full overflow-hidden bg-gray-50/30 block cursor-pointer rounded-lg"
             >
                 {/* Badges */}
                 <div className="absolute top-3 left-3 z-20 flex flex-col gap-1.5">
@@ -216,7 +217,7 @@ const ProductCard = ({ product, viewMode = "grid", onAddToCart }: ProductCardPro
                 />
             </Link>
 
-            <div className="flex flex-col flex-1 p-4 space-y-2">
+            <div className="flex flex-col flex-1 pt-3 pb-1 px-1 sm:pt-4 sm:pb-2 sm:px-2 space-y-2">
                 <div className="flex items-center justify-between gap-1 flex-wrap">
                     <span className="text-[10px] font-bold text-[#13a855]/90 uppercase tracking-wider">
                         {product.category}
@@ -290,15 +291,7 @@ const ItemProduct = ({
     totalPages,
     onPageChange,
 }: ItemProductProps) => {
-    const [toast, setToast] = useState<{
-        message: string;
-        type: "success" | "error";
-    } | null>(null);
-
-    const showToast = (message: string, type: "success" | "error") => {
-        setToast({ message, type });
-        setTimeout(() => setToast(null), 3000);
-    };
+    // Helper to generate page numbers list
 
     const handleAddToCart = async (product: Product) => {
         const token = getCookie("access_token");
@@ -340,10 +333,10 @@ const ItemProduct = ({
             }
 
             localStorage.setItem("local_cart", JSON.stringify(cartItems));
-            window.dispatchEvent(new Event("cart-updated"));
+            queueMicrotask(() => window.dispatchEvent(new Event("cart-updated")));
         }
 
-        showToast(`Đã thêm "${product.name}" vào giỏ hàng thành công!`, "success");
+        toast.success(`Đã thêm "${product.name}" vào giỏ hàng thành công!`);
     };
 
     // Helper to generate page numbers list
@@ -358,25 +351,13 @@ const ItemProduct = ({
     const pages = getPageNumbers();
 
     return (
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex flex-col min-h-[500px]">
-            {toast && (
-                <div
-                    className={`animate-slide-in fixed top-4 right-4 z-50 flex items-center gap-3 rounded-xl border px-4.5 py-3 text-sm font-bold shadow-xl transition-all duration-300 ${
-                        toast.type === "success"
-                            ? "border-[#cbeed7] bg-[#e8f8f0] text-[#13a855]"
-                            : "border-red-100 bg-red-50 text-red-600"
-                    }`}
-                >
-                    <CheckCircle className="h-5 w-5" />
-                    <span>{toast.message}</span>
-                </div>
-            )}
+        <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 pt-1 pb-8 sm:py-8 flex flex-col min-h-[500px]">
             <div className="flex-grow">
                 {isLoading ? (
                     /* Loading Skeleton Grid */
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8">
+                    <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-8">
                         {[1, 2, 3, 4].map((id) => (
-                            <div key={id} className="animate-pulse bg-white border border-gray-200 rounded-lg p-5 space-y-4 h-[350px]">
+                            <div key={id} className="animate-pulse bg-white border border-gray-200 rounded-lg p-3 sm:p-5 space-y-4 h-[300px] sm:h-[350px]">
                                 <div className="bg-gray-200 aspect-square w-full rounded-md" />
                                 <div className="h-4 bg-gray-200 rounded w-1/3" />
                                 <div className="h-6 bg-gray-200 rounded w-5/6" />
@@ -387,7 +368,7 @@ const ItemProduct = ({
                 ) : products.length > 0 ? (
                     /* Loaded Products Display */
                     viewMode === "grid" ? (
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8">
+                        <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-8">
                             {products.map((product) => (
                                 <ProductCard key={product.id} product={product} viewMode="grid" onAddToCart={handleAddToCart} />
                             ))}

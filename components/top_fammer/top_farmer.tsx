@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
+import Link from "next/link";
 import { Award, MapPin, ArrowRight, ShieldCheck, Heart, Users, Calendar } from "lucide-react";
 import { topFarmerAPI } from "@/lib/_api/top_farmer";
 
@@ -36,7 +37,6 @@ const TopFarmer = () => {
     return (
         <section className="w-full py-16 bg-[#f7fbf8] font-sans">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-
                 {/* Header Section */}
                 <div className="flex flex-col md:flex-row md:items-end md:justify-between mb-12 gap-4">
                     <div className="space-y-2">
@@ -47,23 +47,17 @@ const TopFarmer = () => {
                         <h2 className="text-3xl sm:text-4xl font-extrabold text-[#0a5c36] tracking-tight">
                             Top Nhà Vườn Đạt Chuẩn Xanh PIONE
                         </h2>
-                        <p className="text-gray-500 text-sm sm:text-base max-w-2xl">
-                            Gặp gỡ những người nông dân tận tụy đứng sau những sản phẩm nông sản sạch chất lượng cao, cam kết canh tác bền vững vì sức khỏe cộng đồng.
-                        </p>
                     </div>
-
                     <button className="flex items-center gap-2 text-sm font-bold text-[#13a855] hover:text-[#0f8b44] transition-colors self-start md:self-auto group cursor-pointer">
                         <span>Tất cả nhà vườn</span>
                         <ArrowRight className="w-4 h-4 group-hover:translate-x-1.5 transition-transform" />
                     </button>
                 </div>
-
                 {/* Farmers Grid */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                     {topFarmers.map((farmer) => {
                         const isHovered = hoveredCard === farmer.id;
                         const isLiked = !!likedFarmers[farmer.id];
-
                         return (
                             <div
                                 key={farmer.id}
@@ -111,19 +105,19 @@ const TopFarmer = () => {
 
                                     {/* Name and Rating */}
                                     <div className="flex items-center justify-between gap-2 mt-1">
-                                        <h3 className="font-extrabold text-gray-800 text-lg hover:text-[#13a855] transition-colors leading-tight">
-                                            {farmer.name}
-                                        </h3>
-                                        <div className="flex items-center gap-1 text-xs font-bold text-amber-500 bg-amber-50 border border-amber-200/50 px-2 py-0.5 rounded-md">
+                                        <Link href={`/farm/${farmer.id}`} className="font-extrabold text-gray-800 text-lg hover:text-[#13a855] transition-colors leading-tight" title={farmer.name}>
+                                            {farmer.name.length > 25 ? `${farmer.name.slice(0, 25)}...` : farmer.name}
+                                        </Link>
+                                        <div className="flex items-center gap-1 text-xs font-bold text-amber-500 bg-amber-50 border border-amber-200/50 px-2 py-0.5 rounded-md shrink-0">
                                             <span>★</span>
                                             <span>{farmer.rating}</span>
                                         </div>
                                     </div>
 
                                     {/* Location info */}
-                                    <div className="flex items-center gap-1.5 text-xs text-gray-500 mt-2 font-medium">
+                                    <div className="flex items-center gap-1.5 text-xs text-gray-500 mt-2 font-medium" title={farmer.location}>
                                         <MapPin className="w-3.5 h-3.5 text-red-500 shrink-0" />
-                                        <span>{farmer.location}</span>
+                                        <span className="truncate">{farmer.location.length > 35 ? `${farmer.location.slice(0, 35)}...` : farmer.location}</span>
                                     </div>
 
                                     {/* Specialties tags */}
@@ -131,8 +125,8 @@ const TopFarmer = () => {
                                         <span className="text-[11px] font-bold text-[#13a855] uppercase tracking-wider">
                                             Mô hình chuyên canh:
                                         </span>
-                                        <p className="text-xs text-gray-600 font-medium leading-relaxed">
-                                            {farmer.specialty}
+                                        <p className="text-xs text-gray-600 font-medium leading-relaxed" title={farmer.specialty}>
+                                            {farmer.specialty.length > 80 ? `${farmer.specialty.slice(0, 80)}...` : farmer.specialty}
                                         </p>
                                     </div>
 
@@ -156,10 +150,10 @@ const TopFarmer = () => {
 
                                     {/* Action Link */}
                                     <div className="mt-6 pt-2">
-                                        <button className="w-full flex items-center justify-center gap-2 py-2.5 bg-[#e8f8f0] hover:bg-[#13a855] text-[#13a855] hover:text-white font-bold rounded-xl active:scale-98 transition-all duration-200 cursor-pointer text-xs">
+                                        <Link href={`/farm/${farmer.id}`} className="w-full flex items-center justify-center gap-2 py-2.5 bg-[#e8f8f0] hover:bg-[#13a855] text-[#13a855] hover:text-white font-bold rounded-xl active:scale-98 transition-all duration-200 cursor-pointer text-xs">
                                             <span>Ghé thăm & Xem Nhật Ký</span>
                                             <ArrowRight className="w-4 h-4" />
-                                        </button>
+                                        </Link>
                                     </div>
 
                                 </div>
@@ -168,10 +162,8 @@ const TopFarmer = () => {
                         );
                     })}
                 </div>
-
             </div>
         </section>
     );
 };
-
 export default TopFarmer;

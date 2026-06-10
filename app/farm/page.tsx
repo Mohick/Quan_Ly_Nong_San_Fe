@@ -190,8 +190,8 @@ export default function FarmListPage() {
 
                   {/* Body Info */}
                   <div className="px-5 sm:px-6 py-4 space-y-4">
-                    <p className="text-xs text-gray-500 font-medium leading-relaxed">
-                      {farm.description}
+                    <p className="text-xs text-gray-500 font-medium leading-relaxed line-clamp-3">
+                      {farm.description.length > 100 ? `${farm.description.slice(0, 100)}...` : farm.description}
                     </p>
 
                     {/* Highlights parameters */}

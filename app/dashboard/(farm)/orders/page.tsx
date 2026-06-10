@@ -9,6 +9,7 @@ import {
 } from "lucide-react";
 import { getAllOrdersAPI, updateOrderStatusAPI } from "@/lib/_api/order";
 import { printInvoice } from "@/utils/printInvoice";
+import { toast } from "react-toastify";
 
 function getCookie(name: string): string | undefined {
   if (typeof document === "undefined") return undefined;
@@ -47,13 +48,13 @@ export default function DashboardOrders() {
   const [statusFilter, setStatusFilter] = useState<string>("ALL");
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [updatingStatusId, setUpdatingStatusId] = useState<string | null>(null);
-  const [notification, setNotification] = useState<{ message: string; type: "success" | "error" } | null>(null);
 
   const showNotification = (message: string, type: "success" | "error") => {
-    setNotification({ message, type });
-    setTimeout(() => {
-      setNotification(null);
-    }, 3500);
+    if (type === "success") {
+      toast.success(message);
+    } else {
+      toast.error(message);
+    }
   };
 
   const loadOrdersList = async () => {
@@ -181,24 +182,6 @@ export default function DashboardOrders() {
 
   return (
     <div className="space-y-6">
-      
-      {/* Toast Notification */}
-      {notification && (
-        <div 
-          className={`fixed top-4 right-4 z-50 flex items-center gap-2.5 px-4 py-3 rounded-xl border shadow-lg animate-fade-in ${
-            notification.type === "success" 
-              ? "bg-[#e8f8f0] text-emerald-800 border-emerald-200" 
-              : "bg-rose-50 text-rose-800 border-rose-200"
-          }`}
-        >
-          {notification.type === "success" ? (
-            <CheckCircle className="w-5 h-5 text-emerald-600 shrink-0" />
-          ) : (
-            <AlertTriangle className="w-5 h-5 text-rose-600 shrink-0" />
-          )}
-          <span className="text-xs sm:text-sm font-bold">{notification.message}</span>
-        </div>
-      )}
 
       {/* Header section */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-gray-100 pb-5">

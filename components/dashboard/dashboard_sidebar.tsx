@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { Sprout, Bot, ChevronLeft, ChevronRight } from "lucide-react";
+import { Bot, ChevronLeft, ChevronRight } from "lucide-react";
 import Link from "next/link";
 import { LucideIcon } from "lucide-react";
 
@@ -34,12 +34,11 @@ const DashboardSidebar: React.FC<DashboardSidebarProps> = ({
         {/* Logo Brand area */}
         <div className="h-16 flex items-center justify-between px-4 border-b border-gray-100">
           <Link href="/" className="flex items-center gap-2.5">
-            <div className="w-9 h-9 rounded-lg bg-emerald-600 flex items-center justify-center text-white shadow-md shadow-emerald-250">
-              <Sprout className="w-5 h-5" />
-            </div>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/logo.svg" alt="PIONE GROUP" className="w-9 h-9 object-contain" />
             {!isCollapsed && (
               <span className="font-extrabold text-sm tracking-tight text-gray-800 uppercase">
-                Nông Sản Việt
+                Pione Group
               </span>
             )}
           </Link>

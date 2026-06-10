@@ -9,6 +9,7 @@ import {
   Sparkles, Sprout, MessageSquare, ChevronLeft, ChevronRight,
   Droplet, Calendar, Award, CheckCircle, Loader2, MapPin
 } from "lucide-react";
+import { toast } from "react-toastify";
 import { addToCartAPI } from "../cart/service";
 import { getCareProcessesAPI } from "@/lib/_api/care_process";
 import { productAPI } from "@/lib/_api/product";
@@ -61,10 +62,6 @@ export default function ProductDetailView({ product }: ProductDetailViewProps) {
   const router = useRouter();
   const [quantity, setQuantity] = useState(1);
   const [isLiked, setIsLiked] = useState(false);
-  const [toast, setToast] = useState<{
-    message: string;
-    type: "success" | "error";
-  } | null>(null);
 
   const [diaries, setDiaries] = useState<any[]>([]);
   const [isDiariesLoading, setIsDiariesLoading] = useState(false);
@@ -112,7 +109,7 @@ export default function ProductDetailView({ product }: ProductDetailViewProps) {
   }, [product.id]);
 
   useEffect(() => {
-    const cropLotId = product.cropLot?.id;
+    const cropLotId = product.cropLot?.id || product.cropLotId;
     if (!cropLotId) return;
 
     const fetchDiaries = async () => {
@@ -131,12 +128,9 @@ export default function ProductDetailView({ product }: ProductDetailViewProps) {
       }
     };
     fetchDiaries();
-  }, [product.cropLot?.id]);
+  }, [product.cropLot?.id, product.cropLotId]);
 
-  const showToast = (message: string, type: "success" | "error") => {
-    setToast({ message, type });
-    setTimeout(() => setToast(null), 3000);
-  };
+
 
   const handleAddToCart = async () => {
     if (parsedVariants.length > 0 && selectedVariantIdx === null) {
@@ -199,13 +193,13 @@ export default function ProductDetailView({ product }: ProductDetailViewProps) {
       }
 
       localStorage.setItem("local_cart", JSON.stringify(cartItems));
-      window.dispatchEvent(new Event("cart-updated"));
+      queueMicrotask(() => window.dispatchEvent(new Event("cart-updated")));
     }
 
     const varNameStr = selectedVariantIdx !== null && parsedVariants[selectedVariantIdx]
       ? ` (${parsedVariants[selectedVariantIdx].name})`
       : "";
-    showToast(`Đã thêm ${quantity} "${product.name}${varNameStr}" vào giỏ hàng thành công!`, "success");
+    toast.success(`Đã thêm ${quantity} "${product.name}${varNameStr}" vào giỏ hàng thành công!`);
   };
 
   const handleBuyNow = async () => {
@@ -233,8 +227,52 @@ export default function ProductDetailView({ product }: ProductDetailViewProps) {
     }).format(price);
   };
 
-  const handleIncrease = () => setQuantity((prev) => prev + 1);
+  const getStockLimit = () => {
+    if (selectedVariantIdx !== null && parsedVariants[selectedVariantIdx]) {
+      return parsedVariants[selectedVariantIdx].stock ?? 100;
+    }
+    return 100; // default stock fallback
+  };
+
+  const handleIncrease = () => {
+    const stockLimit = getStockLimit();
+    setQuantity((prev) => {
+      const nextVal = prev + 1;
+      if (nextVal > stockLimit) {
+        alert(`Rất tiếc, số lượng sản phẩm trong kho chỉ còn tối đa ${stockLimit} ${product.unit}.`);
+        return prev;
+      }
+      return nextVal;
+    });
+  };
+
   const handleDecrease = () => setQuantity((prev) => (prev > 1 ? prev - 1 : 1));
+
+  const handleQuantityInputChange = (value: string) => {
+    if (value === "") {
+      setQuantity("" as any);
+      return;
+    }
+    let parsedVal = parseInt(value, 10);
+    if (isNaN(parsedVal)) {
+      return;
+    }
+    if (parsedVal < 1) {
+      parsedVal = 1;
+    }
+    const stockLimit = getStockLimit();
+    if (parsedVal > stockLimit) {
+      alert(`Rất tiếc, số lượng sản phẩm trong kho chỉ còn tối đa ${stockLimit} ${product.unit}.`);
+      parsedVal = stockLimit;
+    }
+    setQuantity(parsedVal);
+  };
+
+  const handleQuantityInputBlur = () => {
+    if (quantity === ("" as any) || isNaN(Number(quantity)) || Number(quantity) < 1) {
+      setQuantity(1);
+    }
+  };
 
   const handleTabChange = (tab: "info" | "process") => {
     if (tab === activeTab) return;
@@ -253,20 +291,9 @@ export default function ProductDetailView({ product }: ProductDetailViewProps) {
 
   return (
     <div className="min-h-screen w-full bg-[linear-gradient(180deg,#f0f8f2_0%,#f8faf9_320px)] py-6 font-sans text-gray-800 animate-fade-in sm:py-10">
-      {toast && (
-        <div
-          className={`animate-slide-in fixed top-4 right-4 z-50 flex items-center gap-3 rounded-lg border px-4.5 py-3 text-sm font-bold shadow-xl transition-all duration-300 ${toast.type === "success"
-            ? "border-[#cbeed7] bg-[#e8f8f0] text-[#13a855]"
-            : "border-red-100 bg-red-50 text-red-600"
-            }`}
-        >
-          <CheckCircle className="h-5 w-5" />
-          <span>{toast.message}</span>
-        </div>
-      )}
       <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
 
-        {/* Navigation Breadcrumbs & Dynamic Prev/Next Page Switcher */}
+        {/* Navigation Breadcrumbs */}
         <div className="mb-5 flex items-center justify-between gap-3">
           <Link
             href="/products"
@@ -275,27 +302,6 @@ export default function ProductDetailView({ product }: ProductDetailViewProps) {
             <ArrowLeft className="w-4 h-4 transform group-hover:-translate-x-1 transition-transform" />
             <span>Quay lại cửa hàng</span>
           </Link>
-
-          {/* Dynamic Prev/Next Navigation Switcher */}
-          <div className="flex items-center gap-2.5 font-sans">
-            <Link
-              href={`/products/detail?id=${prevProductId}`}
-              className="flex items-center gap-1.5 px-3 py-1.8 bg-white hover:bg-[#e8f8f0] text-gray-500 hover:text-[#13a855] border border-gray-250 hover:border-[#13a855]/40 rounded-lg text-xs font-bold transition-all active:scale-95 shadow-sm cursor-pointer"
-              title="Sản phẩm trước đó"
-            >
-              <ChevronLeft className="w-3.5 h-3.5" />
-              <span className="hidden sm:inline">Trước đó</span>
-            </Link>
-            <span className="text-xs text-gray-300 font-bold hidden sm:inline">|</span>
-            <Link
-              href={`/products/detail?id=${nextProductId}`}
-              className="flex items-center gap-1.5 px-3 py-1.8 bg-white hover:bg-[#e8f8f0] text-gray-500 hover:text-[#13a855] border border-gray-250 hover:border-[#13a855]/40 rounded-lg text-xs font-bold transition-all active:scale-95 shadow-sm cursor-pointer"
-              title="Sản phẩm tiếp theo"
-            >
-              <span className="hidden sm:inline">Tiếp theo</span>
-              <ChevronRight className="w-3.5 h-3.5" />
-            </Link>
-          </div>
         </div>
 
         {/* 2 MAIN TABS HEADER PLACED AT THE TOP OF THE PAGE */}
@@ -517,7 +523,11 @@ export default function ProductDetailView({ product }: ProductDetailViewProps) {
                     <div className="rounded-2xl border border-gray-200 bg-gray-50 p-4">
                       <div className="mb-3 flex items-center justify-between">
                         <span className="text-base font-black text-gray-900">Số lượng cần mua</span>
-                        <span className="text-sm font-bold text-gray-500">Đơn vị: {product.unit}</span>
+                        <div className="text-xs font-bold text-gray-500 flex items-center gap-3">
+                          <span>Trong kho: <strong className="text-emerald-700 font-black">{getStockLimit()}</strong> {product.unit}</span>
+                          <span className="text-gray-300">|</span>
+                          <span>Đơn vị: {product.unit}</span>
+                        </div>
                       </div>
                       <div className="flex flex-wrap items-center justify-between gap-4">
                         <div className="flex items-center rounded-xl border border-gray-300 bg-white p-1 shadow-sm">
@@ -528,9 +538,14 @@ export default function ProductDetailView({ product }: ProductDetailViewProps) {
                           >
                             <Minus className="w-4.5 h-4.5" />
                           </button>
-                          <span className="w-14 text-center text-xl font-black text-gray-900">
-                            {quantity}
-                          </span>
+                          <input
+                            type="number"
+                            min="1"
+                            value={quantity}
+                            onChange={(e) => handleQuantityInputChange(e.target.value)}
+                            onBlur={handleQuantityInputBlur}
+                            className="w-14 text-center text-lg font-black text-gray-900 bg-transparent border-none focus:outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                          />
                           <button
                             onClick={handleIncrease}
                             aria-label="Tăng số lượng"
@@ -855,7 +870,7 @@ export default function ProductDetailView({ product }: ProductDetailViewProps) {
               <button
                 onClick={async () => {
                   if (selectedVariantIdx === null) {
-                    showToast("Vui lòng chọn một phân loại!", "error");
+                    toast.error("Vui lòng chọn một phân loại!");
                     return;
                   }
                   setIsVariantModalOpen(false);

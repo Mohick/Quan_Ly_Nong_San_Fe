@@ -14,6 +14,7 @@ import { getCategoriesAPI, createCategoryAPI } from "@/lib/_api/category";
 import dynamic from 'next/dynamic';
 const ReactQuill = dynamic(() => import('react-quill-new'), { ssr: false });
 import 'react-quill-new/dist/quill.snow.css';
+import { toast } from "react-toastify";
 
 function getCookie(name: string): string | undefined {
   if (typeof document === "undefined") return undefined;
@@ -77,8 +78,7 @@ export default function DashboardProducts() {
   const [formImageFiles, setFormImageFiles] = useState<File[]>([]);
   const [formVariants, setFormVariants] = useState<{ name: string; price: string; stock: string; options: { key: string; value: string }[] }[]>([]);
 
-  // Status message
-  const [notification, setNotification] = useState<{ message: string; type: "success" | "error" } | null>(null);
+
 
   // Discount Modal & Form control states
   const [isDiscountModalOpen, setIsDiscountModalOpen] = useState(false);
@@ -133,10 +133,11 @@ export default function DashboardProducts() {
 
   // Display notification helper
   const showNotification = (message: string, type: "success" | "error") => {
-    setNotification({ message, type });
-    setTimeout(() => {
-      setNotification(null);
-    }, 3500);
+    if (type === "success") {
+      toast.success(message);
+    } else {
+      toast.error(message);
+    }
   };
 
   // Open modal for adding new product
@@ -624,19 +625,6 @@ export default function DashboardProducts() {
 
   return (
     <div className="space-y-6 font-sans antialiased text-gray-800">
-
-      {/* Toast Notification */}
-      {notification && (
-        <div
-          className={`fixed top-4 right-4 z-50 flex items-center gap-3 px-4.5 py-3 rounded-lg shadow-xl text-sm font-bold border transition-all duration-300 animate-slide-in ${notification.type === "success"
-              ? "bg-[#e8f8f0] text-[#13a855] border-[#cbeed7]"
-              : "bg-red-50 text-red-600 border-red-100"
-            }`}
-        >
-          <CheckCircle className="w-5 h-5" />
-          <span>{notification.message}</span>
-        </div>
-      )}
 
       {/* Page Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">

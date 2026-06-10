@@ -3,6 +3,7 @@
 import React, { useEffect, useState, useRef } from "react";
 import { Star, ShoppingCart, Eye, Heart, Sparkles } from "lucide-react";
 import { productAPI } from "@/lib/_api/product";
+import Link from "next/link";
 
 const TopSale = () => {
     const [topSaleProducts, setTopSaleProducts] = useState<any[]>([]);
@@ -29,56 +30,11 @@ const TopSale = () => {
         fetchProduct();
     }, []);
 
-    // Wheel event handler to jump sections
-    useEffect(() => {
-        let isScrolling = false;
 
-        const handleWheel = (e: WheelEvent) => {
-            if (isScrolling) return;
-
-            const rect = sectionRef.current?.getBoundingClientRect();
-            if (!rect) return;
-
-            // Check if this section is currently visible in the viewport
-            const isVisible = rect.top >= -50 && rect.bottom <= window.innerHeight + 50;
-
-            if (isVisible) {
-                if (e.deltaY > 0) {
-                    // Scroll down to TopFarmer
-                    const nextElement = sectionRef.current?.nextElementSibling;
-                    if (nextElement) {
-                        e.preventDefault();
-                        isScrolling = true;
-                        nextElement.scrollIntoView({ behavior: "smooth" });
-                        setTimeout(() => { isScrolling = false; }, 800);
-                    }
-                } else if (e.deltaY < 0) {
-                    // Scroll up to Banner
-                    const prevElement = sectionRef.current?.previousElementSibling;
-                    if (prevElement) {
-                        e.preventDefault();
-                        isScrolling = true;
-                        prevElement.scrollIntoView({ behavior: "smooth" });
-                        setTimeout(() => { isScrolling = false; }, 800);
-                    }
-                }
-            }
-        };
-
-        const element = sectionRef.current;
-        if (element) {
-            element.addEventListener("wheel", handleWheel, { passive: false });
-        }
-        return () => {
-            if (element) {
-                element.removeEventListener("wheel", handleWheel);
-            }
-        };
-    }, []);
 
     return (
         <section ref={sectionRef} className="w-full py-12 bg-white font-sans min-h-[600px]">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
 
                 {/* Header Section */}
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-8 gap-4 border-b border-gray-100 pb-4">
@@ -97,7 +53,7 @@ const TopSale = () => {
                 </div>
 
                 {/* Products Grid */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8">
+                <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-8">
                     {topSaleProducts.map((product) => {
                         const isHovered = hoveredCard === product.id;
                         return (
@@ -105,10 +61,10 @@ const TopSale = () => {
                                 key={product.id}
                                 onMouseEnter={() => setHoveredCard(product.id)}
                                 onMouseLeave={() => setHoveredCard(null)}
-                                className="group relative flex flex-col bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-xl hover:border-[#13a855]/20 transition-all duration-300 overflow-hidden"
+                                className="group relative flex flex-col bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-xl hover:border-[#13a855]/20 transition-all duration-300 overflow-hidden p-2 sm:p-3"
                             >
                                 {/* Image Container */}
-                                <div className="relative aspect-square w-full overflow-hidden bg-gray-50">
+                                <Link href={`/products/detail?id=${product.id}`} className="relative aspect-square w-full overflow-hidden bg-gray-50 block cursor-pointer rounded-xl">
                                     {/* Badges */}
                                     <div className="absolute top-3.5 left-3.5 z-20 flex flex-col gap-1.5">
                                         {product.isBestSeller && (
@@ -140,17 +96,19 @@ const TopSale = () => {
                                         alt={product.name}
                                         className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500"
                                     />
-                                </div>
+                                </Link>
 
                                 {/* Product Info */}
-                                <div className="flex flex-col flex-1 p-4 sm:p-5 space-y-2.5">
+                                <div className="flex flex-col flex-1 pt-3 pb-1 px-1 sm:pt-4 sm:pb-2 sm:px-2 space-y-2.5">
                                     <span className="text-[11px] font-bold text-[#13a855]/80 uppercase tracking-wider">
                                         {product.category}
                                     </span>
 
-                                    <h3 className="font-bold text-gray-800 text-sm sm:text-base line-clamp-2 min-h-[40px] sm:min-h-[48px] hover:text-[#13a855] transition-colors leading-snug">
-                                        {product.name}
-                                    </h3>
+                                    <Link href={`/products/detail?id=${product.id}`} className="block group/title cursor-pointer">
+                                        <h3 className="font-bold text-gray-800 text-sm sm:text-base line-clamp-2 min-h-[40px] sm:min-h-[48px] group-hover/title:text-[#13a855] transition-colors leading-snug">
+                                            {product.name}
+                                        </h3>
+                                    </Link>
 
                                     {/* Rating & Sold Volume */}
                                     <div className="flex items-center gap-2 text-xs">

@@ -1,11 +1,5 @@
 import axiosInstance from "../axios";
-
-interface FarmUpdatePayload {
-    name?: string;
-    description?: string;
-    address?: string;
-    phone?: string;
-}
+import axios from "axios";
 
 // Lấy thông tin trang trại của chính mình (/farms/get-one)
 async function FarmAPI(token?: string) {
@@ -39,14 +33,17 @@ async function FarmAPI(token?: string) {
 }
 
 // Cập nhật thông tin trang trại (/farms/update/:id)
-async function updateFarmAPI(id: string | number, payload: FarmUpdatePayload, token?: string) {
-    const headers: Record<string, string> = {
-        "Content-Type": "application/json",
-    };
+async function updateFarmAPI(id: string | number, formData: FormData, token?: string) {
+    const headers: Record<string, string> = {};
     if (token) {
         headers["Authorization"] = token.startsWith("Bearer ") ? token : `Bearer ${token}`;
     }
-    return await axiosInstance.put(`/farms/update/${id}`, payload, { headers });
+
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:8080/api/v1";
+    const backendUrl = `${baseUrl.replace(/\/$/, "")}/farms/update/${id}`;
+
+    // Không đặt Content-Type thủ công để Axios tự thêm multipart boundary.
+    return await axios.put(backendUrl, formData, { headers });
 }
 
 // Xóa trang trại (/farms/delete/:id)

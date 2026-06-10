@@ -8,6 +8,8 @@ export interface UserProfile {
   username: string;
   image: string;
   email: string;
+  avatar_url?: string;
+  avatarUrl?: string;
 }
 
 /**
@@ -56,6 +58,8 @@ export async function extractGoogleUserProfile(
   return {
     username: payload.name || payload.given_name || "Người dùng PIONE",
     image: payload.picture || "",
+    avatar_url: payload.picture || "",
+    avatarUrl: payload.picture || "",
     email: payload.email || "",
   };
 }

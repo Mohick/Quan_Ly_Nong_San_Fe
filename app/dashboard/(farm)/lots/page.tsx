@@ -9,6 +9,7 @@ import { getCareProcessesAPI } from "@/lib/_api/care_process";
 import { LotCard } from "@/components/lots/LotCard";
 import { LotDetail } from "@/components/lots/LotDetail";
 import { LotModal } from "@/components/lots/LotModal";
+import { toast } from "react-toastify";
 
 export interface CropLot {
   farm_id?: string;
@@ -42,11 +43,9 @@ export default function CropLotsDashboard() {
   const [lotDiaries, setLotDiaries] = useState<Record<string, any[]>>({});
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingLot, setEditingLot] = useState<CropLot | null>(null);
-  const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   const showToast = (msg: string) => {
-    setToastMessage(msg);
-    setTimeout(() => setToastMessage(null), 3000);
+    toast.success(msg);
   };
 
   // Fetch diaries from backend/localStorage fallback
@@ -122,7 +121,7 @@ export default function CropLotsDashboard() {
     createLotAPI(newLotPayload, token)
       .then((response) => {
         if (response.data && response.data.valid === false) {
-          showToast("Khởi tạo lô canh tác thất bại: " + (response.data.message || "Lỗi hệ thống"));
+          toast.error("Khởi tạo lô canh tác thất bại: " + (response.data.message || "Lỗi hệ thống"));
           return;
         }
         lotsAPI(farmId, token).then((res) => {
@@ -153,7 +152,7 @@ export default function CropLotsDashboard() {
     updateLotAPI(updatedLot.id, payload, token)
       .then((res) => {
         if (res.data && res.data.valid === false) {
-          showToast("Cập nhật lô canh tác thất bại: " + (res.data.message || "Lỗi hệ thống"));
+          toast.error("Cập nhật lô canh tác thất bại: " + (res.data.message || "Lỗi hệ thống"));
           return;
         }
         setLots((prev) => prev.map((l) => (l.id === updatedLot.id ? updatedLot : l)));
@@ -172,7 +171,7 @@ export default function CropLotsDashboard() {
       deleteLotAPI(id, token)
         .then((res) => {
           if (res.data && res.data.valid === false) {
-            showToast("Xóa lô canh tác thất bại: " + (res.data.message || "Lỗi hệ thống"));
+            toast.error("Xóa lô canh tác thất bại: " + (res.data.message || "Lỗi hệ thống"));
             return;
           }
           setLots((prev) => prev.filter((l) => l.id !== id));
@@ -252,13 +251,6 @@ export default function CropLotsDashboard() {
 
   return (
     <div className="space-y-6 font-sans antialiased text-gray-800 animate-fade-in select-none">
-      {/* Toast Alert */}
-      {toastMessage && (
-        <div className="fixed top-4 right-4 z-50 flex items-center gap-3 px-4.5 py-3 rounded-lg shadow-xl text-sm font-bold border bg-[#e8f8f0] text-[#13a855] border-[#cbeed7] transition-all duration-300 animate-slide-in">
-          <CheckCircle2 className="w-5 h-5" />
-          <span>{toastMessage}</span>
-        </div>
-      )}
 
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">

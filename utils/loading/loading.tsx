@@ -1,7 +1,6 @@
 "use client";
 import { AnimatePresence, motion } from "framer-motion";
-import { exit } from "process";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 const pathVariants = {
   initial: { opacity: 0, pathLength: 0 },
@@ -17,7 +16,17 @@ const containerVariants = {
 };
 
 const Loading = () => {
-  const [isVisible, setIsVisible] = useState(true);
+  const [isVisible, setIsVisible] = useState(false);
+
+  useEffect(() => {
+    const hasLoaded = sessionStorage.getItem("hasLoaded");
+    if (!hasLoaded) {
+      setTimeout(() => {
+        setIsVisible(true);
+      }, 0);
+      sessionStorage.setItem("hasLoaded", "true");
+    }
+  }, []);
 
   const transition = {
     duration: 1.5,

@@ -22,15 +22,7 @@ async function createCareProcessAPI(payload: CareProcessPayload, token?: string)
 async function getCareProcessesAPI(cropLotId: string, token?: string) {
     const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(cropLotId);
     if (!isUUID) {
-        if (typeof window !== "undefined") {
-            const localData = localStorage.getItem(`diaries_${cropLotId}`);
-            if (localData) {
-                try {
-                    return { data: JSON.parse(localData), isLocal: true };
-                } catch (_) { }
-            }
-        }
-        return { data: [], isLocal: true };
+        return { data: [], isLocal: false };
     }
 
     try {
@@ -39,17 +31,13 @@ async function getCareProcessesAPI(cropLotId: string, token?: string) {
             headers["Authorization"] = token.startsWith("Bearer ") ? token : `Bearer ${token}`;
         }
         const res = await axiosInstance.get(`/care-process/get-process/${cropLotId}`, { headers });
-        const dataField = Array.isArray(res.data) ? res.data : res.data?.data;
-        const rawData = Array.isArray(dataField) ? dataField : [];
-        
-        if (rawData.length === 0) {
-            if (typeof window !== "undefined") {
-                const localData = localStorage.getItem(`diaries_${cropLotId}`);
-                if (localData) {
-                    try {
-                        return { data: JSON.parse(localData), isLocal: true };
-                    } catch (_) { }
-                }
+        const dataField = res.data?.data !== undefined ? res.data.data : res.data;
+        let rawData: any[] = [];
+        if (dataField) {
+            if (Array.isArray(dataField)) {
+                rawData = dataField;
+            } else {
+                rawData = [dataField];
             }
         }
         
@@ -65,17 +53,9 @@ async function getCareProcessesAPI(cropLotId: string, token?: string) {
         }));
         return { data: mapped, isLocal: false };
     } catch (error: any) {
-        console.warn(`Lô đất #${cropLotId} chưa có dữ liệu nhật ký chăm sóc trên Backend, sử dụng LocalStorage.`);
-        if (typeof window !== "undefined") {
-            const localData = localStorage.getItem(`diaries_${cropLotId}`);
-            if (localData) {
-                try {
-                    return { data: JSON.parse(localData), isLocal: true };
-                } catch (_) { }
-            }
-        }
+        console.error(`Lỗi khi lấy dữ liệu nhật ký chăm sóc từ Backend cho lô ${cropLotId}:`, error);
+        return { data: [], isLocal: false };
     }
-    return { data: [], isLocal: true };
 }
 
 interface CareProcessUpdatePayload extends CareProcessPayload {

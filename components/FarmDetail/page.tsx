@@ -49,7 +49,7 @@ export default function FarmDetailClient({ id }: { id: string }) {
                 // Fetch Farm info from backend
                 const farmRes = await getAllFarmAPI();
                 const responseData = farmRes.data;
-                const farmData = Array.isArray(responseData.data) ? responseData.data : [];
+                const farmData = Array.isArray(responseData.data) ? responseData.data : (Array.isArray(responseData) ? responseData : []);
                 const foundFarm = farmData.find((f: any) => (f.id || f.ID) === id);
                 if (foundFarm) {
                     const mappedFarm: Farm = {
@@ -219,8 +219,8 @@ export default function FarmDetailClient({ id }: { id: string }) {
                         <button
                             onClick={handleSubscribeToggle}
                             className={`flex-1 md:flex-none flex items-center justify-center gap-1.5 px-6 py-2.5 text-xs font-black rounded-full transition-all active:scale-95 cursor-pointer shadow-sm border ${isSubscribed
-                                    ? "bg-gray-150 hover:bg-gray-250 text-gray-800 border-gray-300/60"
-                                    : "bg-gray-900 hover:bg-gray-800 text-white border-transparent"
+                                ? "bg-gray-150 hover:bg-gray-250 text-gray-800 border-gray-300/60"
+                                : "bg-gray-900 hover:bg-gray-800 text-white border-transparent"
                                 }`}
                         >
                             {isSubscribed ? (
@@ -242,8 +242,8 @@ export default function FarmDetailClient({ id }: { id: string }) {
                                 if (!isJoined) alert(`Chào mừng hội viên! Bạn đã trở thành Hội viên VIP của ${farm.name}.`);
                             }}
                             className={`flex-1 md:flex-none flex items-center justify-center px-6 py-2.5 text-xs font-black rounded-full border transition-all active:scale-95 cursor-pointer ${isJoined
-                                    ? "bg-[#e8f8f0] text-[#13a855] border-[#bfead0] hover:bg-[#d4f2e1]"
-                                    : "bg-white border-gray-350 hover:bg-gray-50 text-gray-800"
+                                ? "bg-[#e8f8f0] text-[#13a855] border-[#bfead0] hover:bg-[#d4f2e1]"
+                                : "bg-white border-gray-350 hover:bg-gray-50 text-gray-800"
                                 }`}
                         >
                             {isJoined ? "Hội viên VIP" : "Tham gia hội viên"}
@@ -251,28 +251,6 @@ export default function FarmDetailClient({ id }: { id: string }) {
                     </div>
                 </div>
 
-                {/* Bio & Specialties below the Avatar/Name row */}
-                <div className="mt-5 pt-4 border-t border-gray-200/60 max-w-4xl space-y-2.5">
-                    {/* Expansible description snippet */}
-                    <div className="text-xs font-medium text-gray-600 leading-relaxed">
-                        <p className={descExpanded ? "" : "line-clamp-2"}>
-                            {farm.description} Lâm Đồng chuyên trồng nông sản chất lượng cao theo phương pháp nông nghiệp hữu cơ bền vững. Toàn bộ cây trồng được cấp nước tưới tự động, giảm thiểu phân bón hóa học và theo sát quy trình kiểm duyệt VietGAP chuẩn xuất khẩu.
-                        </p>
-                        <button
-                            onClick={() => setDescExpanded(!descExpanded)}
-                            className="text-gray-900 hover:text-[#13a855] font-black mt-1 bg-transparent border-none outline-none cursor-pointer text-[11px]"
-                        >
-                            {descExpanded ? "ẩn bớt" : "...xem thêm"}
-                        </button>
-                    </div>
-
-                    {/* Specialty tag link */}
-                    <div className="flex items-center justify-start gap-1.5 text-xs font-bold text-sky-600 hover:text-sky-700 transition-colors">
-                        <ExternalLink className="w-3.5 h-3.5" />
-                        <span className="cursor-pointer">{`pione.vn/farm/${id}`}</span>
-                        <span className="text-gray-400 font-normal">và đặc sản: {farm.specialty.split(",").slice(0, 2).join(", ")}</span>
-                    </div>
-                </div>
             </div>
 
             {/* 3. YouTube Tabs Navigation Menu */}
@@ -288,8 +266,8 @@ export default function FarmDetailClient({ id }: { id: string }) {
                             key={tab.id}
                             onClick={() => setActiveTab(tab.id as any)}
                             className={`py-3.5 text-sm font-black border-b-2 tracking-wide transition-all flex-shrink-0 cursor-pointer whitespace-nowrap ${isActive
-                                    ? "border-[#13a855] text-[#13a855]"
-                                    : "border-transparent text-gray-500 hover:text-[#13a855]"
+                                ? "border-[#13a855] text-[#13a855]"
+                                : "border-transparent text-gray-500 hover:text-[#13a855]"
                                 }`}
                         >
                             {tab.label}
@@ -499,9 +477,15 @@ export default function FarmDetailClient({ id }: { id: string }) {
                             <div className="md:col-span-2 space-y-6">
                                 <div className="space-y-2">
                                     <h3 className="text-base sm:text-lg font-black text-gray-900 tracking-tight">Về Trang Trại Chúng Tôi</h3>
-                                    <p className="text-xs sm:text-sm text-gray-600 leading-relaxed font-medium">
+                                    <p className={`text-xs sm:text-sm text-gray-600 leading-relaxed font-medium ${descExpanded ? "" : "line-clamp-3"}`}>
                                         {farm.description} Toàn bộ cơ sở vật chất nhà màng, lưới che phủ côn trùng được nhập khẩu trực tiếp từ Israel. Chúng tôi nỗ lực tối đa để mang lại những dòng nông sản có hàm lượng dinh dưỡng nguyên bản, tuyệt đối không lạm dụng chất hóa học tăng trưởng gây hại cho đất và con người.
                                     </p>
+                                    <button
+                                        onClick={() => setDescExpanded(!descExpanded)}
+                                        className="text-[#13a855] hover:text-[#0f8b44] font-black text-[11px] bg-transparent border-none outline-none cursor-pointer"
+                                    >
+                                        {descExpanded ? "ẩn bớt" : "...xem thêm"}
+                                    </button>
                                 </div>
 
                                 <div className="space-y-2">

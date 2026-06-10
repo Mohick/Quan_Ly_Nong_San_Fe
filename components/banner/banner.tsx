@@ -92,27 +92,7 @@ const Banner = () => {
     }
   };
 
-  // Wheel event handler to jump down on scroll down
-  useEffect(() => {
-    const handleWheel = (e: WheelEvent) => {
-      // Check if user is scrolling down and is currently at the top of page
-      if (window.scrollY < 10 && e.deltaY > 0) {
-        e.preventDefault();
-        scrollToNextSection();
-      }
-    };
 
-    const element = bannerRef.current;
-    if (element) {
-      // Set passive to false so preventDefault works
-      element.addEventListener("wheel", handleWheel, { passive: false });
-    }
-    return () => {
-      if (element) {
-        element.removeEventListener("wheel", handleWheel);
-      }
-    };
-  }, []);
 
   // Autoplay functionality
   useEffect(() => {
@@ -134,65 +114,63 @@ const Banner = () => {
   }, [currentSlide, nextSlide]);
 
   return (
-    <section 
+    <section
       ref={bannerRef}
-      className="relative w-full overflow-hidden bg-gray-900 group h-[calc(100vh-80px)] min-h-[550px] font-sans"
+      className="relative w-full overflow-hidden bg-gray-900 group h-[33vh] min-h-[220px] md:h-[calc(100vh-80px)] md:min-h-[550px] font-sans"
     >
       {/* Background Slides */}
       <div className="relative w-full h-full">
         {slidesData.map((slide, index) => (
           <div
             key={slide.id}
-            className={`absolute inset-0 w-full h-full transition-opacity duration-700 ease-in-out ${
-              index === currentSlide ? "opacity-100 z-10" : "opacity-0 z-0"
-            }`}
+            className={`absolute inset-0 w-full h-full transition-opacity duration-700 ease-in-out ${index === currentSlide ? "opacity-100 z-10" : "opacity-0 z-0"
+              }`}
           >
             {/* Overlay Gradient */}
             <div className="absolute inset-0 bg-gradient-to-r from-gray-950/90 via-gray-900/65 to-transparent z-10" />
             <img
               src={slide.image}
               alt={slide.title}
-              className={`w-full h-full object-cover transform transition-transform duration-[5000ms] ease-out ${
-                index === currentSlide ? "scale-105" : "scale-100"
-              }`}
+              className={`w-full h-full object-cover transform transition-transform duration-[5000ms] ease-out ${index === currentSlide ? "scale-105" : "scale-100"
+                }`}
             />
 
             {/* Slide Content */}
             <div className="absolute inset-0 z-20 flex items-center">
               <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
-                <div className="max-w-3xl space-y-4 md:space-y-6">
+                <div className="max-w-3xl space-y-2 md:space-y-6">
                   {/* Category Badge */}
-                  <span className="inline-block px-3.5 py-1 text-xs font-black uppercase tracking-wider text-white rounded-full bg-white/10 backdrop-blur-md border border-white/20 shadow-sm">
+                  <span className="inline-block px-2 py-0.5 md:px-3.5 md:py-1 text-[9px] md:text-xs font-black uppercase tracking-wider text-gray-400 md:text-white rounded-full bg-white/10 backdrop-blur-md border border-white/20 shadow-sm">
                     {slide.category}
                   </span>
 
                   {/* Title */}
-                  <h1 className="text-3xl sm:text-5xl lg:text-6xl font-black text-white tracking-tight leading-[1.15] select-none">
+                  <h1 className="text-lg sm:text-3xl md:text-5xl lg:text-6xl font-black text-gray-300 md:text-white tracking-tight leading-[1.15] select-none">
                     {slide.title}
                   </h1>
 
                   {/* Description */}
-                  <p className="text-sm sm:text-base md:text-lg text-gray-300 font-normal leading-relaxed max-w-2xl select-none">
+                  <p className="text-[11px] sm:text-sm md:text-lg text-gray-400 md:text-gray-350 font-normal leading-relaxed max-w-2xl select-none line-clamp-2 md:line-clamp-none">
                     {slide.description}
                   </p>
 
                   {/* Details and CTA Row */}
-                  <div className="flex flex-wrap items-center gap-4 pt-3">
-                    <div className="flex items-center gap-2 text-xs md:text-sm text-gray-200 bg-white/5 backdrop-blur-sm border border-white/10 px-3 py-1.5 rounded-lg shadow-sm">
-                      <Calendar className="w-4 h-4 text-[#10b981]" />
+                  <div className="flex flex-wrap items-center gap-2 md:gap-4 pt-0.5 md:pt-3">
+                    <div className="flex items-center gap-1.5 md:gap-2 text-[9px] md:text-sm text-gray-400 md:text-gray-200 bg-white/5 backdrop-blur-sm border border-white/10 px-2 py-1 md:px-3 md:py-1.5 rounded-lg shadow-sm">
+                      <Calendar className="w-3 h-3 md:w-4 md:h-4 text-[#10b981]" />
                       <span>{slide.date}</span>
                     </div>
-                    <div className="flex items-center gap-2 text-xs md:text-sm text-gray-200 bg-white/5 backdrop-blur-sm border border-white/10 px-3 py-1.5 rounded-lg shadow-sm">
-                      <MapPin className="w-4 h-4 text-[#10b981]" />
+                    <div className="flex items-center gap-1.5 md:gap-2 text-[9px] md:text-sm text-gray-400 md:text-gray-200 bg-white/5 backdrop-blur-sm border border-white/10 px-2 py-1 md:px-3 md:py-1.5 rounded-lg shadow-sm">
+                      <MapPin className="w-3 h-3 md:w-4 md:h-4 text-[#10b981]" />
                       <span>{slide.location}</span>
                     </div>
 
                     <a
                       href={slide.ctaLink}
-                      className={`inline-flex items-center gap-2 px-5 py-2.5 text-xs md:text-sm text-white font-extrabold rounded-xl bg-gradient-to-r ${slide.accentColor} hover:shadow-lg hover:brightness-110 active:scale-95 transition-all duration-200`}
+                      className={`inline-flex items-center gap-1.5 md:gap-2 px-3 py-1.5 md:px-5 md:py-2.5 text-[9px] md:text-sm text-white font-extrabold rounded-lg md:rounded-xl bg-gradient-to-r ${slide.accentColor} hover:shadow-lg hover:brightness-110 active:scale-95 transition-all duration-200`}
                     >
                       <span>{slide.ctaText}</span>
-                      <ArrowRight className="w-4 h-4" />
+                      <ArrowRight className="w-3 h-3 md:w-4 md:h-4" />
                     </a>
                   </div>
                 </div>
@@ -205,20 +183,20 @@ const Banner = () => {
       {/* Navigation Arrows */}
       <button
         onClick={prevSlide}
-        className="absolute left-6 top-1/2 -translate-y-1/2 z-30 p-3 rounded-full bg-white/10 hover:bg-white/25 border border-white/25 text-white backdrop-blur-md transition-all duration-200 active:scale-90 cursor-pointer hidden sm:block opacity-0 group-hover:opacity-100 shadow-md"
+        className="absolute left-4 md:left-6 top-1/2 -translate-y-1/2 z-30 p-2 md:p-3 rounded-full bg-white/10 hover:bg-white/25 border border-white/25 text-white backdrop-blur-md transition-all duration-200 active:scale-90 cursor-pointer hidden sm:block opacity-0 group-hover:opacity-100 shadow-md"
       >
-        <ChevronLeft className="w-6 h-6" />
+        <ChevronLeft className="w-5 h-5 md:w-6 md:h-6" />
       </button>
       <button
         onClick={nextSlide}
-        className="absolute right-6 top-1/2 -translate-y-1/2 z-30 p-3 rounded-full bg-white/10 hover:bg-white/25 border border-white/25 text-white backdrop-blur-md transition-all duration-200 active:scale-90 cursor-pointer hidden sm:block opacity-0 group-hover:opacity-100 shadow-md"
+        className="absolute right-4 md:right-6 top-1/2 -translate-y-1/2 z-30 p-2 md:p-3 rounded-full bg-white/10 hover:bg-white/25 border border-white/25 text-white backdrop-blur-md transition-all duration-200 active:scale-90 cursor-pointer hidden sm:block opacity-0 group-hover:opacity-100 shadow-md"
       >
-        <ChevronRight className="w-6 h-6" />
+        <ChevronRight className="w-5 h-5 md:w-6 md:h-6" />
       </button>
 
       {/* Slide Indicators & Scroll Down Indicator */}
-      <div className="absolute bottom-6 left-0 right-0 z-30 flex flex-col items-center gap-6">
-        <div className="flex gap-2.5">
+      <div className="absolute bottom-4 md:bottom-6 left-0 right-0 z-30 flex flex-col items-center gap-2 md:gap-6">
+        <div className="flex gap-2 md:gap-2.5">
           {slidesData.map((_, index) => (
             <button
               key={index}
@@ -229,17 +207,16 @@ const Banner = () => {
                 setCurrentSlide(index);
                 setTimeout(() => setIsTransitioning(false), 500);
               }}
-              className={`h-2.5 rounded-full cursor-pointer transition-all duration-300 ${
-                index === currentSlide ? "w-8 bg-[#10b981]" : "w-2.5 bg-white/40 hover:bg-white/60"
-              }`}
+              className={`h-2 md:h-2.5 rounded-full cursor-pointer transition-all duration-300 ${index === currentSlide ? "w-6 md:w-8 bg-[#10b981]" : "w-2 md:w-2.5 bg-white/40 hover:bg-white/60"
+                }`}
             />
           ))}
         </div>
 
-        {/* Scroll Down Hint */}
+        {/* Scroll Down Hint (Only visible on desktop/md layout) */}
         <button
           onClick={scrollToNextSection}
-          className="flex flex-col items-center text-white/75 hover:text-white transition-colors duration-200 animate-bounce cursor-pointer group/scroll"
+          className="hidden md:flex flex-col items-center text-white/75 hover:text-white transition-colors duration-200 animate-bounce cursor-pointer group/scroll"
         >
           <span className="text-[10px] uppercase font-bold tracking-widest mb-1 opacity-80 group-hover/scroll:opacity-100 transition-opacity">
             Cuộn xuống

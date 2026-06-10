@@ -18,6 +18,7 @@ import { updateProfileAPI } from "@/lib/_api/profile";
 import ProfileTab from "@/components/settings/ProfileTab";
 import FarmTab from "@/components/settings/FarmTab";
 import SecurityTab from "@/components/settings/SecurityTab";
+import { toast } from "react-toastify";
 
 function getCookie(name: string): string | undefined {
   if (typeof document === "undefined") return undefined;
@@ -53,15 +54,6 @@ export default function ProfileSettings() {
 
   // UI States
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [toast, setToast] = useState<{
-    message: string;
-    type: "success" | "error";
-  } | null>(null);
-
-  const showToast = (message: string, type: "success" | "error") => {
-    setToast({ message, type });
-    setTimeout(() => setToast(null), 3500);
-  };
 
   // Đồng bộ form sau khi có kết quả từ Promise auto login
   useEffect(() => {
@@ -106,7 +98,7 @@ export default function ProfileSettings() {
   const handleProfileSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!fullName.trim() || !phone.trim() || !address.trim()) {
-      showToast("Vui lòng nhập đầy đủ các thông tin bắt buộc!", "error");
+      toast.error("Vui lòng nhập đầy đủ các thông tin bắt buộc!");
       return;
     }
     setIsSubmitting(true);
@@ -119,7 +111,7 @@ export default function ProfileSettings() {
       }, token);
 
       if (res.status === 200 || res.status === 201) {
-        showToast("Cập nhật thông tin tài khoản thành công!", "success");
+        toast.success("Cập nhật thông tin tài khoản thành công!");
         if (user) {
           setUser({
             ...user,
@@ -129,13 +121,12 @@ export default function ProfileSettings() {
           });
         }
       } else {
-        showToast("Không thể cập nhật hồ sơ. Vui lòng thử lại!", "error");
+        toast.error("Không thể cập nhật hồ sơ. Vui lòng thử lại!");
       }
     } catch (error: any) {
       console.error("Lỗi khi cập nhật hồ sơ cá nhân:", error);
-      showToast(
-        error.response?.data?.message || error.message || "Lỗi hệ thống khi cập nhật hồ sơ.",
-        "error"
+      toast.error(
+        error.response?.data?.message || error.message || "Lỗi hệ thống khi cập nhật hồ sơ."
       );
     } finally {
       setIsSubmitting(false);
@@ -146,13 +137,12 @@ export default function ProfileSettings() {
     e.preventDefault();
 
     if (!farmName.trim()) {
-      showToast("Tên trang trại là thông tin bắt buộc!", "error");
+      toast.error("Tên trang trại là thông tin bắt buộc!");
       return;
     }
     if (!farmImage) {
-      showToast(
-        "Hình ảnh trang trại là bắt buộc (multipart/form-data)!",
-        "error",
+      toast.error(
+        "Hình ảnh trang trại là bắt buộc (multipart/form-data)!"
       );
       return;
     }
@@ -172,7 +162,7 @@ export default function ProfileSettings() {
       const response = await createFarmAPI(formData, token);
 
       if (response.status === 200 || response.status === 201) {
-        showToast("Đăng ký & Khởi tạo Trang trại mới thành công!", "success");
+        toast.success("Đăng ký & Khởi tạo Trang trại mới thành công!");
 
         if (user) {
           setUser({
@@ -192,14 +182,13 @@ export default function ProfileSettings() {
           window.location.href = "/dashboard";
         }, 1500);
       } else {
-        showToast("Khởi tạo thất bại. Vui lòng thử lại!", "error");
+        toast.error("Khởi tạo thất bại. Vui lòng thử lại!");
       }
     } catch (error: any) {
       console.error("Lỗi khởi tạo trang trại:", error);
-      showToast(
+      toast.error(
         error.response?.data?.message ||
-          "Lỗi hệ thống khi khởi tạo trang trại.",
-        "error",
+        "Lỗi hệ thống khi khởi tạo trang trại."
       );
     } finally {
       setIsSubmitting(false);
@@ -214,20 +203,8 @@ export default function ProfileSettings() {
 
   return (
     <div className="animate-fade-in min-h-screen w-full bg-[#f8faf9] py-10 font-sans text-gray-800 select-none">
-      {toast && (
-        <div
-          className={`animate-slide-in fixed top-4 right-4 z-50 flex items-center gap-3 rounded-lg border px-4.5 py-3 text-sm font-bold shadow-xl transition-all duration-300 ${
-            toast.type === "success"
-              ? "border-[#cbeed7] bg-[#e8f8f0] text-[#13a855]"
-              : "border-red-100 bg-red-50 text-red-600"
-          }`}
-        >
-          <CheckCircle className="h-5 w-5" />
-          <span>{toast.message}</span>
-        </div>
-      )}
 
-      <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="mb-6 flex items-center justify-between">
           <Link
             href="/"
@@ -256,9 +233,9 @@ export default function ProfileSettings() {
                 <div className="flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-tr from-[#13a855] to-[#0a5c36] text-lg font-extrabold text-white shadow-inner">
                   {userDisplayName
                     ? userDisplayName
-                        .split(" ")
-                        .map((n: string) => n[0])
-                        .join("")
+                      .split(" ")
+                      .map((n: string) => n[0])
+                      .join("")
                     : "A"}
                 </div>
                 <div className="border-gray-150 absolute -right-1 -bottom-1 cursor-pointer rounded-full border bg-white p-1 shadow-sm transition-colors hover:bg-gray-50">
@@ -278,11 +255,10 @@ export default function ProfileSettings() {
             <nav className="flex flex-col gap-1 text-xs font-bold sm:text-sm">
               <button
                 onClick={() => setActiveTab("profile")}
-                className={`flex cursor-pointer items-center gap-3 rounded-xl px-4 py-3 transition-all ${
-                  activeTab === "profile"
+                className={`flex cursor-pointer items-center gap-3 rounded-xl px-4 py-3 transition-all ${activeTab === "profile"
                     ? "border-l-4 border-[#13a855] bg-[#e8f8f0] text-[#13a855]"
                     : "text-gray-500 hover:bg-gray-50 hover:text-gray-800"
-                }`}
+                  }`}
               >
                 <User className="h-4.5 w-4.5" />
                 <span>Thông tin tài khoản</span>
@@ -290,11 +266,10 @@ export default function ProfileSettings() {
 
               <button
                 onClick={() => setActiveTab("farm")}
-                className={`flex cursor-pointer items-center gap-3 rounded-xl px-4 py-3 transition-all ${
-                  activeTab === "farm"
+                className={`flex cursor-pointer items-center gap-3 rounded-xl px-4 py-3 transition-all ${activeTab === "farm"
                     ? "border-l-4 border-[#13a855] bg-[#e8f8f0] text-[#13a855]"
                     : "text-gray-500 hover:bg-gray-50 hover:text-gray-800"
-                }`}
+                  }`}
               >
                 <Landmark className="h-4.5 w-4.5" />
                 <span>{myFarm ? "Quản lý trang trại" : "Đăng ký mở Trang trại"}</span>
@@ -302,11 +277,10 @@ export default function ProfileSettings() {
 
               <button
                 onClick={() => setActiveTab("security")}
-                className={`flex cursor-pointer items-center gap-3 rounded-xl px-4 py-3 transition-all ${
-                  activeTab === "security"
+                className={`flex cursor-pointer items-center gap-3 rounded-xl px-4 py-3 transition-all ${activeTab === "security"
                     ? "border-l-4 border-[#13a855] bg-[#e8f8f0] text-[#13a855]"
                     : "text-gray-500 hover:bg-gray-50 hover:text-gray-800"
-                }`}
+                  }`}
               >
                 <Shield className="h-4.5 w-4.5" />
                 <span>Bảo mật tài khoản</span>
