@@ -61,10 +61,10 @@ const TopSale = () => {
                                 key={product.id}
                                 onMouseEnter={() => setHoveredCard(product.id)}
                                 onMouseLeave={() => setHoveredCard(null)}
-                                className="group relative flex flex-col bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-xl hover:border-[#13a855]/20 transition-all duration-300 overflow-hidden"
+                                className="group relative flex flex-col bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-xl hover:border-[#13a855]/20 transition-all duration-300 overflow-hidden p-2 sm:p-3"
                             >
                                 {/* Image Container */}
-                                <Link href={`/products/detail?id=${product.id}`} className="relative aspect-square w-full overflow-hidden bg-gray-50 block cursor-pointer">
+                                <Link href={`/products/detail?id=${product.id}`} className="relative aspect-square w-full overflow-hidden bg-gray-50 block cursor-pointer rounded-xl">
                                     {/* Badges */}
                                     <div className="absolute top-3.5 left-3.5 z-20 flex flex-col gap-1.5">
                                         {product.isBestSeller && (
@@ -99,7 +99,7 @@ const TopSale = () => {
                                 </Link>
 
                                 {/* Product Info */}
-                                <div className="flex flex-col flex-1 p-4 sm:p-5 space-y-2.5">
+                                <div className="flex flex-col flex-1 pt-3 pb-1 px-1 sm:pt-4 sm:pb-2 sm:px-2 space-y-2.5">
                                     <span className="text-[11px] font-bold text-[#13a855]/80 uppercase tracking-wider">
                                         {product.category}
                                     </span>
