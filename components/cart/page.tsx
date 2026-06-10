@@ -111,7 +111,14 @@ export default function CartView() {
   const handleIncrease = async (id: string | number, variantName?: string) => {
     const item = cartItems.find((item) => item.id === id && (item.selectedVariant?.name || "") === (variantName || ""));
     if (!item) return;
+    
+    // Check stock limit (default limit: 100 for safety, or check if variant has custom stock)
+    const stockLimit = 100;
     const newQty = item.quantity + 1;
+    if (newQty > stockLimit) {
+      alert(`Rất tiếc, số lượng sản phẩm trong kho chỉ còn tối đa ${stockLimit} ${item.unit || "sản phẩm"}.`);
+      return;
+    }
 
     const updatedItems = cartItems.map((item) =>
       item.id === id && (item.selectedVariant?.name || "") === (variantName || "") ? { ...item, quantity: newQty } : item
@@ -147,6 +154,38 @@ export default function CartView() {
     try {
       const token = getCookie("access_token");
       await updateCartItemAPI(id, newQty, token);
+    } catch (err) {
+      // Ignore backend error in fallback mode
+    }
+  };
+
+  const handleQuantityChange = async (id: string | number, value: string, variantName?: string) => {
+    const item = cartItems.find((item) => item.id === id && (item.selectedVariant?.name || "") === (variantName || ""));
+    if (!item) return;
+
+    let parsedVal = parseInt(value, 10);
+    if (isNaN(parsedVal) || parsedVal < 1) {
+      parsedVal = 1;
+    }
+
+    const stockLimit = 100;
+    if (parsedVal > stockLimit) {
+      alert(`Rất tiếc, số lượng sản phẩm trong kho chỉ còn tối đa ${stockLimit} ${item.unit || "sản phẩm"}.`);
+      parsedVal = stockLimit;
+    }
+
+    const updatedItems = cartItems.map((item) =>
+      item.id === id && (item.selectedVariant?.name || "") === (variantName || "") ? { ...item, quantity: parsedVal } : item
+    );
+    setCartItems(updatedItems);
+    if (typeof window !== "undefined") {
+      localStorage.setItem("local_cart", JSON.stringify(updatedItems));
+      window.dispatchEvent(new Event("cart-updated"));
+    }
+
+    try {
+      const token = getCookie("access_token");
+      await updateCartItemAPI(id, parsedVal, token);
     } catch (err) {
       // Ignore backend error in fallback mode
     }
@@ -318,9 +357,13 @@ export default function CartView() {
                       >
                         <Minus className="w-3.5 h-3.5" />
                       </button>
-                      <span className="w-10 text-center font-extrabold text-xs sm:text-sm text-gray-800">
-                        {item.quantity}
-                      </span>
+                      <input
+                        type="number"
+                        min="1"
+                        value={item.quantity}
+                        onChange={(e) => handleQuantityChange(item.id, e.target.value, item.selectedVariant?.name)}
+                        className="w-10 text-center font-extrabold text-xs sm:text-sm text-gray-800 bg-transparent border-none focus:outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                      />
                       <button
                         onClick={() => handleIncrease(item.id, item.selectedVariant?.name)}
                         className="p-1.5 text-gray-500 hover:text-[#13a855] hover:bg-[#e8f8f0] rounded-md transition-colors cursor-pointer"
