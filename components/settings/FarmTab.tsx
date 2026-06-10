@@ -100,20 +100,16 @@ export default function FarmTab({
                     </div>
 
                     <div className="p-6 space-y-4 text-xs font-bold text-gray-500">
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                            <div className="space-y-1">
-                                <span className="text-[10px] text-gray-400 uppercase tracking-wider block">Số điện thoại liên hệ</span>
-                                <span className="text-gray-800 text-sm font-extrabold">{ph}</span>
-                            </div>
-                            <div className="space-y-1">
-                                <span className="text-[10px] text-gray-400 uppercase tracking-wider block">ID Trang trại</span>
-                                <span className="text-gray-800 font-mono text-xs font-medium bg-gray-50 p-1.5 rounded border border-gray-200 block truncate">{myFarm.id || myFarm.ID}</span>
-                            </div>
+                        <div className="space-y-1">
+                            <span className="text-[10px] text-gray-400 uppercase tracking-wider block">Số điện thoại liên hệ</span>
+                            <span className="text-gray-800 text-sm font-extrabold">{ph}</span>
                         </div>
 
                         <div className="space-y-1 pt-2 border-t border-gray-100">
                             <span className="text-[10px] text-gray-400 uppercase tracking-wider block">Mô tả giới thiệu</span>
-                            <p className="text-gray-600 font-medium leading-relaxed text-xs">{desc}</p>
+                            <p className="text-gray-600 font-medium leading-relaxed text-xs" title={desc}>
+                                {desc.length > 100 ? `${desc.slice(0, 100)}...` : desc}
+                            </p>
                         </div>
                     </div>
                 </div>
