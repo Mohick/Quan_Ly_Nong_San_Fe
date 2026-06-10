@@ -264,14 +264,14 @@ const Header = () => {
                   <p className="text-xs font-black text-gray-800 leading-tight truncate max-w-[130px]">{displayName}</p>
                   <p className="text-[9px] text-emerald-600 font-extrabold tracking-wider">{userRole}</p>
                 </div>
-                <button
-                  onClick={(e) => { e.stopPropagation(); logout(); }}
-                  className="flex items-center gap-1 px-2.5 py-1.5 bg-red-50 hover:bg-red-100 text-red-500 text-[10px] font-bold rounded-lg transition-all cursor-pointer shrink-0"
-                >
-                  <LogOut className="w-3 h-3" />
-                  <span>Đăng xuất</span>
-                </button>
               </div>
+              <button
+                onClick={logout}
+                className="flex items-center justify-center gap-1.5 w-full py-2 bg-red-50 hover:bg-red-100 text-red-500 text-[11px] font-bold rounded-xl transition-all cursor-pointer"
+              >
+                <LogOut className="w-3.5 h-3.5" />
+                <span>Đăng xuất</span>
+              </button>
             </div>
           )}
           {!loading && !user && (
