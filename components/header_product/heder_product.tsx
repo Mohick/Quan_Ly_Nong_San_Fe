@@ -235,30 +235,32 @@ const HeaderProduct = ({
           </div>
 
           {/* TGDD sorting row style */}
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pt-3 border-t border-gray-100">
-            <div className="flex flex-wrap items-center gap-1.5 text-xs">
-              <span className="font-bold text-gray-400 mr-2">Sắp xếp theo:</span>
-              {[
-                { id: "newest", label: "Mới nhất" },
-                { id: "bestseller", label: "Bán chạy" },
-                { id: "price_asc", label: "Giá thấp đến cao" },
-                { id: "price_desc", label: "Giá cao đến thấp" }
-              ].map((sort) => {
-                const isActive = activeSort === sort.id;
-                return (
-                  <button
-                    key={sort.id}
-                    onClick={() => setActiveSort(sort.id)}
-                    className={`px-3.5 py-2 rounded-xl font-bold transition-all duration-150 cursor-pointer border flex items-center gap-1 ${isActive
-                      ? "bg-[#e8f8f0] text-[#13a855] border-[#13a855] shadow-sm font-extrabold"
-                      : "bg-white text-gray-550 border-gray-250 hover:border-gray-400"
-                      }`}
-                  >
-                    {isActive && <Check className="w-3.5 h-3.5" />}
-                    <span>{sort.label}</span>
-                  </button>
-                );
-              })}
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pt-3 border-t border-gray-100">
+            <div className="flex flex-wrap items-center gap-2 text-xs">
+              <span className="font-bold text-gray-400 w-full sm:w-auto mb-1 sm:mb-0">Sắp xếp theo:</span>
+              <div className="flex flex-wrap items-center gap-1.5 w-full sm:w-auto">
+                {[
+                  { id: "newest", label: "Mới nhất" },
+                  { id: "bestseller", label: "Bán chạy" },
+                  { id: "price_asc", label: "Giá thấp đến cao" },
+                  { id: "price_desc", label: "Giá cao đến thấp" }
+                ].map((sort) => {
+                  const isActive = activeSort === sort.id;
+                  return (
+                    <button
+                      key={sort.id}
+                      onClick={() => setActiveSort(sort.id)}
+                      className={`px-3 py-1.5 rounded-lg text-[11px] sm:text-xs font-bold transition-all duration-150 cursor-pointer border flex items-center gap-1 ${isActive
+                        ? "bg-[#e8f8f0] text-[#13a855] border-[#13a855] shadow-sm font-extrabold"
+                        : "bg-white text-gray-550 border-gray-250 hover:border-gray-400"
+                        }`}
+                    >
+                      {isActive && <Check className="w-3.5 h-3.5" />}
+                      <span>{sort.label}</span>
+                    </button>
+                  );
+                })}
+              </div>
             </div>
 
             {/* Grid/List View Toggles */}
