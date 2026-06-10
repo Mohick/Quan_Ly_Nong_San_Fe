@@ -158,15 +158,14 @@ const Banner = () => {
             {/* Slide Content */}
             <div className="absolute inset-0 z-20 flex items-center">
               <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
-                {/* Mobile: Container with semi-transparent background for high contrast. Desktop: Default clear. */}
-                <div className="max-w-3xl space-y-2 md:space-y-6 bg-gray-950/40 backdrop-blur-[2px] p-3 sm:p-4 rounded-xl md:bg-transparent md:backdrop-blur-none md:p-0 md:rounded-none">
+                <div className="max-w-3xl space-y-2 md:space-y-6">
                   {/* Category Badge */}
-                  <span className="inline-block px-2 py-0.5 md:px-3.5 md:py-1 text-[9px] md:text-xs font-black uppercase tracking-wider text-gray-300 md:text-white rounded-full bg-white/10 backdrop-blur-md border border-white/20 shadow-sm">
+                  <span className="inline-block px-2 py-0.5 md:px-3.5 md:py-1 text-[9px] md:text-xs font-black uppercase tracking-wider text-gray-400 md:text-white rounded-full bg-white/10 backdrop-blur-md border border-white/20 shadow-sm">
                     {slide.category}
                   </span>
 
                   {/* Title */}
-                  <h1 className="text-lg sm:text-3xl md:text-5xl lg:text-6xl font-black text-gray-100 md:text-white tracking-tight leading-[1.15] select-none">
+                  <h1 className="text-lg sm:text-3xl md:text-5xl lg:text-6xl font-black text-gray-300 md:text-white tracking-tight leading-[1.15] select-none">
                     {slide.title}
                   </h1>
 
