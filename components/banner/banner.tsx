@@ -158,39 +158,40 @@ const Banner = () => {
             {/* Slide Content */}
             <div className="absolute inset-0 z-20 flex items-center">
               <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
-                <div className="max-w-3xl space-y-2 md:space-y-6">
+                {/* Mobile: Container with semi-transparent background for high contrast. Desktop: Default clear. */}
+                <div className="max-w-3xl space-y-2 md:space-y-6 bg-gray-950/40 backdrop-blur-[2px] p-3 sm:p-4 rounded-xl md:bg-transparent md:backdrop-blur-none md:p-0 md:rounded-none">
                   {/* Category Badge */}
-                  <span className="inline-block px-2.5 py-0.5 md:px-3.5 md:py-1 text-[10px] md:text-xs font-black uppercase tracking-wider text-white rounded-full bg-white/10 backdrop-blur-md border border-white/20 shadow-sm">
+                  <span className="inline-block px-2 py-0.5 md:px-3.5 md:py-1 text-[9px] md:text-xs font-black uppercase tracking-wider text-gray-300 md:text-white rounded-full bg-white/10 backdrop-blur-md border border-white/20 shadow-sm">
                     {slide.category}
                   </span>
 
                   {/* Title */}
-                  <h1 className="text-xl sm:text-3xl md:text-5xl lg:text-6xl font-black text-white tracking-tight leading-[1.15] select-none">
+                  <h1 className="text-lg sm:text-3xl md:text-5xl lg:text-6xl font-black text-gray-100 md:text-white tracking-tight leading-[1.15] select-none">
                     {slide.title}
                   </h1>
 
                   {/* Description */}
-                  <p className="text-xs sm:text-sm md:text-lg text-gray-300 font-normal leading-relaxed max-w-2xl select-none line-clamp-2 md:line-clamp-none">
+                  <p className="text-[11px] sm:text-sm md:text-lg text-gray-400 md:text-gray-350 font-normal leading-relaxed max-w-2xl select-none line-clamp-2 md:line-clamp-none">
                     {slide.description}
                   </p>
 
                   {/* Details and CTA Row */}
-                  <div className="flex flex-wrap items-center gap-3 md:gap-4 pt-1 md:pt-3">
-                    <div className="flex items-center gap-1.5 md:gap-2 text-[10px] md:text-sm text-gray-200 bg-white/5 backdrop-blur-sm border border-white/10 px-2 py-1 md:px-3 md:py-1.5 rounded-lg shadow-sm">
-                      <Calendar className="w-3.5 h-3.5 md:w-4 md:h-4 text-[#10b981]" />
+                  <div className="flex flex-wrap items-center gap-2 md:gap-4 pt-0.5 md:pt-3">
+                    <div className="flex items-center gap-1.5 md:gap-2 text-[9px] md:text-sm text-gray-400 md:text-gray-200 bg-white/5 backdrop-blur-sm border border-white/10 px-2 py-1 md:px-3 md:py-1.5 rounded-lg shadow-sm">
+                      <Calendar className="w-3 h-3 md:w-4 md:h-4 text-[#10b981]" />
                       <span>{slide.date}</span>
                     </div>
-                    <div className="flex items-center gap-1.5 md:gap-2 text-[10px] md:text-sm text-gray-200 bg-white/5 backdrop-blur-sm border border-white/10 px-2 py-1 md:px-3 md:py-1.5 rounded-lg shadow-sm">
-                      <MapPin className="w-3.5 h-3.5 md:w-4 md:h-4 text-[#10b981]" />
+                    <div className="flex items-center gap-1.5 md:gap-2 text-[9px] md:text-sm text-gray-400 md:text-gray-200 bg-white/5 backdrop-blur-sm border border-white/10 px-2 py-1 md:px-3 md:py-1.5 rounded-lg shadow-sm">
+                      <MapPin className="w-3 h-3 md:w-4 md:h-4 text-[#10b981]" />
                       <span>{slide.location}</span>
                     </div>
 
                     <a
                       href={slide.ctaLink}
-                      className={`inline-flex items-center gap-1.5 md:gap-2 px-4 py-2 md:px-5 md:py-2.5 text-[10px] md:text-sm text-white font-extrabold rounded-lg md:rounded-xl bg-gradient-to-r ${slide.accentColor} hover:shadow-lg hover:brightness-110 active:scale-95 transition-all duration-200`}
+                      className={`inline-flex items-center gap-1.5 md:gap-2 px-3 py-1.5 md:px-5 md:py-2.5 text-[9px] md:text-sm text-white font-extrabold rounded-lg md:rounded-xl bg-gradient-to-r ${slide.accentColor} hover:shadow-lg hover:brightness-110 active:scale-95 transition-all duration-200`}
                     >
                       <span>{slide.ctaText}</span>
-                      <ArrowRight className="w-3.5 h-3.5 md:w-4 md:h-4" />
+                      <ArrowRight className="w-3 h-3 md:w-4 md:h-4" />
                     </a>
                   </div>
                 </div>
