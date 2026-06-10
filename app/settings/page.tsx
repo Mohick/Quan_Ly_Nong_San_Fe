@@ -204,7 +204,7 @@ export default function ProfileSettings() {
   return (
     <div className="animate-fade-in min-h-screen w-full bg-[#f8faf9] py-10 font-sans text-gray-800 select-none">
 
-      <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="mb-6 flex items-center justify-between">
           <Link
             href="/"
