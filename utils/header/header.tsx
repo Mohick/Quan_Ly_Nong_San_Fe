@@ -265,13 +265,6 @@ const Header = () => {
                   <p className="text-[9px] text-emerald-600 font-extrabold tracking-wider">{userRole}</p>
                 </div>
               </div>
-              <button
-                onClick={logout}
-                className="flex items-center justify-center gap-1.5 w-full py-2 bg-red-50 hover:bg-red-100 text-red-500 text-[11px] font-bold rounded-xl transition-all cursor-pointer"
-              >
-                <LogOut className="w-3.5 h-3.5" />
-                <span>Đăng xuất</span>
-              </button>
             </div>
           )}
           {!loading && !user && (
