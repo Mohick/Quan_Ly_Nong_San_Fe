@@ -219,8 +219,8 @@ export default function FarmDetailClient({ id }: { id: string }) {
                         <button
                             onClick={handleSubscribeToggle}
                             className={`flex-1 md:flex-none flex items-center justify-center gap-1.5 px-6 py-2.5 text-xs font-black rounded-full transition-all active:scale-95 cursor-pointer shadow-sm border ${isSubscribed
-                                    ? "bg-gray-150 hover:bg-gray-250 text-gray-800 border-gray-300/60"
-                                    : "bg-gray-900 hover:bg-gray-800 text-white border-transparent"
+                                ? "bg-gray-150 hover:bg-gray-250 text-gray-800 border-gray-300/60"
+                                : "bg-gray-900 hover:bg-gray-800 text-white border-transparent"
                                 }`}
                         >
                             {isSubscribed ? (
@@ -242,8 +242,8 @@ export default function FarmDetailClient({ id }: { id: string }) {
                                 if (!isJoined) alert(`Chào mừng hội viên! Bạn đã trở thành Hội viên VIP của ${farm.name}.`);
                             }}
                             className={`flex-1 md:flex-none flex items-center justify-center px-6 py-2.5 text-xs font-black rounded-full border transition-all active:scale-95 cursor-pointer ${isJoined
-                                    ? "bg-[#e8f8f0] text-[#13a855] border-[#bfead0] hover:bg-[#d4f2e1]"
-                                    : "bg-white border-gray-350 hover:bg-gray-50 text-gray-800"
+                                ? "bg-[#e8f8f0] text-[#13a855] border-[#bfead0] hover:bg-[#d4f2e1]"
+                                : "bg-white border-gray-350 hover:bg-gray-50 text-gray-800"
                                 }`}
                         >
                             {isJoined ? "Hội viên VIP" : "Tham gia hội viên"}
@@ -266,12 +266,6 @@ export default function FarmDetailClient({ id }: { id: string }) {
                         </button>
                     </div>
 
-                    {/* Specialty tag link */}
-                    <div className="flex items-center justify-start gap-1.5 text-xs font-bold text-sky-600 hover:text-sky-700 transition-colors">
-                        <ExternalLink className="w-3.5 h-3.5" />
-                        <span className="cursor-pointer">{`pione.vn/farm/${id}`}</span>
-                        <span className="text-gray-400 font-normal">và đặc sản: {farm.specialty.split(",").slice(0, 2).join(", ")}</span>
-                    </div>
                 </div>
             </div>
 
@@ -288,8 +282,8 @@ export default function FarmDetailClient({ id }: { id: string }) {
                             key={tab.id}
                             onClick={() => setActiveTab(tab.id as any)}
                             className={`py-3.5 text-sm font-black border-b-2 tracking-wide transition-all flex-shrink-0 cursor-pointer whitespace-nowrap ${isActive
-                                    ? "border-[#13a855] text-[#13a855]"
-                                    : "border-transparent text-gray-500 hover:text-[#13a855]"
+                                ? "border-[#13a855] text-[#13a855]"
+                                : "border-transparent text-gray-500 hover:text-[#13a855]"
                                 }`}
                         >
                             {tab.label}
