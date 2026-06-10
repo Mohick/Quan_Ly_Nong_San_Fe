@@ -1,8 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useCallback, useRef } from "react";
-import { usePathname } from "next/navigation";
-import { ChevronLeft, ChevronRight, Calendar, MapPin, ArrowRight, ChevronDown } from "lucide-react";
+import { ChevronLeft, ChevronRight, Calendar, ArrowRight } from "lucide-react";
 
 interface EventSlide {
   id: number;
@@ -57,9 +56,6 @@ const slidesData: EventSlide[] = [
 ];
 
 const Banner = () => {
-  const pathname = usePathname();
-  const isCompact = pathname === "/products";
-
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [progress, setProgress] = useState(0);
@@ -81,43 +77,6 @@ const Banner = () => {
     setTimeout(() => setIsTransitioning(false), 500);
   };
 
-  const scrollToNextSection = () => {
-    if (bannerRef.current) {
-      // Find the next element sibling or fallback to window height
-      const nextElement = bannerRef.current.nextElementSibling;
-      if (nextElement) {
-        nextElement.scrollIntoView({ behavior: "smooth" });
-      } else {
-        window.scrollTo({
-          top: window.innerHeight - 80,
-          behavior: "smooth"
-        });
-      }
-    }
-  };
-
-  // Wheel event handler to jump down on scroll down
-  useEffect(() => {
-    const handleWheel = (e: WheelEvent) => {
-      // Check if user is scrolling down and is currently at the top of page
-      if (window.scrollY < 10 && e.deltaY > 0) {
-        e.preventDefault();
-        scrollToNextSection();
-      }
-    };
-
-    const element = bannerRef.current;
-    if (element) {
-      // Set passive to false so preventDefault works
-      element.addEventListener("wheel", handleWheel, { passive: false });
-    }
-    return () => {
-      if (element) {
-        element.removeEventListener("wheel", handleWheel);
-      }
-    };
-  }, []);
-
   // Autoplay functionality
   useEffect(() => {
     const duration = 5000; // 5 seconds per slide
@@ -138,77 +97,53 @@ const Banner = () => {
   }, [currentSlide, nextSlide]);
 
   return (
-    <section 
+    <section
       ref={bannerRef}
-      className={`relative w-full overflow-hidden bg-gray-900 group font-sans ${
-        isCompact
-          ? "h-[33vh] min-h-[200px]"
-          : "h-[calc(100vh-80px)] min-h-[550px]"
-      }`}
+      className="relative w-full overflow-hidden bg-gray-900 group font-sans h-[33vh] min-h-[220px]"
     >
       {/* Background Slides */}
       <div className="relative w-full h-full">
         {slidesData.map((slide, index) => (
           <div
             key={slide.id}
-            className={`absolute inset-0 w-full h-full transition-opacity duration-700 ease-in-out ${
-              index === currentSlide ? "opacity-100 z-10" : "opacity-0 z-0"
-            }`}
+            className={`absolute inset-0 w-full h-full transition-opacity duration-700 ease-in-out ${index === currentSlide ? "opacity-100 z-10" : "opacity-0 z-0"
+              }`}
           >
             {/* Overlay Gradient */}
             <div className="absolute inset-0 bg-gradient-to-r from-gray-950/90 via-gray-900/65 to-transparent z-10" />
             <img
               src={slide.image}
               alt={slide.title}
-              className={`w-full h-full object-cover transform transition-transform duration-[5000ms] ease-out ${
-                index === currentSlide ? "scale-105" : "scale-100"
-              }`}
+              className={`w-full h-full object-cover transform transition-transform duration-[5000ms] ease-out ${index === currentSlide ? "scale-105" : "scale-100"
+                }`}
             />
 
             {/* Slide Content */}
             <div className="absolute inset-0 z-20 flex items-center">
               <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
-                <div className={`space-y-2 ${isCompact ? "max-w-xl" : "max-w-3xl md:space-y-6"}`}>
+                <div className="space-y-2 max-w-2xl">
                   {/* Category Badge */}
-                  {!isCompact && (
-                    <span className="inline-block px-3.5 py-1 text-xs font-black uppercase tracking-wider text-white rounded-full bg-white/10 backdrop-blur-md border border-white/20 shadow-sm">
-                      {slide.category}
-                    </span>
-                  )}
+                  <span className="inline-block px-3 py-1 text-[10px] font-black uppercase tracking-wider text-white rounded-full bg-white/10 backdrop-blur-md border border-white/20 shadow-sm">
+                    {slide.category}
+                  </span>
 
                   {/* Title */}
-                  <h1 className={`font-black text-white tracking-tight leading-[1.15] select-none ${
-                    isCompact ? "text-xl sm:text-2xl" : "text-3xl sm:text-5xl lg:text-6xl"
-                  }`}>
+                  <h1 className="text-xl sm:text-2xl font-black text-white tracking-tight leading-[1.15] select-none">
                     {slide.title}
                   </h1>
 
-                  {/* Description - hide on compact */}
-                  {!isCompact && (
-                    <p className="text-sm sm:text-base md:text-lg text-gray-300 font-normal leading-relaxed max-w-2xl select-none">
-                      {slide.description}
-                    </p>
-                  )}
-
                   {/* Details and CTA Row */}
-                  <div className="flex flex-wrap items-center gap-3 pt-1">
-                    <div className="flex items-center gap-2 text-xs text-gray-200 bg-white/5 backdrop-blur-sm border border-white/10 px-3 py-1.5 rounded-lg shadow-sm">
-                      <Calendar className="w-3.5 h-3.5 text-[#10b981]" />
+                  <div className="flex flex-wrap items-center gap-2 pt-1">
+                    <div className="flex items-center gap-1.5 text-xs text-gray-200 bg-white/5 backdrop-blur-sm border border-white/10 px-2.5 py-1 rounded-lg shadow-sm">
+                      <Calendar className="w-3 h-3 text-[#10b981]" />
                       <span>{slide.date}</span>
                     </div>
-                    {!isCompact && (
-                      <div className="flex items-center gap-2 text-xs md:text-sm text-gray-200 bg-white/5 backdrop-blur-sm border border-white/10 px-3 py-1.5 rounded-lg shadow-sm">
-                        <MapPin className="w-4 h-4 text-[#10b981]" />
-                        <span>{slide.location}</span>
-                      </div>
-                    )}
-
                     <a
                       href={slide.ctaLink}
-                      className={`inline-flex items-center gap-2 px-4 py-2 text-xs text-white font-extrabold rounded-xl bg-gradient-to-r ${slide.accentColor} hover:shadow-lg hover:brightness-110 active:scale-95 transition-all duration-200`}
+                      className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 text-xs text-white font-extrabold rounded-lg bg-gradient-to-r ${slide.accentColor} hover:shadow-lg hover:brightness-110 active:scale-95 transition-all duration-200`}
                     >
                       <span>{slide.ctaText}</span>
-                      <ArrowRight className="w-3.5 h-3.5" />
+                      <ArrowRight className="w-3 h-3" />
                     </a>
                   </div>
                 </div>
@@ -232,9 +167,9 @@ const Banner = () => {
         <ChevronRight className="w-6 h-6" />
       </button>
 
-      {/* Slide Indicators & Scroll Down Indicator */}
-      <div className="absolute bottom-4 left-0 right-0 z-30 flex flex-col items-center gap-4">
-        <div className="flex gap-2">
+      {/* Slide Indicators */}
+      <div className="absolute bottom-3 left-0 right-0 z-30 flex justify-center">
+        <div className="flex gap-1.5">
           {slidesData.map((_, index) => (
             <button
               key={index}
@@ -245,25 +180,11 @@ const Banner = () => {
                 setCurrentSlide(index);
                 setTimeout(() => setIsTransitioning(false), 500);
               }}
-              className={`h-2 rounded-full cursor-pointer transition-all duration-300 ${
-                index === currentSlide ? "w-6 bg-[#10b981]" : "w-2 bg-white/40 hover:bg-white/60"
-              }`}
+              className={`h-1.5 rounded-full cursor-pointer transition-all duration-300 ${index === currentSlide ? "w-5 bg-[#10b981]" : "w-1.5 bg-white/40 hover:bg-white/60"
+                }`}
             />
           ))}
         </div>
-
-        {/* Scroll Down Hint - only on full banner */}
-        {!isCompact && (
-          <button
-            onClick={scrollToNextSection}
-            className="flex flex-col items-center text-white/75 hover:text-white transition-colors duration-200 animate-bounce cursor-pointer group/scroll"
-          >
-            <span className="text-[10px] uppercase font-bold tracking-widest mb-1 opacity-80 group-hover/scroll:opacity-100 transition-opacity">
-              Cuộn xuống
-            </span>
-            <ChevronDown className="w-5 h-5 text-[#10b981]" />
-          </button>
-        )}
       </div>
 
       {/* Bottom Autoplay Progress Bar */}
