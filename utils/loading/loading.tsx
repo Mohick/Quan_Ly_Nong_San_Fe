@@ -16,19 +16,16 @@ const containerVariants = {
 };
 
 const Loading = () => {
-  const [isVisible, setIsVisible] = useState(() => {
-    if (typeof window !== "undefined") {
-      const hasLoaded = sessionStorage.getItem("hasLoaded");
-      if (hasLoaded) {
-        return false;
-      }
-      sessionStorage.setItem("hasLoaded", "true");
-    }
-    return true;
-  });
+  const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {
-    // Session storage is initialized lazily during state setup to avoid set-state-in-effect
+    const hasLoaded = sessionStorage.getItem("hasLoaded");
+    if (!hasLoaded) {
+      setTimeout(() => {
+        setIsVisible(true);
+      }, 0);
+      sessionStorage.setItem("hasLoaded", "true");
+    }
   }, []);
 
   const transition = {
