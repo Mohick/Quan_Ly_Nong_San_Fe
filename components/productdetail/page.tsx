@@ -291,7 +291,7 @@ export default function ProductDetailView({ product }: ProductDetailViewProps) {
 
   return (
     <div className="min-h-screen w-full bg-[linear-gradient(180deg,#f0f8f2_0%,#f8faf9_320px)] py-6 font-sans text-gray-800 animate-fade-in sm:py-10">
-      <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
 
         {/* Navigation Breadcrumbs */}
         <div className="mb-5 flex items-center justify-between gap-3">
