@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useCallback, useRef } from "react";
+import { usePathname } from "next/navigation";
 import { ChevronLeft, ChevronRight, Calendar, MapPin, ArrowRight, ChevronDown } from "lucide-react";
 
 interface EventSlide {
@@ -56,6 +57,9 @@ const slidesData: EventSlide[] = [
 ];
 
 const Banner = () => {
+  const pathname = usePathname();
+  const isCompact = pathname === "/products";
+
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [progress, setProgress] = useState(0);
@@ -136,7 +140,11 @@ const Banner = () => {
   return (
     <section 
       ref={bannerRef}
-      className="relative w-full overflow-hidden bg-gray-900 group h-[calc(100vh-80px)] min-h-[550px] font-sans"
+      className={`relative w-full overflow-hidden bg-gray-900 group font-sans ${
+        isCompact
+          ? "h-[33vh] min-h-[200px]"
+          : "h-[calc(100vh-80px)] min-h-[550px]"
+      }`}
     >
       {/* Background Slides */}
       <div className="relative w-full h-full">
@@ -160,39 +168,47 @@ const Banner = () => {
             {/* Slide Content */}
             <div className="absolute inset-0 z-20 flex items-center">
               <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
-                <div className="max-w-3xl space-y-4 md:space-y-6">
+                <div className={`space-y-2 ${isCompact ? "max-w-xl" : "max-w-3xl md:space-y-6"}`}>
                   {/* Category Badge */}
-                  <span className="inline-block px-3.5 py-1 text-xs font-black uppercase tracking-wider text-white rounded-full bg-white/10 backdrop-blur-md border border-white/20 shadow-sm">
-                    {slide.category}
-                  </span>
+                  {!isCompact && (
+                    <span className="inline-block px-3.5 py-1 text-xs font-black uppercase tracking-wider text-white rounded-full bg-white/10 backdrop-blur-md border border-white/20 shadow-sm">
+                      {slide.category}
+                    </span>
+                  )}
 
                   {/* Title */}
-                  <h1 className="text-3xl sm:text-5xl lg:text-6xl font-black text-white tracking-tight leading-[1.15] select-none">
+                  <h1 className={`font-black text-white tracking-tight leading-[1.15] select-none ${
+                    isCompact ? "text-xl sm:text-2xl" : "text-3xl sm:text-5xl lg:text-6xl"
+                  }`}>
                     {slide.title}
                   </h1>
 
-                  {/* Description */}
-                  <p className="text-sm sm:text-base md:text-lg text-gray-300 font-normal leading-relaxed max-w-2xl select-none">
-                    {slide.description}
-                  </p>
+                  {/* Description - hide on compact */}
+                  {!isCompact && (
+                    <p className="text-sm sm:text-base md:text-lg text-gray-300 font-normal leading-relaxed max-w-2xl select-none">
+                      {slide.description}
+                    </p>
+                  )}
 
                   {/* Details and CTA Row */}
-                  <div className="flex flex-wrap items-center gap-4 pt-3">
-                    <div className="flex items-center gap-2 text-xs md:text-sm text-gray-200 bg-white/5 backdrop-blur-sm border border-white/10 px-3 py-1.5 rounded-lg shadow-sm">
-                      <Calendar className="w-4 h-4 text-[#10b981]" />
+                  <div className="flex flex-wrap items-center gap-3 pt-1">
+                    <div className="flex items-center gap-2 text-xs text-gray-200 bg-white/5 backdrop-blur-sm border border-white/10 px-3 py-1.5 rounded-lg shadow-sm">
+                      <Calendar className="w-3.5 h-3.5 text-[#10b981]" />
                       <span>{slide.date}</span>
                     </div>
-                    <div className="flex items-center gap-2 text-xs md:text-sm text-gray-200 bg-white/5 backdrop-blur-sm border border-white/10 px-3 py-1.5 rounded-lg shadow-sm">
-                      <MapPin className="w-4 h-4 text-[#10b981]" />
-                      <span>{slide.location}</span>
-                    </div>
+                    {!isCompact && (
+                      <div className="flex items-center gap-2 text-xs md:text-sm text-gray-200 bg-white/5 backdrop-blur-sm border border-white/10 px-3 py-1.5 rounded-lg shadow-sm">
+                        <MapPin className="w-4 h-4 text-[#10b981]" />
+                        <span>{slide.location}</span>
+                      </div>
+                    )}
 
                     <a
                       href={slide.ctaLink}
-                      className={`inline-flex items-center gap-2 px-5 py-2.5 text-xs md:text-sm text-white font-extrabold rounded-xl bg-gradient-to-r ${slide.accentColor} hover:shadow-lg hover:brightness-110 active:scale-95 transition-all duration-200`}
+                      className={`inline-flex items-center gap-2 px-4 py-2 text-xs text-white font-extrabold rounded-xl bg-gradient-to-r ${slide.accentColor} hover:shadow-lg hover:brightness-110 active:scale-95 transition-all duration-200`}
                     >
                       <span>{slide.ctaText}</span>
-                      <ArrowRight className="w-4 h-4" />
+                      <ArrowRight className="w-3.5 h-3.5" />
                     </a>
                   </div>
                 </div>
@@ -217,8 +233,8 @@ const Banner = () => {
       </button>
 
       {/* Slide Indicators & Scroll Down Indicator */}
-      <div className="absolute bottom-6 left-0 right-0 z-30 flex flex-col items-center gap-6">
-        <div className="flex gap-2.5">
+      <div className="absolute bottom-4 left-0 right-0 z-30 flex flex-col items-center gap-4">
+        <div className="flex gap-2">
           {slidesData.map((_, index) => (
             <button
               key={index}
@@ -229,23 +245,25 @@ const Banner = () => {
                 setCurrentSlide(index);
                 setTimeout(() => setIsTransitioning(false), 500);
               }}
-              className={`h-2.5 rounded-full cursor-pointer transition-all duration-300 ${
-                index === currentSlide ? "w-8 bg-[#10b981]" : "w-2.5 bg-white/40 hover:bg-white/60"
+              className={`h-2 rounded-full cursor-pointer transition-all duration-300 ${
+                index === currentSlide ? "w-6 bg-[#10b981]" : "w-2 bg-white/40 hover:bg-white/60"
               }`}
             />
           ))}
         </div>
 
-        {/* Scroll Down Hint */}
-        <button
-          onClick={scrollToNextSection}
-          className="flex flex-col items-center text-white/75 hover:text-white transition-colors duration-200 animate-bounce cursor-pointer group/scroll"
-        >
-          <span className="text-[10px] uppercase font-bold tracking-widest mb-1 opacity-80 group-hover/scroll:opacity-100 transition-opacity">
-            Cuộn xuống
-          </span>
-          <ChevronDown className="w-5 h-5 text-[#10b981]" />
-        </button>
+        {/* Scroll Down Hint - only on full banner */}
+        {!isCompact && (
+          <button
+            onClick={scrollToNextSection}
+            className="flex flex-col items-center text-white/75 hover:text-white transition-colors duration-200 animate-bounce cursor-pointer group/scroll"
+          >
+            <span className="text-[10px] uppercase font-bold tracking-widest mb-1 opacity-80 group-hover/scroll:opacity-100 transition-opacity">
+              Cuộn xuống
+            </span>
+            <ChevronDown className="w-5 h-5 text-[#10b981]" />
+          </button>
+        )}
       </div>
 
       {/* Bottom Autoplay Progress Bar */}
