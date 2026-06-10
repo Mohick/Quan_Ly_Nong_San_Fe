@@ -34,7 +34,7 @@ const TopSale = () => {
 
     return (
         <section ref={sectionRef} className="w-full py-12 bg-white font-sans min-h-[600px]">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="max-w-7xl mx-auto px-2 sm:px-6 lg:px-8">
 
                 {/* Header Section */}
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-8 gap-4 border-b border-gray-100 pb-4">
