@@ -197,11 +197,12 @@ const Header = () => {
     </header>
 
       {/* Mobile Drawer Overlay Backdrop */}
-      <div
-        className={`fixed inset-0 bg-black/50 z-40 lg:hidden transition-opacity duration-300 ${isMobileMenuOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
-          }`}
-        onClick={() => setIsMobileMenuOpen(false)}
-      />
+      {isMobileMenuOpen && (
+        <div
+          className="fixed inset-0 bg-black/50 z-40 lg:hidden transition-opacity duration-300 opacity-100"
+          onClick={() => setIsMobileMenuOpen(false)}
+        />
+      )}
 
       {/* Mobile Drawer Menu (Slides in from the right, occupies 1/4 viewport width on tablet/desktop sizes) */}
       <div
@@ -298,12 +299,12 @@ const Header = () => {
       </div>
 
       {/* Profile Drawer Backdrop */}
-      <div
-        className={`fixed inset-0 bg-black/50 z-40 transition-opacity duration-300 ${
-          isProfileDrawerOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
-        }`}
-        onClick={() => setIsProfileDrawerOpen(false)}
-      />
+      {isProfileDrawerOpen && (
+        <div
+          className="fixed inset-0 bg-black/50 z-40 transition-opacity duration-300 opacity-100"
+          onClick={() => setIsProfileDrawerOpen(false)}
+        />
+      )}
 
       {/* Profile Drawer (Slides in from the right, takes up 1/5 of viewport on lg screens) */}
       <div
