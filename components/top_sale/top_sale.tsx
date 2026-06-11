@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState, useRef } from "react";
 import { Star, ShoppingCart, Eye, Heart, Sparkles } from "lucide-react";
-import { productAPI } from "@/lib/_api/product";
+import { topProductAPI } from "@/lib/_api/product";
 import Link from "next/link";
 
 const TopSale = () => {
@@ -20,7 +20,7 @@ const TopSale = () => {
     useEffect(() => {
         const fetchProduct = async () => {
             try {
-                const res = await productAPI();
+                const res = await topProductAPI();
                 const data = Array.isArray(res.data) ? res.data : [];
                 setTopSaleProducts(data.slice(0, 8));
             } catch (error) {
@@ -43,9 +43,7 @@ const TopSale = () => {
                             <Sparkles className="w-4 h-4 animate-pulse" />
                             <span>Sản phẩm hot nhất</span>
                         </div>
-                        <h2 className="text-2xl sm:text-3xl font-extrabold text-[#0a5c36] tracking-tight">
-                            Top Bán Chạy Nhất Tuần
-                        </h2>
+
                     </div>
                     <span className="text-xs sm:text-sm font-semibold text-gray-500 bg-gray-50 px-4 py-2 rounded-full border border-gray-100 self-start sm:self-auto">
                         Số liệu cập nhật thời gian thực

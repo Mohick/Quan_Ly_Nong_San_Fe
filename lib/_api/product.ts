@@ -76,12 +76,13 @@ function mapSingleProduct(item: any) {
             if (rawImg.startsWith("http://") || rawImg.startsWith("https://") || rawImg.startsWith("data:")) {
                 return rawImg;
             }
-            let baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:8080";
-            if (baseUrl.includes("/api/v1")) {
-                baseUrl = baseUrl.replace("/api/v1", "");
+            let baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:8080/api/v1";
+            let assetBase = baseUrl.replace("/api/v1", "");
+            if (!assetBase.startsWith("http://") && !assetBase.startsWith("https://")) {
+                assetBase = "http://localhost:8080";
             }
             const cleanUrl = rawImg.startsWith("/") ? rawImg : `/${rawImg}`;
-            return `${baseUrl}${cleanUrl}`;
+            return `${assetBase}${cleanUrl}`;
         })(),
         images: (() => {
             const list: string[] = [];
@@ -93,12 +94,13 @@ function mapSingleProduct(item: any) {
                         if (url.startsWith("http://") || url.startsWith("https://") || url.startsWith("data:")) {
                             list.push(url);
                         } else {
-                            let baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:8080";
-                            if (baseUrl.includes("/api/v1")) {
-                                baseUrl = baseUrl.replace("/api/v1", "");
+                            let baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:8080/api/v1";
+                            let assetBase = baseUrl.replace("/api/v1", "");
+                            if (!assetBase.startsWith("http://") && !assetBase.startsWith("https://")) {
+                                assetBase = "http://localhost:8080";
                             }
                             const cleanUrl = url.startsWith("/") ? url : `/${url}`;
-                            list.push(`${baseUrl}${cleanUrl}`);
+                            list.push(`${assetBase}${cleanUrl}`);
                         }
                     }
                 });
@@ -109,12 +111,13 @@ function mapSingleProduct(item: any) {
                     if (mainImg.startsWith("http://") || mainImg.startsWith("https://") || mainImg.startsWith("data:")) {
                         list.push(mainImg);
                     } else {
-                        let baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:8080";
-                        if (baseUrl.includes("/api/v1")) {
-                            baseUrl = baseUrl.replace("/api/v1", "");
+                        let baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:8080/api/v1";
+                        let assetBase = baseUrl.replace("/api/v1", "");
+                        if (!assetBase.startsWith("http://") && !assetBase.startsWith("https://")) {
+                            assetBase = "http://localhost:8080";
                         }
                         const cleanUrl = mainImg.startsWith("/") ? mainImg : `/${mainImg}`;
-                        list.push(`${baseUrl}${cleanUrl}`);
+                        list.push(`${assetBase}${cleanUrl}`);
                     }
                 } else {
                     list.push("https://images.unsplash.com/photo-1610348725531-843dff10902c?q=80&w=600&auto=format&fit=crop");
@@ -270,6 +273,26 @@ async function getProductListAPI(page: number = 1, token?: string) {
     };
 }
 
+async function topProductAPI(token?: string) {
+    const headers: Record<string, string> = {};
+    if (token) {
+        headers["Authorization"] = token.startsWith("Bearer ") ? token : `Bearer ${token}`;
+    }
+    const res = await axiosInstance.get("/products/top_product", { headers });
+    let rawData: any[] = [];
+    if (res.data) {
+        if (Array.isArray(res.data)) {
+            rawData = res.data;
+        } else if (res.data.data) {
+            rawData = Array.isArray(res.data.data) 
+                ? res.data.data 
+                : (Array.isArray(res.data.data.data) ? res.data.data.data : []);
+        }
+    }
+    const mapped = rawData.map(mapSingleProduct).filter(Boolean) as any[];
+    return { data: mapped };
+}
+
 export { 
     productAPI, 
     getProductsByFarmerAPI,
@@ -278,5 +301,6 @@ export {
     deleteProductAPI, 
     updateProductAPI, 
     addDiscountAPI, 
-    getProductListAPI 
+    getProductListAPI,
+    topProductAPI
 };

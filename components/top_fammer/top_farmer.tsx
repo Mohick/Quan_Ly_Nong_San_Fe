@@ -44,9 +44,7 @@ const TopFarmer = () => {
                             <Award className="w-4 h-4 animate-bounce" />
                             <span>Nhà Vườn Tiêu Biểu</span>
                         </div>
-                        <h2 className="text-3xl sm:text-4xl font-extrabold text-[#0a5c36] tracking-tight">
-                            Top Nhà Vườn Đạt Chuẩn Xanh PIONE
-                        </h2>
+
                     </div>
                     <button className="flex items-center gap-2 text-sm font-bold text-[#13a855] hover:text-[#0f8b44] transition-colors self-start md:self-auto group cursor-pointer">
                         <span>Tất cả nhà vườn</span>
