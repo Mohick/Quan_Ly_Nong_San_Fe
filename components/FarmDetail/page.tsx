@@ -52,12 +52,13 @@ export default function FarmDetailClient({ id }: { id: string }) {
                 const farmData = Array.isArray(responseData.data) ? responseData.data : (Array.isArray(responseData) ? responseData : []);
                 const foundFarm = farmData.find((f: any) => (f.id || f.ID) === id);
                 if (foundFarm) {
+                    const rawLocation = foundFarm.address || foundFarm.Address || "Việt Nam";
                     const mappedFarm: Farm = {
                         id: foundFarm.id || foundFarm.ID,
                         name: foundFarm.farm_name || foundFarm.FarmName || "Nông trại thành viên",
                         avatar: foundFarm.image_url || foundFarm.ImageURL || "https://images.unsplash.com/photo-1595974482597-4b8da8879bc5?auto=format&fit=crop&q=80&w=150",
                         coverImage: foundFarm.image_url || foundFarm.ImageURL || "https://images.unsplash.com/photo-1500937386664-56d1dfef3854?auto=format&fit=crop&q=80&w=1000",
-                        location: foundFarm.address || foundFarm.Address || "Việt Nam",
+                        location: rawLocation.length > 30 ? `${rawLocation.slice(0, 30)}...` : rawLocation,
                         specialty: "Nông sản sạch, Rau củ quả",
                         experience: "5 năm",
                         landArea: "1.2 Hécta",
@@ -66,6 +67,7 @@ export default function FarmDetailClient({ id }: { id: string }) {
                         likes: 88,
                         description: foundFarm.description || foundFarm.Description || "Trang trại của gia đình liên kết sản xuất nông nghiệp sạch chuẩn an toàn vệ sinh thực phẩm.",
                     };
+
                     setFarm(mappedFarm);
                     setLikesCount(mappedFarm.likes);
                 }
