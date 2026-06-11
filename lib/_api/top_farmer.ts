@@ -25,13 +25,13 @@ async function topFarmerAPI() {
                 
                 return {
                     id: farm.ID || farm.id || String(index + 1),
-                    name: name,
+                    name: name.length > 25 ? `${name.slice(0, 25)}...` : name,
                     coverImage: image,
                     avatar: avatar,
                     badge: "Đạt chuẩn PIONE",
                     rating: (4.7 + (index % 3) * 0.1).toFixed(1),
-                    location: address,
-                    specialty: description,
+                    location: address.length > 35 ? `${address.slice(0, 35)}...` : address,
+                    specialty: description.length > 80 ? `${description.slice(0, 80)}...` : description,
                     experience: `${3 + (index % 4)} năm`,
                     landArea: `${1.5 + (index % 3) * 0.5} ha`
                 };

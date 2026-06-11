@@ -35,20 +35,27 @@ export default function FarmListPage() {
       try {
         const res = await FarmAPI();
         const data = Array.isArray(res.data) ? res.data : [];
-        const mapped = data.map((f: any) => ({
-          id: f.id || f.ID,
-          name: f.farm_name || f.FarmName || "Nông trại thành viên",
-          avatar: f.image_url || f.ImageURL || "https://images.unsplash.com/photo-1595974482597-4b8da8879bc5?auto=format&fit=crop&q=80&w=150",
-          coverImage: f.image_url || f.ImageURL || "https://images.unsplash.com/photo-1500937386664-56d1dfef3854?auto=format&fit=crop&q=80&w=1000",
-          location: f.address || f.Address || "Việt Nam",
-          specialty: f.specialty || "Nông sản sạch, Rau củ quả",
-          experience: f.experience || "5 năm",
-          landArea: f.landArea || "1.2 Hécta",
-          rating: f.rating || 4.9,
-          badge: f.badge || "VietGAP",
-          likes: f.likes || 88,
-          description: f.description || f.Description || "Trang trại của gia đình liên kết sản xuất nông nghiệp sạch chuẩn an toàn vệ sinh thực phẩm.",
-        }));
+        const mapped = data.map((f: any) => {
+          const rawName = f.farm_name || f.FarmName || "Nông trại thành viên";
+          const rawLocation = f.address || f.Address || "Việt Nam";
+          const rawSpecialty = f.specialty || "Nông sản sạch, Rau củ quả";
+          const rawDescription = f.description || f.Description || "Trang trại của gia đình liên kết sản xuất nông nghiệp sạch chuẩn an toàn vệ sinh thực phẩm.";
+
+          return {
+            id: f.id || f.ID,
+            name: rawName,
+            avatar: f.image_url || f.ImageURL || "https://images.unsplash.com/photo-1595974482597-4b8da8879bc5?auto=format&fit=crop&q=80&w=150",
+            coverImage: f.image_url || f.ImageURL || "https://images.unsplash.com/photo-1500937386664-56d1dfef3854?auto=format&fit=crop&q=80&w=1000",
+            location: rawLocation.length > 30 ? `${rawLocation.slice(0, 30)}...` : rawLocation,
+            specialty: rawSpecialty.length > 45 ? `${rawSpecialty.slice(0, 45)}...` : rawSpecialty,
+            experience: f.experience || "5 năm",
+            landArea: f.landArea || "1.2 Hécta",
+            rating: f.rating || 4.9,
+            badge: f.badge || "VietGAP",
+            likes: f.likes || 88,
+            description: rawDescription.length > 100 ? `${rawDescription.slice(0, 100)}...` : rawDescription,
+          };
+        });
         setFarms(mapped);
         console.log("Danh sách trang trại:", mapped);
       } catch (error) {
@@ -177,45 +184,49 @@ export default function FarmListPage() {
                     <div className="w-20 h-20 rounded-2xl overflow-hidden border-4 border-white bg-white shadow-md flex-shrink-0 relative -mt-10">
                       <img src={farm.avatar} alt={farm.name} className="w-full h-full object-cover" />
                     </div>
-                    <div className="pb-1.5">
-                      <h3 className="text-base sm:text-lg font-black text-gray-900 leading-tight group-hover:text-[#13a855] transition-colors">
-                        {farm.name}
+                     <div className="pb-1.5">
+                      <h3 className="text-base sm:text-lg font-black text-gray-900 leading-tight group-hover:text-[#13a855] transition-colors" title={farm.name}>
+                        {farm.name.length > 25 ? `${farm.name.slice(0, 25)}...` : farm.name}
                       </h3>
-                      <div className="flex items-center gap-1.5 text-xs text-gray-400 font-bold mt-1">
+                      <div className="flex items-center gap-1.5 text-xs text-gray-400 font-bold mt-1" title={farm.location}>
                         <MapPin className="w-3.5 h-3.5 text-[#13a855]" />
-                        <span>{farm.location}</span>
+                        <span>{farm.location.length > 30 ? `${farm.location.slice(0, 30)}...` : farm.location}</span>
                       </div>
                     </div>
                   </div>
-
+ 
                   {/* Body Info */}
-                  <div className="px-5 sm:px-6 py-4 space-y-4">
+                  <div className="px-5 sm:px-6 py-4 space-y-4 flex-grow flex flex-col justify-between">
                     <p className="text-xs text-gray-500 font-medium leading-relaxed line-clamp-3">
                       {farm.description.length > 100 ? `${farm.description.slice(0, 100)}...` : farm.description}
                     </p>
-
-                    {/* Highlights parameters */}
-                    <div className="grid grid-cols-3 gap-2.5 p-3 bg-gray-50 rounded-2xl border border-gray-100 text-center text-xs font-bold text-gray-600">
-                      <div>
-                        <span className="block text-[9px] text-gray-450 uppercase font-black tracking-wider mb-0.5">Kinh nghiệm</span>
-                        <span className="text-gray-800 font-extrabold">{farm.experience}</span>
+ 
+                    <div className="space-y-4 mt-auto">
+                      {/* Highlights parameters */}
+                      <div className="grid grid-cols-3 gap-2.5 p-3 bg-gray-50 rounded-2xl border border-gray-100 text-center text-xs font-bold text-gray-600">
+                        <div>
+                          <span className="block text-[9px] text-gray-450 uppercase font-black tracking-wider mb-0.5">Kinh nghiệm</span>
+                          <span className="text-gray-800 font-extrabold">{farm.experience}</span>
+                        </div>
+                        <div className="border-x border-gray-150">
+                          <span className="block text-[9px] text-gray-450 uppercase font-black tracking-wider mb-0.5">Diện tích</span>
+                          <span className="text-gray-800 font-extrabold">{farm.landArea}</span>
+                        </div>
+                        <div>
+                          <span className="block text-[9px] text-gray-450 uppercase font-black tracking-wider mb-0.5">Đánh giá</span>
+                          <span className="text-amber-500 font-extrabold flex items-center justify-center gap-0.5">
+                            <Star className="w-3.5 h-3.5 fill-current" />
+                            {farm.rating}
+                          </span>
+                        </div>
                       </div>
-                      <div className="border-x border-gray-150">
-                        <span className="block text-[9px] text-gray-450 uppercase font-black tracking-wider mb-0.5">Diện tích</span>
-                        <span className="text-gray-800 font-extrabold">{farm.landArea}</span>
+ 
+                      <div className="text-xs space-y-1">
+                        <span className="text-[10px] text-gray-400 font-black uppercase tracking-wider block">Các Đặc Sản Chủ Chốt</span>
+                        <p className="text-gray-700 font-extrabold" title={farm.specialty}>
+                          {farm.specialty.length > 45 ? `${farm.specialty.slice(0, 45)}...` : farm.specialty}
+                        </p>
                       </div>
-                      <div>
-                        <span className="block text-[9px] text-gray-450 uppercase font-black tracking-wider mb-0.5">Đánh giá</span>
-                        <span className="text-amber-500 font-extrabold flex items-center justify-center gap-0.5">
-                          <Star className="w-3.5 h-3.5 fill-current" />
-                          {farm.rating}
-                        </span>
-                      </div>
-                    </div>
-
-                    <div className="text-xs space-y-1">
-                      <span className="text-[10px] text-gray-400 font-black uppercase tracking-wider block">Các Đặc Sản Chủ Chốt</span>
-                      <p className="text-gray-700 font-extrabold">{farm.specialty}</p>
                     </div>
                   </div>
                 </div>
