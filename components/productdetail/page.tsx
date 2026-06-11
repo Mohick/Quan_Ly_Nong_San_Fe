@@ -60,11 +60,12 @@ interface ProductDetailViewProps {
 
 export default function ProductDetailView({ product }: ProductDetailViewProps) {
   const router = useRouter();
+
   const [quantity, setQuantity] = useState(1);
   const [isLiked, setIsLiked] = useState(false);
-
-  const [diaries, setDiaries] = useState<any[]>([]);
   const [isDiariesLoading, setIsDiariesLoading] = useState(false);
+  const [diaries, setDiaries] = useState<any[]>([]);
+  const [expandedDiaries, setExpandedDiaries] = useState<Record<string, boolean>>({});
 
   // Parse variants out of product.product_variants
   const rawVariants = (product as any).product_variants || (product as any).ProductVariants || [];
@@ -714,28 +715,41 @@ export default function ProductDetailView({ product }: ProductDetailViewProps) {
                   </div>
                 ) : diaries.length > 0 ? (
                   <div className="relative space-y-4 before:absolute before:bottom-6 before:left-6 before:top-6 before:w-0.5 before:bg-emerald-200">
-                    {diaries.map((diary, index) => (
-                      <article key={diary.id || index} className="relative flex gap-4 rounded-2xl border border-emerald-100 bg-[#f7fcf8] p-4 transition-shadow hover:shadow-md sm:p-5">
-                        <div className="z-10 flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-[#0f8f4a] text-base font-black text-white shadow-sm ring-4 ring-white">
-                          {String(index + 1).padStart(2, "0")}
-                        </div>
-                        <div className="min-w-0 flex-1">
-                          <h4 className="text-base font-black text-gray-900 sm:text-lg">
-                            {diary.title || `Giai đoạn ${diary.month}`}
-                          </h4>
-                          {diary.started_date && (
-                            <span className="mt-2 flex items-center gap-2 text-sm font-bold text-amber-700">
-                              <Calendar className="h-4 w-4" />
-                              {new Date(diary.started_date).toLocaleDateString("vi-VN")}
-                              {diary.finished_dat && ` - ${new Date(diary.finished_dat).toLocaleDateString("vi-VN")}`}
-                            </span>
-                          )}
-                          <p className="mt-3 text-base leading-7 text-gray-700">
-                            {diary.description}
-                          </p>
-                        </div>
-                      </article>
-                    ))}
+                    {diaries.map((diary, index) => {
+                      const diaryId = diary.id || String(index);
+                      const isExpanded = !!expandedDiaries[diaryId];
+                      return (
+                        <article
+                          key={diaryId}
+                          onClick={() => setExpandedDiaries(prev => ({ ...prev, [diaryId]: !prev[diaryId] }))}
+                          className="relative flex gap-4 rounded-2xl border border-emerald-100 bg-[#f7fcf8] p-4 transition-all hover:shadow-md sm:p-5 cursor-pointer select-none"
+                        >
+                          <div className="z-10 flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-[#0f8f4a] text-base font-black text-white shadow-sm ring-4 ring-white">
+                            {String(index + 1).padStart(2, "0")}
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <div className="flex items-center justify-between gap-4">
+                              <h4 className="text-base font-black text-gray-900 sm:text-lg">
+                                {diary.title || `Giai đoạn ${diary.month}`}
+                              </h4>
+                              <ChevronRight className={`w-5 h-5 text-gray-400 transition-transform duration-200 shrink-0 ${isExpanded ? "rotate-90 text-[#13a855]" : ""}`} />
+                            </div>
+                            {diary.started_date && (
+                              <span className="mt-2 flex items-center gap-2 text-sm font-bold text-amber-700">
+                                <Calendar className="h-4 w-4" />
+                                {new Date(diary.started_date).toLocaleDateString("vi-VN")}
+                                {diary.finished_dat && ` - ${new Date(diary.finished_dat).toLocaleDateString("vi-VN")}`}
+                              </span>
+                            )}
+                            {isExpanded && (
+                              <p className="mt-3 text-base leading-7 text-gray-700 animate-fade-in">
+                                {diary.description}
+                              </p>
+                            )}
+                          </div>
+                        </article>
+                      );
+                    })}
                   </div>
                 ) : (
                   <div className="grid grid-cols-1 gap-4 pt-2 md:grid-cols-3">
