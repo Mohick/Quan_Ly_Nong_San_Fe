@@ -149,13 +149,13 @@ const HeaderProduct = ({
               <button
                 type="button"
                 onClick={togglePriceDropdown}
-                className={`flex items-center gap-1.5 px-3.5 py-2 border rounded-xl text-xs font-extrabold transition-all cursor-pointer hover:bg-gray-50 ${minPrice || maxPrice
+                className={`flex items-center gap-1.5 px-4 py-2.5 border rounded-xl text-sm font-extrabold transition-all cursor-pointer hover:bg-gray-50 ${minPrice || maxPrice
                   ? "border-[#13a855] bg-[#e8f8f0] text-[#13a855]"
                   : "border-gray-250 text-gray-700 bg-white"
                   }`}
               >
                 <span>Mức giá: {minPrice || maxPrice ? "Đã lọc theo giá" : "Tất cả mức giá"}</span>
-                <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-200 ${activeDropdown === "price" ? "rotate-180" : ""}`} />
+                <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${activeDropdown === "price" ? "rotate-180" : ""}`} />
               </button>
 
               {/* Price Range Popover Menu */}
@@ -204,13 +204,13 @@ const HeaderProduct = ({
                         <button
                           type="button"
                           onClick={() => { setMinPrice(""); setMaxPrice(""); setLocalMinPrice(""); setLocalMaxPrice(""); setActiveDropdown(null); }}
-                          className="flex-1 py-2 text-xs font-bold border border-gray-350 hover:bg-gray-50 text-gray-700 rounded-xl transition-all"
+                          className="flex-1 py-2.5 text-sm font-bold border border-gray-350 hover:bg-gray-50 text-gray-700 rounded-xl transition-all"
                         >
                           Xóa
                         </button>
                         <button
                           type="submit"
-                          className="flex-1 py-2 text-xs font-bold bg-[#13a855] text-white rounded-xl hover:bg-[#0f8b44] transition-all shadow-sm"
+                          className="flex-1 py-2.5 text-sm font-bold bg-[#13a855] text-white rounded-xl hover:bg-[#0f8b44] transition-all shadow-sm"
                         >
                           Áp dụng
                         </button>
@@ -226,9 +226,9 @@ const HeaderProduct = ({
               <button
                 type="button"
                 onClick={handleResetAll}
-                className="flex items-center gap-1 px-3 py-2 border border-dashed border-red-300 bg-red-50/40 text-red-600 rounded-xl text-xs font-bold hover:bg-red-50 hover:border-red-400 active:scale-95 transition-all cursor-pointer"
+                className="flex items-center gap-1.5 px-4 py-2.5 border border-dashed border-red-300 bg-red-50/40 text-red-600 rounded-xl text-sm font-bold hover:bg-red-50 hover:border-red-400 active:scale-95 transition-all cursor-pointer"
               >
-                <RotateCcw className="w-3.5 h-3.5" />
+                <RotateCcw className="w-4 h-4" />
                 <span>Xóa bộ lọc</span>
               </button>
             )}
@@ -250,12 +250,12 @@ const HeaderProduct = ({
                     <button
                       key={sort.id}
                       onClick={() => setActiveSort(sort.id)}
-                      className={`px-3 py-1.5 rounded-lg text-[11px] sm:text-xs font-bold transition-all duration-150 cursor-pointer border flex items-center gap-1 ${isActive
+                      className={`px-4 py-2 rounded-lg text-xs sm:text-sm font-bold transition-all duration-150 cursor-pointer border flex items-center gap-1 ${isActive
                         ? "bg-[#e8f8f0] text-[#13a855] border-[#13a855] shadow-sm font-extrabold"
                         : "bg-white text-gray-550 border-gray-250 hover:border-gray-400"
                         }`}
                     >
-                      {isActive && <Check className="w-3.5 h-3.5" />}
+                      {isActive && <Check className="w-4 h-4" />}
                       <span>{sort.label}</span>
                     </button>
                   );
@@ -267,21 +267,21 @@ const HeaderProduct = ({
             <div className="flex items-center bg-white border border-gray-250 rounded-xl p-1 shadow-sm gap-0.5 self-end sm:self-auto">
               <button
                 onClick={() => setViewMode("grid")}
-                className={`p-1.5 rounded-lg transition-colors cursor-pointer ${viewMode === "grid"
+                className={`p-2 rounded-lg transition-colors cursor-pointer ${viewMode === "grid"
                   ? "bg-[#e8f8f0] text-[#13a855]"
                   : "text-gray-400 hover:text-gray-600"
                   }`}
               >
-                <Grid className="w-4 h-4" />
+                <Grid className="w-4.5 h-4.5" />
               </button>
               <button
                 onClick={() => setViewMode("list")}
-                className={`p-1.5 rounded-lg transition-colors cursor-pointer ${viewMode === "list"
+                className={`p-2 rounded-lg transition-colors cursor-pointer ${viewMode === "list"
                   ? "bg-[#e8f8f0] text-[#13a855]"
                   : "text-gray-400 hover:text-gray-600"
                   }`}
               >
-                <List className="w-4 h-4" />
+                <List className="w-4.5 h-4.5" />
               </button>
             </div>
           </div>

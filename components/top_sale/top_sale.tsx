@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState, useRef } from "react";
-import { Star, ShoppingCart, Eye, Heart, Sparkles } from "lucide-react";
+import { Star, ShoppingCart, Eye, Heart, Sparkles, ArrowRight } from "lucide-react";
 import { topProductAPI } from "@/lib/_api/product";
 import Link from "next/link";
 
@@ -145,6 +145,17 @@ const TopSale = () => {
                             </div>
                         );
                     })}
+                </div>
+
+                {/* View More Products Button */}
+                <div className="flex justify-center mt-8">
+                    <Link 
+                        href="/products" 
+                        className="inline-flex items-center gap-1.5 px-5 py-2.5 bg-[#e8f8f0] hover:bg-[#13a855] text-[#13a855] hover:text-white font-bold rounded-xl shadow-xs active:scale-95 transition-all duration-200 cursor-pointer text-xs border border-[#13a855]/10"
+                    >
+                        <span>Xem thêm sản phẩm</span>
+                        <ArrowRight className="w-3.5 h-3.5" />
+                    </Link>
                 </div>
 
             </div>

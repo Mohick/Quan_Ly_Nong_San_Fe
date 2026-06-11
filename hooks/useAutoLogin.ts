@@ -1,5 +1,6 @@
 import { useEffect } from "react";
 import { create } from "zustand";
+import axios from "axios";
 import { autoLoginAPI } from "@/lib/_api/auto_login";
 
 export interface User {
@@ -13,6 +14,10 @@ export interface User {
   address?: string;
   verified: boolean;
 }
+
+type CachedUser = User & {
+  image?: string;
+};
 
 interface AuthState {
   user: User | null;
@@ -43,30 +48,33 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     // Nếu đã initialized rồi thì không gọi lại API nữa để tránh loop/nhiều request thừa
     if (get().initialized) return;
 
+    // Mark the request as started before awaiting so React Strict Mode cannot start it twice.
+    set({ loading: true, initialized: true });
+
+    let localUser: CachedUser | null = null;
+
     try {
-      set({ loading: true });
       const token = getCookie("access_token");
       
       // Fallback: Read Google user profile from localStorage first
-      let localUser: any = null;
       if (typeof window !== "undefined") {
         const rawLocal = localStorage.getItem("user");
         if (rawLocal) {
           try {
-            localUser = JSON.parse(rawLocal);
-          } catch (_) {}
+            localUser = JSON.parse(rawLocal) as CachedUser;
+          } catch {}
         }
       }
 
       if (!token) {
-        set({ user: null, initialized: true });
+        set({ user: null });
         localStorage.removeItem("user");
         return;
       }
 
-      // If we have local user profile details, temporarily populate state to prevent UI flicker
+      // Render cached account details immediately while the backend validates the token.
       if (localUser) {
-        set({ user: localUser });
+        set({ user: localUser, loading: false });
       }
 
       const response = await autoLoginAPI(token);
@@ -80,16 +88,25 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         if (!userData.avatar_url && localUser?.avatar_url) {
           userData.avatar_url = localUser.avatar_url;
         }
-        set({ user: userData, initialized: true });
+        set({ user: userData });
         localStorage.setItem("user", JSON.stringify(userData));
       } else {
-        set({ user: null, initialized: true });
+        set({ user: null });
         localStorage.removeItem("user");
       }
     } catch (error) {
       console.warn("Lỗi tự động đăng nhập:", error);
-      set({ user: null, initialized: true });
-      localStorage.removeItem("user");
+
+      const isUnauthorized =
+        axios.isAxiosError(error) && error.response?.status === 401;
+
+      if (isUnauthorized) {
+        set({ user: null });
+        localStorage.removeItem("user");
+      } else {
+        // A slow/offline API must not make the header unusable.
+        set({ user: localUser });
+      }
     } finally {
       set({ loading: false });
     }

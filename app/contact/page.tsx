@@ -34,7 +34,7 @@ export default function ContactSupportPage() {
       <div className="max-w-6xl w-full mx-auto grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center">
         
         {/* Left Column */}
-        <div className="space-y-10">
+        <div className="space-y-10 order-2 lg:order-1">
           <div className="space-y-4">
             <h1 className="text-4xl sm:text-5xl font-black text-gray-900 tracking-tight leading-tight">
               Nhận tư vấn miễn phí từ các chuyên gia
@@ -127,7 +127,7 @@ export default function ContactSupportPage() {
         </div>
 
         {/* Right Column (Form Card) */}
-        <div className="bg-white border border-gray-150/70 rounded-3xl p-8 sm:p-10 shadow-sm">
+        <div className="bg-white border border-gray-150/70 rounded-3xl p-8 sm:p-10 shadow-sm order-1 lg:order-2">
           {isSubmitted ? (
             <div className="text-center py-8 space-y-4 animate-in fade-in zoom-in duration-300">
               <div className="w-12 h-12 bg-emerald-50 text-emerald-600 rounded-full flex items-center justify-center mx-auto">

@@ -129,7 +129,7 @@ const TopFarmer = () => {
                                     </div>
 
                                     {/* Statistics */}
-                                    <div className="grid grid-cols-2 gap-4 mt-6 p-3 bg-gray-50 rounded-xl border border-gray-100/50 text-center">
+                                    <div className="grid grid-cols-2 gap-4 mt-auto p-3 bg-gray-50 rounded-xl border border-gray-100/50 text-center">
                                         <div className="space-y-0.5">
                                             <span className="block text-[10px] text-gray-400 font-bold uppercase">Kinh nghiệm</span>
                                             <div className="flex items-center justify-center gap-1 text-xs font-extrabold text-gray-700">

@@ -6,7 +6,7 @@ interface CareProcessPayload {
     description: string;
     month: number;
     started_date: string;
-    finished_dat: string;
+    finished_date: string;
 }
 
 async function createCareProcessAPI(payload: CareProcessPayload, token?: string) {

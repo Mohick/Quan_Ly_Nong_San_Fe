@@ -72,7 +72,7 @@ export const LotDetail: React.FC<LotDetailProps> = ({
       description: newDiaryDesc,
       month: Number(newDiaryMonth),
       started_date: new Date(newDiaryStartDate).toISOString().split(".")[0] + "Z",
-      finished_dat: new Date(newDiaryFinishedDate).toISOString().split(".")[0] + "Z",
+      finished_date: new Date(newDiaryFinishedDate).toISOString().split(".")[0] + "Z",
     };
 
     const token = getCookie("access_token");
