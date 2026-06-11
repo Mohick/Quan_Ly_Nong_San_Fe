@@ -186,7 +186,11 @@ const Header = () => {
             {/* Mobile Menu Button */}
             <button
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className="lg:hidden p-3.5 text-white hover:text-[#00ff88] transition-colors relative z-50 cursor-pointer"
+              onTouchEnd={(e) => {
+                e.preventDefault();
+                setIsMobileMenuOpen(!isMobileMenuOpen);
+              }}
+              className="lg:hidden p-3.5 text-white hover:text-[#00ff88] active:scale-95 transition-all relative z-50 cursor-pointer flex items-center justify-center"
               aria-label="Menu"
             >
               {isMobileMenuOpen ? <X className="w-7 h-7" /> : <Menu className="w-7 h-7" />}
@@ -201,13 +205,18 @@ const Header = () => {
         <div
           className="fixed inset-0 bg-black/50 z-40 lg:hidden transition-opacity duration-300 opacity-100"
           onClick={() => setIsMobileMenuOpen(false)}
+          onTouchEnd={(e) => {
+            e.preventDefault();
+            setIsMobileMenuOpen(false);
+          }}
         />
       )}
 
       {/* Mobile Drawer Menu (Slides in from the right, occupies 1/4 viewport width on tablet/desktop sizes) */}
       <div
-        className={`fixed top-0 right-0 h-full w-[280px] sm:w-[320px] md:w-[25vw] max-w-[90vw] bg-white shadow-2xl z-50 lg:hidden flex flex-col transition-transform duration-300 ease-in-out transform ${isMobileMenuOpen ? "translate-x-0" : "translate-x-full"
-          }`}
+        className={`fixed top-0 right-0 h-full w-[280px] sm:w-[320px] md:w-[25vw] max-w-[90vw] bg-white shadow-2xl z-50 lg:hidden flex flex-col transition-all duration-300 ease-in-out ${
+          isMobileMenuOpen ? "translate-x-0 opacity-100 pointer-events-auto" : "translate-x-full opacity-0 pointer-events-none invisible"
+        }`}
       >
         {/* Drawer Header */}
         <div className="flex items-center justify-between px-5 py-5 border-b border-gray-100">
