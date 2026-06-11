@@ -93,6 +93,9 @@ const TopSale = () => {
                                         src={product.image}
                                         alt={product.name}
                                         className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500"
+                                        onError={(e) => {
+                                            (e.target as HTMLImageElement).src = "https://images.unsplash.com/photo-1610348725531-843dff10902c?q=80&w=600&auto=format&fit=crop";
+                                        }}
                                     />
                                 </Link>
 
