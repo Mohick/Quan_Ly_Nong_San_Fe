@@ -722,17 +722,19 @@ export default function ProductDetailView({ product }: ProductDetailViewProps) {
                         <article
                           key={diaryId}
                           onClick={() => setExpandedDiaries(prev => ({ ...prev, [diaryId]: !prev[diaryId] }))}
-                          className="relative flex gap-4 rounded-2xl border border-emerald-100 bg-[#f7fcf8] p-4 transition-all hover:shadow-md sm:p-5 cursor-pointer select-none"
+                          className="group relative flex gap-4 rounded-2xl border border-emerald-100 hover:border-emerald-300 bg-[#f7fcf8] hover:bg-[#f0faf2] p-4 transition-all duration-300 hover:shadow-md sm:p-5 cursor-pointer select-none active:scale-[0.995]"
                         >
                           <div className="z-10 flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-[#0f8f4a] text-base font-black text-white shadow-sm ring-4 ring-white">
                             {String(index + 1).padStart(2, "0")}
                           </div>
                           <div className="min-w-0 flex-1">
                             <div className="flex items-center justify-between gap-4">
-                              <h4 className="text-base font-black text-gray-900 sm:text-lg">
+                              <h4 className="text-base font-black text-gray-900 sm:text-lg group-hover:text-[#0f8f4a] transition-colors">
                                 {diary.title || `Giai đoạn ${diary.month}`}
                               </h4>
-                              <ChevronRight className={`w-5 h-5 text-gray-400 transition-transform duration-200 shrink-0 ${isExpanded ? "rotate-90 text-[#13a855]" : ""}`} />
+                              <div className={`p-1.5 rounded-full transition-all duration-300 shrink-0 ${isExpanded ? "bg-[#0f8f4a] text-white rotate-90" : "bg-emerald-50 text-[#0f8f4a] group-hover:bg-[#0f8f4a]/10"}`}>
+                                <ChevronRight className="w-4 h-4" />
+                              </div>
                             </div>
                             {diary.started_date && (
                               <span className="mt-2 flex items-center gap-2 text-sm font-bold text-amber-700">
