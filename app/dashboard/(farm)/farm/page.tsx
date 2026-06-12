@@ -22,6 +22,7 @@ const MAX_IMAGE_SIZE = 5 * 1024 * 1024;
 interface FarmForm {
   farmName: string;
   address: string;
+  phone: string;
   description: string;
   gapCertificateUrl: string;
 }

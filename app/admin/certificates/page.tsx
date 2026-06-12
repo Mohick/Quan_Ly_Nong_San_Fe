@@ -4,7 +4,6 @@ import React, { useEffect, useState } from "react";
 import { ShieldCheck, CheckCircle2, XCircle, FileImage, Loader2, RefreshCw, Eye } from "lucide-react";
 import { toast } from "react-toastify";
 import { getPendingCertificatesAPI, verifyCertificateAPI } from "@/lib/_api/certificates";
-import { getCookie } from "cookies-next";
 
 interface FarmCertificate {
   ID: string;
@@ -16,6 +15,13 @@ interface FarmCertificate {
   Farm?: {
     FarmName: string;
   };
+}
+
+function getCookie(name: string): string | undefined {
+  if (typeof document === "undefined") return undefined;
+  const value = `; ${document.cookie}`;
+  const parts = value.split(`; ${name}=`);
+  return parts.length === 2 ? parts.pop()?.split(";").shift() : undefined;
 }
 
 export default function AdminCertificatesPage() {
