@@ -3,11 +3,13 @@
 import React, { useEffect, useState, useRef } from "react";
 import { Star, ShoppingCart, Eye, Heart, Sparkles, ArrowRight } from "lucide-react";
 import { topProductAPI } from "@/lib/_api/product";
+import { toggleFavoriteAPI } from "@/lib/_api/favorites";
 import Link from "next/link";
 
 const TopSale = () => {
     const [topSaleProducts, setTopSaleProducts] = useState<any[]>([]);
     const [hoveredCard, setHoveredCard] = useState<number | null>(null);
+    const [likedProducts, setLikedProducts] = useState<Record<string, boolean>>({});
     const sectionRef = useRef<HTMLDivElement>(null);
 
     const formatPrice = (price: number) => {
@@ -15,6 +17,20 @@ const TopSale = () => {
             style: "currency",
             currency: "VND",
         }).format(price);
+    };
+
+    const handleLike = async (id: string, e: React.MouseEvent) => {
+        e.preventDefault();
+        e.stopPropagation();
+        try {
+            await toggleFavoriteAPI(id);
+            setLikedProducts(prev => ({
+                ...prev,
+                [id]: !prev[id]
+            }));
+        } catch (error) {
+            console.error("Error toggling favorite:", error);
+        }
     };
 
     useEffect(() => {
@@ -54,6 +70,7 @@ const TopSale = () => {
                 <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-8">
                     {topSaleProducts.map((product) => {
                         const isHovered = hoveredCard === product.id;
+                        const isLiked = !!likedProducts[product.id];
                         return (
                             <div
                                 key={product.id}
@@ -83,8 +100,11 @@ const TopSale = () => {
                                         <button className="p-3 bg-white hover:bg-[#e8f8f0] text-gray-800 hover:text-[#13a855] rounded-full shadow-lg transition-transform duration-200 hover:scale-110 cursor-pointer">
                                             <Eye className="w-4.5 h-4.5" />
                                         </button>
-                                        <button className="p-3 bg-white hover:bg-red-50 text-gray-800 hover:text-red-500 rounded-full shadow-lg transition-transform duration-200 hover:scale-110 cursor-pointer">
-                                            <Heart className="w-4.5 h-4.5" />
+                                        <button 
+                                            onClick={(e) => handleLike(product.id, e)}
+                                            className="p-3 bg-white hover:bg-red-50 text-gray-800 hover:text-red-500 rounded-full shadow-lg transition-transform duration-200 hover:scale-110 cursor-pointer"
+                                        >
+                                            <Heart className={`w-4.5 h-4.5 transition-colors ${isLiked ? "fill-red-500 text-red-500" : ""}`} />
                                         </button>
                                     </div>
 

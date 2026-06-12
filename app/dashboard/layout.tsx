@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { LayoutDashboard, Sprout, ShoppingBag, Package, Layers, Landmark, House } from "lucide-react";
+import { LayoutDashboard, Sprout, ShoppingBag, Package, Layers, Landmark, House, MessageSquare } from "lucide-react";
 import { usePathname } from "next/navigation";
 import DashboardSidebar from "@/components/dashboard/dashboard_sidebar";
 import DashboardTopbar from "@/components/dashboard/dashboard_topbar";
@@ -21,6 +21,7 @@ export default function DashboardLayout({
     { name: "Thông Tin Trang Trại", href: "/dashboard/farm", icon: Landmark },
     { name: "Doanh Thu", href: "/dashboard/revenue", icon: Sprout },
     { name: "Quản Lý Đơn Hàng", href: "/dashboard/orders", icon: ShoppingBag },
+    { name: "Tin Nhắn", href: "/dashboard/chat", icon: MessageSquare },
     { name: "Về trang chủ", href: "/", icon: House },
   ];
 

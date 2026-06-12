@@ -7,7 +7,7 @@ import {
   Phone, User, Mail, CreditCard, ChevronDown, 
   Check, X, Loader2, Calendar, ShoppingBag, Printer
 } from "lucide-react";
-import { getAllOrdersAPI, updateOrderStatusAPI } from "@/lib/_api/order";
+import { getOrderManagementAPI, updateOrderStatusAPI } from "@/lib/_api/order";
 import { printInvoice } from "@/utils/printInvoice";
 import { toast } from "react-toastify";
 
@@ -42,6 +42,7 @@ interface Order {
 }
 
 export default function DashboardOrders() {
+  const [counts, setCounts] = useState({ pending: 0, processing: 0, shipped: 0, delivered: 0, cancelled: 0, all: 0 });
   const [orders, setOrders] = useState<Order[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
@@ -57,38 +58,36 @@ export default function DashboardOrders() {
     }
   };
 
-  const loadOrdersList = async () => {
+  const loadOrdersList = async (search: string, status: string) => {
     try {
       const token = getCookie("access_token");
-      const res = await getAllOrdersAPI(token);
+      if (!token) return;
+      const res = await getOrderManagementAPI(token, status, search);
       
-      if (res.data && res.data.valid) {
-        const rawOrders = Array.isArray(res.data.data) ? res.data.data : [];
+      if (res.data && res.data.valid && res.data.data) {
+        if (res.data.data.counts) {
+          setCounts(res.data.data.counts);
+        }
+        const rawOrders = Array.isArray(res.data.data.orders) ? res.data.data.orders : [];
         const mapped: Order[] = rawOrders.map((order: any) => {
-          const user = order.User || order.user || {};
-          const details = order.OrderDetails || order.order_details || [];
-          const items: OrderItem[] = details.map((detail: any) => {
-            const prod = detail.Product || detail.product || {};
-            return {
-              id: detail.ID || detail.id || "",
-              productName: prod.Name || prod.name || "Sản phẩm đã xóa",
-              quantity: detail.Quantity || detail.quantity || 0,
-              price: detail.Price || detail.price || 0,
-              unit: prod.Unit || prod.unit || "kg"
-            };
-          });
           return {
-            id: order.ID || order.id || "",
-            userId: order.UserID || order.user_id || "",
-            customerName: user.FullName || user.full_name || "Khách vãng lai",
-            customerPhone: user.Phone || user.phone || "Chưa có SĐT",
-            customerEmail: user.Email || user.email || "N/A",
-            address: order.Address || order.address || "",
-            paymentMethod: order.PaymentMethod || order.payment_method || "COD",
-            totalAmount: order.TotalAmount || order.total_amount || 0,
-            status: order.Status || order.status || "PENDING",
-            createdAt: order.CreatedAt || order.created_at || "",
-            items: items
+            id: order.order_code || order.ID || "",
+            userId: "",
+            customerName: order.customer_name || "Khách vãng lai",
+            customerPhone: order.customer_phone || "Chưa có SĐT",
+            customerEmail: order.customer_email || "N/A",
+            address: order.address || "Liên hệ khách để lấy địa chỉ",
+            paymentMethod: order.payment_method || "COD",
+            totalAmount: order.total_price || order.total_amount || 0,
+            status: order.status || "PENDING",
+            createdAt: order.created_at || "",
+            items: order.items || [{
+              id: "1",
+              productName: order.product_name || "Sản phẩm",
+              quantity: 1,
+              price: order.total_price || order.total_amount || 0,
+              unit: "đơn"
+            }]
           };
         });
         setOrders(mapped);
@@ -103,8 +102,11 @@ export default function DashboardOrders() {
 
   useEffect(() => {
     setIsLoading(true);
-    loadOrdersList().finally(() => setIsLoading(false));
-  }, []);
+    const timer = setTimeout(() => {
+      loadOrdersList(searchQuery, statusFilter).finally(() => setIsLoading(false));
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [searchQuery, statusFilter]);
 
   const handleUpdateStatus = async (orderId: string, newStatus: string) => {
     setUpdatingStatusId(orderId);
@@ -170,15 +172,8 @@ export default function DashboardOrders() {
     }
   };
 
-  // Filter & Search logic
-  const filteredOrders = orders.filter((order) => {
-    const matchesStatus = statusFilter === "ALL" || order.status === statusFilter;
-    const matchesSearch = 
-      order.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      order.customerName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      order.customerPhone.includes(searchQuery);
-    return matchesStatus && matchesSearch;
-  });
+  // Filter & Search logic is now handled by the backend API
+  const filteredOrders = orders;
 
   return (
     <div className="space-y-6">
@@ -202,7 +197,7 @@ export default function DashboardOrders() {
           <div>
             <span className="block text-[10px] font-bold text-gray-400 uppercase leading-none">Chờ xác nhận</span>
             <span className="block text-lg font-black text-gray-800 mt-1 leading-none">
-              {orders.filter((o) => o.status === "PENDING").length}
+              {counts.pending}
             </span>
           </div>
         </div>
@@ -213,7 +208,7 @@ export default function DashboardOrders() {
           <div>
             <span className="block text-[10px] font-bold text-gray-400 uppercase leading-none">Đang xử lý</span>
             <span className="block text-lg font-black text-gray-800 mt-1 leading-none">
-              {orders.filter((o) => o.status === "PROCESSING").length}
+              {counts.processing}
             </span>
           </div>
         </div>
@@ -224,7 +219,7 @@ export default function DashboardOrders() {
           <div>
             <span className="block text-[10px] font-bold text-gray-400 uppercase leading-none">Đang giao</span>
             <span className="block text-lg font-black text-gray-800 mt-1 leading-none">
-              {orders.filter((o) => o.status === "SHIPPED").length}
+              {counts.shipped}
             </span>
           </div>
         </div>
@@ -235,7 +230,7 @@ export default function DashboardOrders() {
           <div>
             <span className="block text-[10px] font-bold text-gray-400 uppercase leading-none">Hoàn thành</span>
             <span className="block text-lg font-black text-[#13a855] mt-1 leading-none">
-              {orders.filter((o) => o.status === "DELIVERED").length}
+              {counts.delivered}
             </span>
           </div>
         </div>

@@ -293,6 +293,26 @@ async function topProductAPI(token?: string) {
     return { data: mapped };
 }
 
+async function topFarmProductAPI(farmId: string, token?: string) {
+    const headers: Record<string, string> = {};
+    if (token) {
+        headers["Authorization"] = token.startsWith("Bearer ") ? token : `Bearer ${token}`;
+    }
+    const res = await axiosInstance.get(`/products/top_by_farm/${farmId}`, { headers });
+    let rawData: any[] = [];
+    if (res.data) {
+        if (Array.isArray(res.data)) {
+            rawData = res.data;
+        } else if (res.data.data) {
+            rawData = Array.isArray(res.data.data) 
+                ? res.data.data 
+                : (Array.isArray(res.data.data.data) ? res.data.data.data : []);
+        }
+    }
+    const mapped = rawData.map(mapSingleProduct).filter(Boolean) as any[];
+    return { data: mapped };
+}
+
 export { 
     productAPI, 
     getProductsByFarmerAPI,
@@ -302,5 +322,6 @@ export {
     updateProductAPI, 
     addDiscountAPI, 
     getProductListAPI,
-    topProductAPI
+    topProductAPI,
+    topFarmProductAPI
 };

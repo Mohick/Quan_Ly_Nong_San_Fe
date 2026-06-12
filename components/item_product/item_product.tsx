@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import { Star, ShoppingCart, Eye, Heart, ChevronLeft, ChevronRight, CheckCircle } from "lucide-react";
 import Link from "next/link";
 import { addToCartAPI } from "../cart/service";
+import { toggleFavoriteAPI } from "@/lib/_api/favorites";
 import { toast } from "react-toastify";
 
 function getCookie(name: string): string | undefined {
@@ -42,6 +43,10 @@ export interface Product {
     farmName?: string;
     farmId?: string;
     FarmID?: string;
+    isFavorite?: boolean;
+    isLiked?: boolean;
+    is_favorite?: boolean;
+    is_liked?: boolean;
 }
 
 interface ProductCardProps {
@@ -53,6 +58,38 @@ interface ProductCardProps {
 // Reusable single product card component supporting both grid & list viewmodes
 export const ProductCard = ({ product, viewMode = "grid", onAddToCart }: ProductCardProps) => {
     const [isHovered, setIsHovered] = useState(false);
+    const [isLiked, setIsLiked] = useState(!!(product.isFavorite || product.isLiked || product.is_favorite || product.is_liked || false));
+
+    const formatNumber = (num: string | number) => {
+        if (!num) return "0";
+        const strVal = num.toString().replace(/\./g, "");
+        const match = strVal.match(/\d+/);
+        if (!match) return num.toString();
+        
+        const n = Number(match[0]);
+        if (isNaN(n)) return num.toString();
+        if (n >= 1000000000) {
+            return (n / 1000000000).toFixed(1).replace(/\.0$/, "") + " Tỷ";
+        }
+        if (n >= 1000000) {
+            return (n / 1000000).toFixed(1).replace(/\.0$/, "") + " Tr";
+        }
+        if (n >= 1000) {
+            return (n / 1000).toFixed(1).replace(/\.0$/, "") + "K";
+        }
+        return n.toString();
+    };
+
+    const handleLike = async (e: React.MouseEvent) => {
+        e.preventDefault();
+        e.stopPropagation();
+        try {
+            await toggleFavoriteAPI(product.id.toString());
+            setIsLiked(!isLiked);
+        } catch (error) {
+            console.error("Error toggling favorite:", error);
+        }
+    };
 
     const formatPrice = (price: number) => {
         return new Intl.NumberFormat("vi-VN", {
@@ -96,8 +133,11 @@ export const ProductCard = ({ product, viewMode = "grid", onAddToCart }: Product
                         <button className="p-2 bg-white hover:bg-[#e8f8f0] text-gray-800 hover:text-[#13a855] rounded-full shadow-md transition-transform duration-200 hover:scale-105 cursor-pointer">
                             <Eye className="w-3.5 h-3.5" />
                         </button>
-                        <button className="p-2 bg-white hover:bg-red-50 text-gray-800 hover:text-red-500 rounded-full shadow-md transition-transform duration-200 hover:scale-105 cursor-pointer">
-                            <Heart className="w-3.5 h-3.5" />
+                        <button 
+                            onClick={handleLike}
+                            className="p-2 bg-white hover:bg-red-50 text-gray-800 hover:text-red-500 rounded-full shadow-md transition-transform duration-200 hover:scale-105 cursor-pointer"
+                        >
+                            <Heart className={`w-3.5 h-3.5 transition-colors ${isLiked ? "fill-red-500 text-red-500" : ""}`} />
                         </button>
                     </div>
 
@@ -140,7 +180,7 @@ export const ProductCard = ({ product, viewMode = "grid", onAddToCart }: Product
                                 <span>{product.rating}</span>
                             </div>
                             <span className="text-gray-300">|</span>
-                            <span className="text-gray-500 font-medium">Đã bán {product.soldQuantity}</span>
+                            <span className="text-gray-500 font-medium">Đã bán {formatNumber(product.soldQuantity)}</span>
                         </div>
                     </div>
 
@@ -207,8 +247,11 @@ export const ProductCard = ({ product, viewMode = "grid", onAddToCart }: Product
                     <button className="p-2.5 bg-white hover:bg-[#e8f8f0] text-gray-800 hover:text-[#13a855] rounded-full shadow-md transition-transform duration-200 hover:scale-105 cursor-pointer">
                         <Eye className="w-4 h-4" />
                     </button>
-                    <button className="p-2.5 bg-white hover:bg-red-50 text-gray-800 hover:text-red-500 rounded-full shadow-md transition-transform duration-200 hover:scale-105 cursor-pointer">
-                        <Heart className="w-4 h-4" />
+                    <button 
+                        onClick={handleLike}
+                        className="p-2.5 bg-white hover:bg-red-50 text-gray-800 hover:text-red-500 rounded-full shadow-md transition-transform duration-200 hover:scale-105 cursor-pointer"
+                    >
+                        <Heart className={`w-4 h-4 transition-colors ${isLiked ? "fill-red-500 text-red-500" : ""}`} />
                     </button>
                 </div>
 
@@ -249,7 +292,7 @@ export const ProductCard = ({ product, viewMode = "grid", onAddToCart }: Product
                         <span>{product.rating}</span>
                     </div>
                     <span className="text-gray-300">|</span>
-                    <span className="text-gray-500 font-medium">Đã bán {product.soldQuantity}</span>
+                    <span className="text-gray-500 font-medium">Đã bán {formatNumber(product.soldQuantity)}</span>
                 </div>
 
                 {/* Pricing and Unit */}

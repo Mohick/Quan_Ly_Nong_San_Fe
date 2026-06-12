@@ -7,7 +7,7 @@ import {
   Star, ShoppingCart, ArrowLeft, ShieldCheck,
   Truck, RefreshCw, Heart, Plus, Minus,
   Sparkles, Sprout, MessageSquare, ChevronLeft, ChevronRight,
-  Droplet, Calendar, Award, CheckCircle, Loader2, MapPin
+  Droplet, Calendar, Award, CheckCircle, Loader2, MapPin, Users
 } from "lucide-react";
 import { toast } from "react-toastify";
 import { addToCartAPI } from "../cart/service";
@@ -52,6 +52,9 @@ export interface Product {
   farmName?: string;
   farmId?: string;
   FarmID?: string;
+  farmAvatar?: string;
+  farmFollowers?: number;
+  farmRating?: number;
 }
 
 interface ProductDetailViewProps {
@@ -496,7 +499,14 @@ export default function ProductDetailView({ product }: ProductDetailViewProps) {
                               <MapPin className="mt-0.5 h-5 w-5 shrink-0 text-amber-700" />
                               <div>
                                 <span className="block text-gray-500">Nhà vườn</span>
-                                <strong className="text-gray-900">{product.farmName}</strong>
+                                {product.farmId || product.FarmID ? (
+                                  <Link href={`/farm/detail/?id=${product.farmId || product.FarmID}`} className="text-[#0d8d49] hover:underline flex items-center gap-1 group/farm">
+                                    <strong className="text-[#0d8d49]">{product.farmName}</strong>
+                                    <ChevronRight className="w-3 h-3 group-hover/farm:translate-x-1 transition-transform" />
+                                  </Link>
+                                ) : (
+                                  <strong className="text-gray-900">{product.farmName}</strong>
+                                )}
                               </div>
                             </div>
                           )}
@@ -603,6 +613,55 @@ export default function ProductDetailView({ product }: ProductDetailViewProps) {
                   </div>
                 </div>
               </div>
+
+              {/* Farm Profile Snippet Section */}
+              {(product.farmName || product.farmId || product.FarmID) && (
+                <div className="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                  <div className="flex items-center gap-4">
+                    <Link href={`/farm/detail/?id=${product.farmId || product.FarmID}`} className="shrink-0 relative group">
+                      <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-gray-100 shadow-sm">
+                        {product.farmAvatar ? (
+                          <img src={product.farmAvatar} alt={product.farmName} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300" />
+                        ) : (
+                          <div className="w-full h-full bg-emerald-50 text-emerald-600 flex items-center justify-center font-black text-xl group-hover:scale-110 transition-transform duration-300">
+                            {product.farmName?.[0] || 'F'}
+                          </div>
+                        )}
+                      </div>
+                      <span className="absolute bottom-0 right-0 w-4 h-4 bg-blue-500 border-2 border-white rounded-full flex items-center justify-center text-white text-[8px]">
+                        ✓
+                      </span>
+                    </Link>
+                    <div className="flex flex-col">
+                      <div className="flex items-center gap-2 mb-1">
+                        <Link href={`/farm/detail/?id=${product.farmId || product.FarmID}`} className="font-black text-gray-900 text-lg hover:text-[#13a855] transition-colors">
+                          {product.farmName}
+                        </Link>
+                        <span className="bg-emerald-100 text-emerald-800 text-[10px] px-1.5 py-0.5 rounded font-black">MALL</span>
+                      </div>
+                      <div className="flex items-center gap-4 text-xs font-semibold text-gray-500">
+                        <div className="flex items-center gap-1"><Users className="w-4 h-4" /> {product.farmFollowers || 0} Theo dõi</div>
+                        <div className="flex items-center gap-1 text-amber-500"><Star className="w-4 h-4 fill-amber-500" /> {product.farmRating || 5.0} Đánh giá</div>
+                        <div className="flex items-center gap-1"><MessageSquare className="w-4 h-4" /> Phản hồi chat: 98%</div>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex flex-row items-center gap-2 sm:ml-auto">
+                    <button 
+                      onClick={() => toast.success("Đã theo dõi nhà vườn!")}
+                      className="flex items-center gap-1.5 min-h-10 px-4 rounded-lg bg-[#13a855] text-white font-bold hover:bg-[#0f8b44] transition-all text-sm shadow-sm"
+                    >
+                      <Plus className="w-4 h-4" /> Theo dõi
+                    </button>
+                    <button 
+                      onClick={() => router.push(`/chat?store_id=${product.farmId || product.FarmID}`)}
+                      className="flex items-center gap-1.5 min-h-10 px-4 rounded-lg bg-white border border-gray-300 text-gray-700 font-bold hover:bg-gray-50 transition-all text-sm shadow-sm"
+                    >
+                      <MessageSquare className="w-4 h-4" /> Chat
+                    </button>
+                  </div>
+                </div>
+              )}
 
               {/* Related Products Section (Các sản phẩm khác) */}
               {otherProducts.length > 0 && (

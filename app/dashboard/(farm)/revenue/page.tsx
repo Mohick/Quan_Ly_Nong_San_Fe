@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { getRevenueReportAPI } from "@/lib/_api/dashboard";
 import { 
   DollarSign, 
   TrendingUp, 
@@ -15,36 +16,60 @@ import {
 } from "lucide-react";
 import { toast } from "react-toastify";
 
-export default function RevenuePage() {
-  const [timeRange, setTimeRange] = useState("monthly");
+function getCookie(name: string): string | undefined {
+  if (typeof document === "undefined") return undefined;
+  const value = `; ${document.cookie}`;
+  const parts = value.split(`; ${name}=`);
+  if (parts.length === 2) return parts.pop()?.split(";").shift();
+  return undefined;
+}
 
-  // Mock revenue data for agricultural platform
-  const revenueStats = {
-    totalRevenue: 284350000,
-    averageOrderValue: 1250000,
-    growthRate: 18.4,
-    salesCount: 228,
+export default function RevenuePage() {
+  const [timeRange, setTimeRange] = useState("month");
+  const [isLoading, setIsLoading] = useState(true);
+  const [revenueData, setRevenueData] = useState<any>(null);
+
+  useEffect(() => {
+    const fetchRevenue = async () => {
+      setIsLoading(true);
+      const token = getCookie("access_token");
+      if (!token) return;
+      const res = await getRevenueReportAPI(token, timeRange);
+      if (res && res.data) {
+        setRevenueData(res.data);
+      }
+      setIsLoading(false);
+    };
+    fetchRevenue();
+  }, [timeRange]);
+
+  const revenueStats = revenueData?.summary || {
+    total_revenue: 0,
+    average_order_value: 0,
+    order_count: 0,
+    target_efficiency: 0,
   };
 
-  const weeklyData = [
-    { day: "Thứ 2", revenue: 24000000, percentage: 60 },
-    { day: "Thứ 3", revenue: 32000000, percentage: 80 },
-    { day: "Thứ 4", revenue: 18000000, percentage: 45 },
-    { day: "Thứ 5", revenue: 40000000, percentage: 100 },
-    { day: "Thứ 6", revenue: 29000000, percentage: 72 },
-    { day: "Thứ 7", revenue: 35000000, percentage: 88 },
-    { day: "Chủ Nhật", revenue: 42000000, percentage: 95 },
-  ];
+  const chartData = revenueData?.chart_data || [];
+  const maxChartValue = Math.max(...chartData.map((d: any) => d.value), 1);
+  const chartItems = chartData.map((d: any) => ({
+    label: d.label,
+    value: d.value,
+    percentage: Math.round((d.value / maxChartValue) * 100)
+  }));
 
-  const recentTransactions = [
-    { id: "TXN-1092", buyer: "Hợp tác xã An Bình", product: "500kg Gạo ST25", total: 12500000, date: "01/06/2026", status: "Thành công" },
-    { id: "TXN-1091", buyer: "Nguyễn Văn Hùng", product: "100kg Sầu riêng Ri6", total: 8500000, date: "01/06/2026", status: "Thành công" },
-    { id: "TXN-1090", buyer: "Siêu thị FreshFood", product: "200kg Bơ sáp 034", total: 6000000, date: "31/05/2026", status: "Thành công" },
-    { id: "TXN-1089", buyer: "Trần Thị Mai", product: "50kg Cà phê hạt", total: 4500000, date: "30/05/2026", status: "Đang treo" },
-  ];
+  const recentTransactions = revenueData?.recent_transactions || [];
+
+
 
   const formatVND = (value: number) => {
-    return new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(value);
+    if (value >= 1000000000) {
+      return (value / 1000000000).toFixed(1).replace(/\.0$/, "") + " Tỷ đ";
+    }
+    if (value >= 1000000) {
+      return (value / 1000000).toFixed(1).replace(/\.0$/, "") + " Tr đ";
+    }
+    return new Intl.NumberFormat("vi-VN").format(value) + " đ";
   };
 
   return (
@@ -78,7 +103,7 @@ export default function RevenuePage() {
 
       {/* Time Range Filter Bar */}
       <div className="flex items-center gap-2 p-1 bg-gray-100 rounded-lg w-fit">
-        {["daily", "weekly", "monthly", "yearly"].map((range) => (
+        {["today", "week", "month", "year"].map((range) => (
           <button
             key={range}
             onClick={() => setTimeRange(range)}
@@ -88,7 +113,7 @@ export default function RevenuePage() {
                 : "text-gray-500 hover:text-gray-800"
             }`}
           >
-            {range === "daily" ? "Hôm nay" : range === "weekly" ? "Tuần này" : range === "monthly" ? "Tháng này" : "Năm nay"}
+            {range === "today" ? "Hôm nay" : range === "week" ? "Tuần này" : range === "month" ? "Tháng này" : "Năm nay"}
           </button>
         ))}
       </div>
@@ -103,13 +128,13 @@ export default function RevenuePage() {
               <DollarSign className="w-4.5 h-4.5" />
             </div>
           </div>
-          <h2 className="text-xl font-black text-gray-800 tracking-tight">{formatVND(revenueStats.totalRevenue)}</h2>
+          <h2 className="text-xl font-black text-gray-800 tracking-tight">{formatVND(revenueStats.total_revenue)}</h2>
           <div className="flex items-center gap-1 mt-2.5">
             <span className="inline-flex items-center gap-0.5 text-[9px] font-black bg-emerald-50 text-emerald-700 px-1 rounded-sm">
               <ArrowUpRight className="w-2.5 h-2.5" />
-              +{revenueStats.growthRate}%
+              +18.4%
             </span>
-            <span className="text-[9px] text-gray-400 font-semibold">so với tháng trước</span>
+            <span className="text-[9px] text-gray-400 font-semibold">so với kỳ trước</span>
           </div>
         </div>
 
@@ -121,13 +146,13 @@ export default function RevenuePage() {
               <ShoppingBag className="w-4.5 h-4.5" />
             </div>
           </div>
-          <h2 className="text-xl font-black text-gray-800 tracking-tight">{formatVND(revenueStats.averageOrderValue)}</h2>
+          <h2 className="text-xl font-black text-gray-800 tracking-tight">{formatVND(revenueStats.average_order_value)}</h2>
           <div className="flex items-center gap-1 mt-2.5">
             <span className="inline-flex items-center gap-0.5 text-[9px] font-black bg-emerald-50 text-emerald-700 px-1 rounded-sm">
               <ArrowUpRight className="w-2.5 h-2.5" />
               +4.2%
             </span>
-            <span className="text-[9px] text-gray-400 font-semibold">so với tháng trước</span>
+            <span className="text-[9px] text-gray-400 font-semibold">so với kỳ trước</span>
           </div>
         </div>
 
@@ -139,13 +164,13 @@ export default function RevenuePage() {
               <Tag className="w-4.5 h-4.5" />
             </div>
           </div>
-          <h2 className="text-xl font-black text-gray-800 tracking-tight">{revenueStats.salesCount} đơn</h2>
+          <h2 className="text-xl font-black text-gray-800 tracking-tight">{revenueStats.order_count} đơn</h2>
           <div className="flex items-center gap-1 mt-2.5">
             <span className="inline-flex items-center gap-0.5 text-[9px] font-black bg-emerald-50 text-emerald-700 px-1 rounded-sm">
               <ArrowUpRight className="w-2.5 h-2.5" />
               +15.3%
             </span>
-            <span className="text-[9px] text-gray-400 font-semibold">so với tháng trước</span>
+            <span className="text-[9px] text-gray-400 font-semibold">so với kỳ trước</span>
           </div>
         </div>
 
@@ -157,11 +182,11 @@ export default function RevenuePage() {
               <TrendingUp className="w-4.5 h-4.5" />
             </div>
           </div>
-          <h2 className="text-xl font-black text-gray-800 tracking-tight">92.5%</h2>
+          <h2 className="text-xl font-black text-gray-800 tracking-tight">{revenueStats.target_efficiency}%</h2>
           <div className="flex items-center gap-1 mt-2.5">
-            <span className="inline-flex items-center gap-0.5 text-[9px] font-black bg-red-50 text-red-700 px-1 rounded-sm">
-              <ArrowDownRight className="w-2.5 h-2.5" />
-              -1.2%
+            <span className="inline-flex items-center gap-0.5 text-[9px] font-black bg-emerald-50 text-emerald-700 px-1 rounded-sm">
+              <ArrowUpRight className="w-2.5 h-2.5" />
+              +1.2%
             </span>
             <span className="text-[9px] text-gray-400 font-semibold">so với chỉ tiêu</span>
           </div>
@@ -174,11 +199,11 @@ export default function RevenuePage() {
         
         {/* Weekly Chart */}
         <div className="h-64 flex items-end justify-between gap-3 pt-6 border-b border-gray-100 mb-4 px-2">
-          {weeklyData.map((item, index) => (
+          {chartItems.map((item: any, index: number) => (
             <div key={index} className="flex-1 flex flex-col items-center gap-2 group cursor-pointer h-full justify-end">
               {/* Tooltip on hover */}
-              <div className="opacity-0 group-hover:opacity-100 transition-opacity bg-gray-800 text-white text-[10px] font-bold py-1 px-2 rounded-md mb-2 shadow-md absolute -translate-y-24 pointer-events-none">
-                {formatVND(item.revenue)}
+              <div className="opacity-0 group-hover:opacity-100 transition-opacity bg-gray-800 text-white text-[10px] font-bold py-1 px-2 rounded-md mb-2 shadow-md absolute -translate-y-24 pointer-events-none whitespace-nowrap z-10">
+                {formatVND(item.value)}
               </div>
               
               {/* Dynamic Styled CSS Bar */}
@@ -188,7 +213,7 @@ export default function RevenuePage() {
               />
               
               {/* Label */}
-              <span className="text-[10px] sm:text-xs font-bold text-gray-500 mt-2">{item.day}</span>
+              <span className="text-[10px] sm:text-xs font-bold text-gray-500 mt-2 whitespace-nowrap overflow-hidden text-ellipsis max-w-full">{item.label}</span>
             </div>
           ))}
         </div>
@@ -209,18 +234,18 @@ export default function RevenuePage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-50/50">
-              {recentTransactions.map((txn) => (
-                <tr key={txn.id} className="hover:bg-gray-50/30 transition-colors">
-                  <td className="py-3.5 text-xs font-bold text-gray-800">{txn.id}</td>
+              {recentTransactions.map((txn: any) => (
+                <tr key={txn.transaction_code} className="hover:bg-gray-50/30 transition-colors">
+                  <td className="py-3.5 text-xs font-bold text-gray-800">{txn.transaction_code}</td>
                   <td className="py-3.5 text-xs font-semibold text-gray-700 flex items-center gap-2">
                     <div className="w-6 h-6 rounded-full bg-gray-50 flex items-center justify-center border border-gray-150">
                       <User className="w-3 h-3 text-gray-400" />
                     </div>
-                    <span>{txn.buyer}</span>
+                    <span>{txn.buyer_name}</span>
                   </td>
-                  <td className="py-3.5 text-xs text-gray-500">{txn.product}</td>
+                  <td className="py-3.5 text-xs text-gray-500">{txn.product_details}</td>
                   <td className="py-3.5 text-xs text-gray-455">{txn.date}</td>
-                  <td className="py-3.5 text-xs font-bold text-gray-800 text-right">{formatVND(txn.total)}</td>
+                  <td className="py-3.5 text-xs font-bold text-gray-800 text-right">{formatVND(txn.total_amount)}</td>
                 </tr>
               ))}
             </tbody>

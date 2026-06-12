@@ -1,6 +1,7 @@
 "use client";
 
-import React from "react";
+import React, { useState, useEffect } from "react";
+import { DashboardAPI } from "@/lib/_api/dashboard";
 import { 
   TrendingUp, 
   Users, 
@@ -14,12 +15,49 @@ import {
   AlertCircle 
 } from "lucide-react";
 
+function getCookie(name: string): string | undefined {
+  if (typeof document === "undefined") return undefined;
+  const value = `; ${document.cookie}`;
+  const parts = value.split(`; ${name}=`);
+  if (parts.length === 2) return parts.pop()?.split(";").shift();
+  return undefined;
+}
+
 const DashboardOverview: React.FC = () => {
+  const [dashboardData, setDashboardData] = useState<any>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      const token = getCookie("access_token");
+      if (!token) {
+        setIsLoading(false);
+        return;
+      }
+      const res = await DashboardAPI(token);
+      if (res && res.data) {
+        setDashboardData(res.data);
+      }
+      setIsLoading(false);
+    };
+    fetchData();
+  }, []);
+
+  const formatCurrency = (val: number) => {
+    if (val >= 1000000000) {
+      return (val / 1000000000).toFixed(1).replace(/\.0$/, "") + " Tỷ đ";
+    }
+    if (val >= 1000000) {
+      return (val / 1000000).toFixed(1).replace(/\.0$/, "") + " Tr đ";
+    }
+    return new Intl.NumberFormat("vi-VN").format(val) + " đ";
+  };
+
   // Stat items
   const stats = [
     {
       title: "Tổng doanh thu",
-      value: "148,250,000 đ",
+      value: dashboardData ? formatCurrency(dashboardData.total_revenue || 0) : "0 đ",
       change: "+12.5%",
       isPositive: true,
       icon: DollarSign,
@@ -27,7 +65,7 @@ const DashboardOverview: React.FC = () => {
     },
     {
       title: "Đơn hàng mới",
-      value: "42 đơn",
+      value: dashboardData ? `${dashboardData.new_orders_count || 0} đơn` : "0 đơn",
       change: "+8.2%",
       isPositive: true,
       icon: Package,
@@ -35,7 +73,7 @@ const DashboardOverview: React.FC = () => {
     },
     {
       title: "Khách hàng mới",
-      value: "1,240 hội viên",
+      value: dashboardData ? `${new Intl.NumberFormat("vi-VN").format(dashboardData.new_customers || 0)} hội viên` : "0 hội viên",
       change: "+24.3%",
       isPositive: true,
       icon: Users,
@@ -43,7 +81,7 @@ const DashboardOverview: React.FC = () => {
     },
     {
       title: "Sản phẩm tồn",
-      value: "350 kg",
+      value: dashboardData ? `${new Intl.NumberFormat("vi-VN").format(dashboardData.total_stock || 0)} kg` : "0 kg",
       change: "-3.1%",
       isPositive: false,
       icon: TrendingUp,
@@ -51,13 +89,32 @@ const DashboardOverview: React.FC = () => {
     },
   ];
 
-  // Recent transactions table mock
-  const recentOrders = [
-    { id: "DH-0982", customer: "Trần Anh Tuấn", product: "Gạo ST25 Sóc Trăng", amount: "1,250,000 đ", status: "Hoàn thành" },
-    { id: "DH-0981", customer: "Phạm Minh Hoàng", product: "Sầu riêng Ri6 Bến Tre", amount: "2,400,000 đ", status: "Đang xử lý" },
-    { id: "DH-0980", customer: "Nguyễn Thị Mai", product: "Bơ sáp 034 Đắk Lắk", amount: "620,000 đ", status: "Đã hủy" },
-    { id: "DH-0979", customer: "Lâm Hoàng Nam", product: "Cà phê Robusta Gia Lai", amount: "3,100,000 đ", status: "Hoàn thành" },
-  ];
+  // Recent transactions table mapping
+  const recentOrders = dashboardData?.recent_transactions?.map((t: any) => {
+    let mappedStatus = "Khác";
+    if (t.status === "DELIVERED") mappedStatus = "Hoàn thành";
+    if (t.status === "PENDING") mappedStatus = "Đang xử lý";
+    if (t.status === "CANCELLED") mappedStatus = "Đã hủy";
+
+    return {
+      id: t.order_code,
+      customer: t.customer_name,
+      product: t.product_name,
+      amount: formatCurrency(t.revenue),
+      status: mappedStatus
+    };
+  }) || [];
+
+  if (isLoading) {
+    return (
+      <div className="flex h-64 items-center justify-center">
+        <div className="flex flex-col items-center gap-3">
+          <div className="h-8 w-8 animate-spin rounded-full border-4 border-[#13a855] border-t-transparent"></div>
+          <span className="text-xs font-bold text-gray-500">Đang tải dữ liệu dashboard...</span>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-7 font-sans">
@@ -130,7 +187,7 @@ const DashboardOverview: React.FC = () => {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-50/50">
-                {recentOrders.map((order) => (
+                {recentOrders.map((order: any) => (
                   <tr key={order.id} className="hover:bg-gray-50/30 transition-colors">
                     <td className="py-3 text-xs font-bold text-gray-800">{order.id}</td>
                     <td className="py-3 text-xs font-semibold text-gray-700">{order.customer}</td>

@@ -45,4 +45,16 @@ async function getAllOrdersAPI(token?: string) {
     return await axiosInstance.get(`/orders/all`, { headers });
 }
 
-export { getMyOrdersAPI, placeOrderAPI, updateOrderStatusAPI, getAllOrdersAPI };
+// Lấy danh sách quản lý đơn hàng
+async function getOrderManagementAPI(token: string, status?: string, search?: string) {
+    const headers: Record<string, string> = {
+        "Authorization": token.startsWith("Bearer ") ? token : `Bearer ${token}`
+    };
+    const params = new URLSearchParams();
+    if (status && status !== "ALL") params.append("status", status);
+    if (search) params.append("search", search);
+    
+    return await axiosInstance.get(`/orders/management?${params.toString()}`, { headers });
+}
+
+export { getMyOrdersAPI, placeOrderAPI, updateOrderStatusAPI, getAllOrdersAPI, getOrderManagementAPI };
