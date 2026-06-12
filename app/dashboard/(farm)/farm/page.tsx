@@ -22,8 +22,8 @@ const MAX_IMAGE_SIZE = 5 * 1024 * 1024;
 interface FarmForm {
   farmName: string;
   address: string;
-  phone: string;
   description: string;
+  gapCertificateUrl: string;
 }
 
 type FarmRecord = Record<string, unknown>;
@@ -59,8 +59,10 @@ export default function DashboardFarmPage() {
     address: "",
     phone: "",
     description: "",
+    gapCertificateUrl: "",
   });
   const [imageFile, setImageFile] = useState<File | null>(null);
+  const [gapFile, setGapFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState(FALLBACK_IMAGE);
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -91,11 +93,13 @@ export default function DashboardFarmPage() {
         address: readFarmValue(farm, "address", "Address"),
         phone: readFarmValue(farm, "phone", "Phone"),
         description: readFarmValue(farm, "description", "Description"),
+        gapCertificateUrl: readFarmValue(farm, "gap_certificate_url", "GapCertificateURL"),
       });
       setImagePreview(
         readFarmValue(farm, "image_url", "ImageURL") || FALLBACK_IMAGE,
       );
       setImageFile(null);
+      setGapFile(null);
     } catch (error: unknown) {
       setLoadError(getErrorMessage(error, "Không thể tải thông tin trang trại."));
     } finally {
@@ -140,6 +144,32 @@ export default function DashboardFarmPage() {
     setImagePreview(objectUrlRef.current);
   };
 
+  const handleGapFileChange = (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith("image/") && file.type !== "application/pdf") {
+      toast.error("Vui lòng chọn file hình ảnh hoặc PDF cho chứng chỉ.");
+      event.target.value = "";
+      return;
+    }
+
+    if (file.size > MAX_IMAGE_SIZE) {
+      toast.error("File chứng chỉ không được vượt quá 5MB.");
+      event.target.value = "";
+      return;
+    }
+
+    setGapFile(file);
+    // Optional: preview gap file if it's an image
+    if (file.type.startsWith("image/")) {
+      const url = URL.createObjectURL(file);
+      updateField("gapCertificateUrl", url);
+    } else {
+      updateField("gapCertificateUrl", file.name);
+    }
+  };
+
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
@@ -156,6 +186,7 @@ export default function DashboardFarmPage() {
       payload.append("phone", form.phone.trim());
       payload.append("description", form.description.trim());
       if (imageFile) payload.append("image", imageFile);
+      if (gapFile) payload.append("gap_certificate", gapFile);
 
       const response = await updateFarmAPI(
         farmId,
@@ -340,6 +371,38 @@ export default function DashboardFarmPage() {
                 <p className="mt-3 truncate rounded-lg bg-white px-3 py-2 text-[11px] font-semibold text-emerald-700">
                   {imageFile.name}
                 </p>
+              )}
+            </div>
+
+            <div className="rounded-2xl border border-blue-100 bg-blue-50/60 p-5 mt-4">
+              <div className="flex items-center gap-2">
+                <Building2 className="h-5 w-5 text-blue-600" />
+                <h3 className="text-sm font-black text-gray-900">Chứng nhận GAP</h3>
+              </div>
+              <p className="mt-1 text-xs leading-5 text-gray-600 mb-3">
+                Upload chứng chỉ VietGAP/GlobalGAP (Ảnh hoặc PDF) để được cấp Tích Xanh.
+              </p>
+              
+              <label className="inline-flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl bg-white border border-blue-200 px-4 py-2.5 text-xs font-bold text-blue-700 shadow-sm transition hover:bg-blue-100">
+                <ImagePlus className="h-4 w-4" />
+                Chọn file chứng chỉ
+                <input
+                  type="file"
+                  accept="image/png,image/jpeg,image/webp,application/pdf"
+                  onChange={handleGapFileChange}
+                  className="hidden"
+                />
+              </label>
+
+              {form.gapCertificateUrl && (
+                <div className="mt-3">
+                  <p className="truncate rounded-lg bg-white px-3 py-2 text-[11px] font-semibold text-blue-700 border border-blue-100">
+                    {gapFile ? gapFile.name : "Đã tải lên chứng chỉ"}
+                  </p>
+                  {form.gapCertificateUrl.startsWith("blob:") || form.gapCertificateUrl.startsWith("http") ? (
+                    <img src={form.gapCertificateUrl} alt="GAP Certificate" className="mt-2 w-full h-32 object-cover rounded-lg border border-gray-200" />
+                  ) : null}
+                </div>
               )}
             </div>
 
