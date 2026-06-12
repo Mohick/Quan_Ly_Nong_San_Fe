@@ -1,10 +1,41 @@
-import React from "react";
+import React, { useState } from "react";
 import Link from "next/link";
-import { Landmark, ArrowLeft, Sprout, Upload, Loader2, Plus } from "lucide-react";
+import {
+    ArrowRight,
+    Building2,
+    ChevronDown,
+    ChevronUp,
+    CircleAlert,
+    FileText,
+    ImageIcon,
+    Landmark,
+    Loader2,
+    MapPin,
+    Phone,
+    Plus,
+    Sprout,
+    Upload,
+} from "lucide-react";
+
+interface FarmRecord {
+    id?: string;
+    ID?: string;
+    farm_name?: string;
+    FarmName?: string;
+    image_url?: string;
+    ImageURL?: string;
+    address?: string;
+    Address?: string;
+    phone?: string;
+    Phone?: string;
+    description?: string;
+    Description?: string;
+    status?: boolean;
+    Status?: boolean;
+}
 
 interface FarmTabProps {
-    user: any;
-    myFarm: any;
+    myFarm: FarmRecord | null;
     isFetchingFarm: boolean;
     farmName: string;
     setFarmName: (val: string) => void;
@@ -22,7 +53,6 @@ interface FarmTabProps {
 }
 
 export default function FarmTab({
-    user,
     myFarm,
     isFetchingFarm,
     farmName,
@@ -39,7 +69,7 @@ export default function FarmTab({
     isSubmitting,
     onSubmit
 }: FarmTabProps) {
-
+    const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
 
     const handleFarmImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files && e.target.files[0]) {
@@ -59,69 +89,176 @@ export default function FarmTab({
     }
 
     if (myFarm) {
-        const name = myFarm.farm_name || myFarm.FarmName || "Trang trại của tôi";
-        const img = myFarm.image_url || myFarm.ImageURL || "https://images.unsplash.com/photo-1500937386664-56d1dfef3854?auto=format&fit=crop&q=80&w=1000";
-        const addr = myFarm.address || myFarm.Address || "Chưa xác định";
-        const ph = myFarm.phone || myFarm.Phone || "Chưa cập nhật";
-        const desc = myFarm.description || myFarm.Description || "Chưa có mô tả chi tiết.";
-        const status = myFarm.status !== false;
+        const name = myFarm.farm_name || myFarm.FarmName || "";
+        const imageUrl = myFarm.image_url || myFarm.ImageURL || "";
+        const address = myFarm.address || myFarm.Address || "";
+        const phone = myFarm.phone || myFarm.Phone || "";
+        const description = myFarm.description || myFarm.Description || "";
+        const status = myFarm.status ?? myFarm.Status;
+        const hasContactDetails = Boolean(address || phone);
+        const canExpandDescription = description.length > 160;
 
         return (
-            <div className="space-y-6 animate-fade-in">
-                <div className="border-b border-gray-100 pb-4">
-                    <div className="flex items-center gap-2 text-[#13a855]">
-                        <Landmark className="w-5 h-5" />
-                        <h3 className="text-base sm:text-lg font-black text-gray-900">Quản Lý Trang Trại</h3>
+            <div className="animate-fade-in space-y-4">
+                <div className="border-b border-gray-100 pb-3">
+                    <div className="flex items-center gap-3">
+                        <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-emerald-50 text-[#13a855]">
+                            <Landmark className="h-4.5 w-4.5" />
+                        </span>
+                        <div>
+                            <h3 className="text-sm font-black text-gray-900 sm:text-base">
+                                Quản Lý Trang Trại
+                            </h3>
+                            <p className="mt-0.5 text-[10px] font-medium text-gray-500 sm:text-[11px]">
+                                Thông tin được đồng bộ trực tiếp từ hồ sơ trang trại của bạn.
+                            </p>
+                        </div>
                     </div>
-                    <p className="text-[11px] sm:text-xs text-gray-500 font-medium mt-0.5">
-                        Quản lý thông tin chung của trang trại của bạn.
-                    </p>
                 </div>
 
-                {/* Farm details card */}
-                <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-shadow">
-                    <div className="h-48 w-full relative overflow-hidden bg-gray-100">
-                        <img src={img} alt={name} className="w-full h-full object-cover" />
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
-                        <div className="absolute top-4 right-4">
-                            <span className={`px-3 py-1 text-[10px] font-black uppercase rounded-full shadow-md tracking-wider border ${status
-                                ? "bg-emerald-50 text-emerald-600 border-emerald-200"
-                                : "bg-red-50 text-red-600 border-red-200"
-                                }`}>
+                <article className="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
+                    <div className="relative h-36 overflow-hidden bg-gray-100 sm:h-40">
+                        {imageUrl ? (
+                            <>
+                                {/* eslint-disable-next-line @next/next/no-img-element */}
+                                <img
+                                    src={imageUrl}
+                                    alt={name ? `Ảnh trang trại ${name}` : "Ảnh trang trại"}
+                                    className="absolute inset-0 h-full w-full object-cover"
+                                />
+                                <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/15 to-black/5" />
+                            </>
+                        ) : (
+                            <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 text-gray-400">
+                                <ImageIcon className="h-8 w-8" />
+                                <span className="text-[11px] font-semibold">Chưa có ảnh trang trại</span>
+                            </div>
+                        )}
+
+                        {typeof status === "boolean" && (
+                            <span
+                                className={`absolute top-3 right-3 inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[9px] font-black uppercase tracking-wider shadow-sm ${
+                                    status
+                                        ? "border-emerald-200 bg-white/95 text-emerald-700"
+                                        : "border-red-200 bg-white/95 text-red-600"
+                                }`}
+                            >
+                                <span
+                                    className={`h-1.5 w-1.5 rounded-full ${
+                                        status ? "bg-emerald-500" : "bg-red-500"
+                                    }`}
+                                />
                                 {status ? "Đang hoạt động" : "Tạm dừng"}
                             </span>
-                        </div>
-                        <div className="absolute bottom-4 left-5 right-5 text-white">
-                            <h4 className="text-lg font-black tracking-tight drop-shadow-sm">{name}</h4>
-                            <p className="text-xs font-semibold text-gray-200 drop-shadow-sm flex items-center gap-1 mt-0.5">
-                                <span>📍 {addr}</span>
-                            </p>
+                        )}
+
+                        <div className="absolute right-4 bottom-4 left-4 text-white">
+                            <div className="flex items-center gap-2">
+                                <Building2 className="h-4.5 w-4.5 shrink-0" />
+                                <h4 className="text-base font-black tracking-tight sm:text-lg">
+                                    {name || "Chưa cập nhật tên trang trại"}
+                                </h4>
+                            </div>
+                            {address && (
+                                <p className="mt-1 flex items-center gap-1.5 text-[10px] font-semibold text-white/90 sm:text-xs">
+                                    <MapPin className="h-3.5 w-3.5 shrink-0" />
+                                    <span>{address}</span>
+                                </p>
+                            )}
                         </div>
                     </div>
 
-                    <div className="p-6 space-y-4 text-xs font-bold text-gray-500">
-                        <div className="space-y-1">
-                            <span className="text-[10px] text-gray-400 uppercase tracking-wider block">Số điện thoại liên hệ</span>
-                            <span className="text-gray-800 text-sm font-extrabold">{ph}</span>
-                        </div>
+                    <div className="grid gap-3 p-4 sm:grid-cols-2">
+                        {hasContactDetails ? (
+                            <>
+                                {phone && (
+                                    <div className="rounded-lg border border-gray-100 bg-gray-50/70 px-3 py-2.5">
+                                        <div className="flex items-center gap-2 text-gray-400">
+                                            <Phone className="h-3.5 w-3.5" />
+                                            <span className="text-[9px] font-extrabold uppercase tracking-wider">
+                                                Số điện thoại liên hệ
+                                            </span>
+                                        </div>
+                                        <a
+                                            href={`tel:${phone}`}
+                                            className="mt-1 block text-xs font-black text-gray-900 transition-colors hover:text-[#13a855] sm:text-sm"
+                                        >
+                                            {phone}
+                                        </a>
+                                    </div>
+                                )}
 
-                        <div className="space-y-1 pt-2 border-t border-gray-100">
-                            <span className="text-[10px] text-gray-400 uppercase tracking-wider block">Mô tả giới thiệu</span>
-                            <p className="text-gray-600 font-medium leading-relaxed text-xs" title={desc}>
-                                {desc.length > 100 ? `${desc.slice(0, 100)}...` : desc}
-                            </p>
+                                {address && (
+                                    <div className="rounded-lg border border-gray-100 bg-gray-50/70 px-3 py-2.5">
+                                        <div className="flex items-center gap-2 text-gray-400">
+                                            <MapPin className="h-3.5 w-3.5" />
+                                            <span className="text-[9px] font-extrabold uppercase tracking-wider">
+                                                Địa chỉ trang trại
+                                            </span>
+                                        </div>
+                                        <p className="mt-1 line-clamp-1 text-xs font-bold text-gray-800 sm:text-sm">
+                                            {address}
+                                        </p>
+                                    </div>
+                                )}
+                            </>
+                        ) : (
+                            <div className="flex items-center gap-2.5 rounded-lg border border-amber-100 bg-amber-50/70 p-3 text-amber-700 sm:col-span-2">
+                                <CircleAlert className="h-4 w-4 shrink-0" />
+                                <span className="text-[11px] font-semibold">
+                                    Trang trại chưa cập nhật thông tin liên hệ.
+                                </span>
+                            </div>
+                        )}
+
+                        {description && (
+                            <div className="rounded-lg border border-gray-100 p-3 sm:col-span-2">
+                                <div className="flex items-center gap-2 text-gray-400">
+                                    <FileText className="h-3.5 w-3.5" />
+                                    <span className="text-[9px] font-extrabold uppercase tracking-wider">
+                                        Mô tả giới thiệu
+                                    </span>
+                                </div>
+                                <p
+                                    className={`mt-1.5 whitespace-pre-line text-xs leading-5 text-gray-600 ${
+                                        isDescriptionExpanded ? "" : "line-clamp-3"
+                                    }`}
+                                >
+                                    {description}
+                                </p>
+                                {canExpandDescription && (
+                                    <button
+                                        type="button"
+                                        onClick={() =>
+                                            setIsDescriptionExpanded((expanded) => !expanded)
+                                        }
+                                        className="mt-1.5 inline-flex cursor-pointer items-center gap-1 text-[11px] font-bold text-[#13a855] transition-colors hover:text-[#0f8b44]"
+                                        aria-expanded={isDescriptionExpanded}
+                                    >
+                                        <span>
+                                            {isDescriptionExpanded ? "Thu gọn" : "Xem thêm"}
+                                        </span>
+                                        {isDescriptionExpanded ? (
+                                            <ChevronUp className="h-3.5 w-3.5" />
+                                        ) : (
+                                            <ChevronDown className="h-3.5 w-3.5" />
+                                        )}
+                                    </button>
+                                )}
+                            </div>
+                        )}
+
+                        <div className="flex justify-end border-t border-gray-100 pt-3 sm:col-span-2">
+                            <Link
+                                href="/dashboard"
+                                className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-[#13a855] px-5 py-2.5 text-xs font-bold text-white shadow-sm transition-all hover:bg-[#0f8b44] active:scale-[0.98] sm:w-auto"
+                            >
+                                <span>Truy cập cổng quản trị</span>
+                                <ArrowRight className="h-3.5 w-3.5" />
+                            </Link>
                         </div>
                     </div>
-                </div>
-
-                <div className="pt-4 border-t border-gray-100 flex justify-end">
-                    <Link href="/dashboard/" className="block w-full sm:w-auto">
-                        <button className="w-full sm:w-auto px-6 py-3.5 bg-[#13a855] hover:bg-[#0f8b44] text-white text-xs sm:text-sm font-bold rounded-xl shadow-md transition-all active:scale-95 flex items-center justify-center gap-2 cursor-pointer">
-                            <span>Truy cập Cổng quản trị trang trại</span>
-                            <ArrowLeft className="w-4 h-4 rotate-180" />
-                        </button>
-                    </Link>
-                </div>
+                </article>
             </div>
         );
     }

@@ -16,6 +16,7 @@ const ReactQuill = dynamic(() => import('react-quill-new'), { ssr: false });
 import 'react-quill-new/dist/quill.snow.css';
 import { toast } from "react-toastify";
 import { autoLoginAPI } from "@/lib/_api/auto_login";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 
 function getCookie(name: string): string | undefined {
   if (typeof document === "undefined") return undefined;
@@ -62,6 +63,8 @@ export default function DashboardProducts() {
   // Modal control states
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
+  const [productToDelete, setProductToDelete] = useState<Product | null>(null);
+  const [isDeletingProduct, setIsDeletingProduct] = useState(false);
 
   // Form states
   const [formName, setFormName] = useState("");
@@ -94,6 +97,8 @@ export default function DashboardProducts() {
   const [discountActive, setDiscountActive] = useState(true);
   const [activeDiscountId, setActiveDiscountId] = useState<string | number | null>(null);
   const [isFetchingDiscount, setIsFetchingDiscount] = useState(false);
+  const [isDiscountDeleteConfirmOpen, setIsDiscountDeleteConfirmOpen] = useState(false);
+  const [isDeletingDiscount, setIsDeletingDiscount] = useState(false);
 
   const loadProductsList = async () => {
     try {
@@ -393,17 +398,25 @@ export default function DashboardProducts() {
   };
 
   // Delete product logic
-  const handleDeleteProduct = async (id: number | string) => {
-    if (confirm("Bạn có chắc chắn muốn xóa sản phẩm này? Hành động này không thể hoàn tác.")) {
-      try {
-        const token = getCookie("access_token");
-        await deleteProductAPI(id, token);
-        setProducts((prev) => prev.filter((p) => p.id !== id));
-        showNotification("Đã xóa sản phẩm trên hệ thống thành công!", "success");
-      } catch (err: any) {
-        console.error("Lỗi khi xóa sản phẩm:", err);
-        showNotification("Lỗi khi xóa sản phẩm: " + (err.response?.data?.message || err.message), "error");
-      }
+  const handleDeleteProduct = (product: Product) => {
+    setProductToDelete(product);
+  };
+
+  const handleConfirmDeleteProduct = async () => {
+    if (!productToDelete || isDeletingProduct) return;
+
+    setIsDeletingProduct(true);
+    try {
+      const token = getCookie("access_token");
+      await deleteProductAPI(productToDelete.id, token);
+      setProducts((prev) => prev.filter((product) => product.id !== productToDelete.id));
+      showNotification("Đã xóa sản phẩm trên hệ thống thành công!", "success");
+      setProductToDelete(null);
+    } catch (err: any) {
+      console.error("Lỗi khi xóa sản phẩm:", err);
+      showNotification("Lỗi khi xóa sản phẩm: " + (err.response?.data?.message || err.message), "error");
+    } finally {
+      setIsDeletingProduct(false);
     }
   };
 
@@ -573,8 +586,13 @@ export default function DashboardProducts() {
 
   const handleDiscountDelete = async () => {
     if (!selectedDiscountProduct || !activeDiscountId) return;
-    if (!confirm("Bạn có chắc chắn muốn xóa chương trình giảm giá này của sản phẩm?")) return;
+    setIsDiscountDeleteConfirmOpen(true);
+  };
 
+  const handleConfirmDiscountDelete = async () => {
+    if (!selectedDiscountProduct || !activeDiscountId || isDeletingDiscount) return;
+
+    setIsDeletingDiscount(true);
     try {
       const token = getCookie("access_token");
       await deleteDiscountAPI(activeDiscountId, token);
@@ -592,12 +610,15 @@ export default function DashboardProducts() {
         )
       );
       setIsDiscountModalOpen(false);
+      setIsDiscountDeleteConfirmOpen(false);
     } catch (err: any) {
       console.error("Lỗi khi xóa giảm giá:", err);
       showNotification(
         "Lỗi khi xóa giảm giá: " + (err.response?.data?.message || err.message),
         "error"
       );
+    } finally {
+      setIsDeletingDiscount(false);
     }
   };
 
@@ -843,7 +864,7 @@ export default function DashboardProducts() {
                           <Edit2 className="w-4 h-4" />
                         </button>
                         <button
-                          onClick={() => handleDeleteProduct(product.id)}
+                          onClick={() => handleDeleteProduct(product)}
                           className="p-2 text-gray-500 hover:text-red-600 hover:bg-red-50 border border-gray-200 hover:border-red-100 rounded-lg cursor-pointer transition-all active:scale-95"
                           title="Xóa sản phẩm"
                         >
@@ -1523,6 +1544,26 @@ export default function DashboardProducts() {
           </div>
         </div>
       )}
+
+      <ConfirmDialog
+        open={Boolean(productToDelete)}
+        title="Xóa sản phẩm?"
+        description={`Sản phẩm “${productToDelete?.name || ""}” sẽ bị xóa khỏi hệ thống. Hành động này không thể hoàn tác.`}
+        confirmLabel="Xóa sản phẩm"
+        isLoading={isDeletingProduct}
+        onCancel={() => setProductToDelete(null)}
+        onConfirm={handleConfirmDeleteProduct}
+      />
+
+      <ConfirmDialog
+        open={isDiscountDeleteConfirmOpen}
+        title="Xóa chương trình giảm giá?"
+        description={`Chương trình giảm giá của “${selectedDiscountProduct?.name || ""}” sẽ bị xóa và sản phẩm quay về giá bán gốc.`}
+        confirmLabel="Xóa giảm giá"
+        isLoading={isDeletingDiscount}
+        onCancel={() => setIsDiscountDeleteConfirmOpen(false)}
+        onConfirm={handleConfirmDiscountDelete}
+      />
 
     </div>
   );

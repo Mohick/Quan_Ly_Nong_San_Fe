@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { X, Layers } from "lucide-react";
 import { CropLot } from "@/app/dashboard/(farm)/lots/page";
+import { toast } from "react-toastify";
 
 interface LotModalProps {
   isOpen: boolean;
@@ -62,7 +63,7 @@ export const LotModal: React.FC<LotModalProps> = ({
     e.preventDefault();
 
     if (!formName.trim() || !formArea || !formTreeCount || !formStartDate || !formHarvestDate) {
-      alert("Vui lòng điền đầy đủ các thông tin bắt buộc!");
+      toast.error("Vui lòng điền đầy đủ các thông tin bắt buộc!");
       return;
     }
 

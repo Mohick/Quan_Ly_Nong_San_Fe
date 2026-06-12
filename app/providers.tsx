@@ -21,7 +21,6 @@ export default function Providers({ children }: { children: ReactNode }) {
         pauseOnFocusLoss
         draggable
         pauseOnHover
-        theme="colored"
         style={{ zIndex: 9999 }}
       />
     </QueryClientProvider>

@@ -3,6 +3,8 @@
  * Supports different order object structures from Checkout, History, and Dashboard.
  */
 
+import { toast } from "react-toastify";
+
 interface NormalizedOrderItem {
   name: string;
   quantity: number;
@@ -325,6 +327,6 @@ export function printInvoice(order: any) {
     printWindow.document.write(htmlContent);
     printWindow.document.close();
   } else {
-    alert("Không thể mở cửa sổ in. Vui lòng cho phép Pop-up trong trình duyệt của bạn!");
+    toast.error("Không thể mở cửa sổ in. Vui lòng cho phép Pop-up trong trình duyệt của bạn!");
   }
 }

@@ -2,14 +2,12 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import axios from "axios";
 import {
   User,
   Shield,
   Landmark,
   Camera,
   ArrowLeft,
-  CheckCircle,
 } from "lucide-react";
 import { useAuthStore, useAutoLogin } from "@/hooks/useAutoLogin";
 import { createFarmAPI } from "@/lib/_api/create_farm";
@@ -28,19 +26,66 @@ function getCookie(name: string): string | undefined {
   return undefined;
 }
 
+const MAX_AVATAR_FILE_SIZE = 5 * 1024 * 1024;
+const AVATAR_SIZE = 512;
+
+function createAvatarDataUrl(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+
+    reader.onerror = () => reject(new Error("Không thể đọc tệp ảnh."));
+    reader.onload = () => {
+      const image = new Image();
+      image.onerror = () => reject(new Error("Tệp đã chọn không phải ảnh hợp lệ."));
+      image.onload = () => {
+        const canvas = document.createElement("canvas");
+        canvas.width = AVATAR_SIZE;
+        canvas.height = AVATAR_SIZE;
+
+        const context = canvas.getContext("2d");
+        if (!context) {
+          reject(new Error("Trình duyệt không hỗ trợ xử lý ảnh."));
+          return;
+        }
+
+        const sourceSize = Math.min(image.naturalWidth, image.naturalHeight);
+        const sourceX = (image.naturalWidth - sourceSize) / 2;
+        const sourceY = (image.naturalHeight - sourceSize) / 2;
+
+        context.drawImage(
+          image,
+          sourceX,
+          sourceY,
+          sourceSize,
+          sourceSize,
+          0,
+          0,
+          AVATAR_SIZE,
+          AVATAR_SIZE,
+        );
+        resolve(canvas.toDataURL("image/jpeg", 0.82));
+      };
+      image.src = String(reader.result);
+    };
+
+    reader.readAsDataURL(file);
+  });
+}
+
 export default function ProfileSettings() {
   const [activeTab, setActiveTab] = useState<"profile" | "farm" | "security">(
     "profile",
   );
 
   // Lấy thông tin user thực tế từ Zustand Global Store và Trigger Auto Login tự động
-  const { user, loading } = useAutoLogin();
+  const { user } = useAutoLogin();
   const setUser = useAuthStore((state) => state.setUser);
 
   // Profile form states
   const [fullName, setFullName] = useState("");
   const [phone, setPhone] = useState("");
   const [address, setAddress] = useState("");
+  const [avatarUrl, setAvatarUrl] = useState("");
 
   // Farm creation states
   const [farmName, setFarmName] = useState("");
@@ -55,23 +100,57 @@ export default function ProfileSettings() {
   // UI States
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Đồng bộ form sau khi có kết quả từ Promise auto login
+  // Đồng bộ form khi tài khoản đăng nhập được tải hoặc cập nhật.
   useEffect(() => {
-    const fetchAndFillUser = async () => {
-      try {
-        await useAuthStore.getState().performAutoLogin();
-        const currentUser = useAuthStore.getState().user;
-        if (currentUser) {
-          setFullName(currentUser.full_name || "");
-          setPhone(currentUser.phone || "");
-          setAddress(currentUser.address || "");
-        }
-      } catch (err) {
-        console.error("Lỗi khi tải thông tin tài khoản:", err);
-      }
+    if (!user) return;
+    let isActive = true;
+    const account = user as typeof user & {
+      FullName?: string;
+      Phone?: string;
+      Address?: string;
+      AvatarURL?: string;
+      image?: string;
     };
-    fetchAndFillUser();
-  }, []);
+    queueMicrotask(() => {
+      if (!isActive) return;
+      setFullName(account.full_name || account.FullName || "");
+      setPhone(account.phone || account.Phone || "");
+      setAddress(account.address || account.Address || "");
+      setAvatarUrl(
+        account.avatar_url || account.AvatarURL || account.image || "",
+      );
+    });
+
+    return () => {
+      isActive = false;
+    };
+  }, [user]);
+
+  const handleAvatarChange = async (
+    event: React.ChangeEvent<HTMLInputElement>,
+  ) => {
+    const file = event.target.files?.[0];
+    event.target.value = "";
+    if (!file) return;
+
+    if (!file.type.startsWith("image/")) {
+      toast.error("Vui lòng chọn đúng định dạng hình ảnh.");
+      return;
+    }
+    if (file.size > MAX_AVATAR_FILE_SIZE) {
+      toast.error("Ảnh đại diện không được vượt quá 5MB.");
+      return;
+    }
+
+    try {
+      setAvatarUrl(await createAvatarDataUrl(file));
+      toast.info("Ảnh mới đã được chọn. Hãy nhấn Cập nhật hồ sơ để lưu.");
+    } catch (error) {
+      toast.error(
+        error instanceof Error ? error.message : "Không thể xử lý ảnh đại diện.",
+      );
+    }
+  };
 
   useEffect(() => {
     const fetchFarm = async () => {
@@ -108,17 +187,21 @@ export default function ProfileSettings() {
         full_name: fullName,
         phone,
         address,
+        avatar_url: avatarUrl,
       }, token);
 
       if (res.status === 200 || res.status === 201) {
         toast.success("Cập nhật thông tin tài khoản thành công!");
         if (user) {
-          setUser({
+          const updatedUser = {
             ...user,
             full_name: fullName,
             phone,
             address,
-          });
+            avatar_url: avatarUrl,
+          };
+          setUser(updatedUser);
+          localStorage.setItem("user", JSON.stringify(updatedUser));
         }
       } else {
         toast.error("Không thể cập nhật hồ sơ. Vui lòng thử lại!");
@@ -200,6 +283,15 @@ export default function ProfileSettings() {
   const userRole = (user as any)?.Role || user?.role || "CUSTOMER";
   const userEmail = (user as any)?.Email || user?.email || "";
   const createdAt = (user as any)?.CreatedAt || (user as any)?.created_at || "";
+  const avatarInitials = userDisplayName
+    ? userDisplayName
+      .split(" ")
+      .filter(Boolean)
+      .map((name: string) => name[0])
+      .join("")
+      .slice(0, 3)
+      .toUpperCase()
+    : "A";
 
   return (
     <div className="animate-fade-in min-h-screen w-full bg-[#f8faf9] py-10 font-sans text-gray-800 select-none">
@@ -230,17 +322,29 @@ export default function ProfileSettings() {
           <div className="space-y-6 rounded-2xl border border-gray-200 bg-white p-5 shadow-sm md:col-span-4">
             <div className="border-gray-150/60 flex items-center gap-4 border-b pb-5">
               <div className="relative">
-                <div className="flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-tr from-[#13a855] to-[#0a5c36] text-lg font-extrabold text-white shadow-inner">
-                  {userDisplayName
-                    ? userDisplayName
-                      .split(" ")
-                      .map((n: string) => n[0])
-                      .join("")
-                    : "A"}
-                </div>
-                <div className="border-gray-150 absolute -right-1 -bottom-1 cursor-pointer rounded-full border bg-white p-1 shadow-sm transition-colors hover:bg-gray-50">
+                {avatarUrl ? (
+                  <img
+                    src={avatarUrl}
+                    alt={`Ảnh đại diện của ${userDisplayName}`}
+                    className="h-14 w-14 rounded-full border border-emerald-100 object-cover shadow-inner"
+                  />
+                ) : (
+                  <div className="flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-tr from-[#13a855] to-[#0a5c36] text-lg font-extrabold text-white shadow-inner">
+                    {avatarInitials}
+                  </div>
+                )}
+                <label
+                  className="border-gray-150 absolute -right-1 -bottom-1 cursor-pointer rounded-full border bg-white p-1 shadow-sm transition-colors hover:bg-gray-50"
+                  title="Thay đổi ảnh đại diện"
+                >
                   <Camera className="h-3.5 w-3.5 text-gray-500" />
-                </div>
+                  <input
+                    type="file"
+                    accept="image/png,image/jpeg,image/webp"
+                    className="hidden"
+                    onChange={handleAvatarChange}
+                  />
+                </label>
               </div>
               <div>
                 <span className="mb-1 block text-sm leading-tight font-black text-gray-900 sm:text-base">
@@ -307,7 +411,6 @@ export default function ProfileSettings() {
 
             {activeTab === "farm" && (
               <FarmTab
-                user={user}
                 myFarm={myFarm}
                 isFetchingFarm={isFetchingFarm}
                 farmName={farmName}

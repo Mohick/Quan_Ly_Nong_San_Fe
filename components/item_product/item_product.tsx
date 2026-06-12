@@ -51,7 +51,7 @@ interface ProductCardProps {
 }
 
 // Reusable single product card component supporting both grid & list viewmodes
-const ProductCard = ({ product, viewMode = "grid", onAddToCart }: ProductCardProps) => {
+export const ProductCard = ({ product, viewMode = "grid", onAddToCart }: ProductCardProps) => {
     const [isHovered, setIsHovered] = useState(false);
 
     const formatPrice = (price: number) => {
@@ -395,7 +395,7 @@ const ItemProduct = ({
             </div>
 
             {/* Premium Pagination Controls */}
-            {!isLoading && totalPages > 1 && (
+            {!isLoading && totalPages >= 1 && (
                 <div className="flex items-center justify-center gap-2 mt-12 sm:mt-16 mb-4 select-none font-sans">
                     {/* Previous Page Button */}
                     <button

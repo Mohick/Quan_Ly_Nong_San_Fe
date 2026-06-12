@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Search, ShoppingCart, Menu, X, LogOut, Settings, LayoutDashboard } from "lucide-react";
+import { ShoppingCart, Menu, X, LogOut, Settings } from "lucide-react";
 import { useAutoLogin } from "@/hooks/useAutoLogin";
 
 // Stable helper outside component so it's never re-created
@@ -31,8 +31,6 @@ const Header = () => {
   const avatarUrl = (user as any)?.AvatarURL || (user as any)?.avatar_url || (user as any)?.image || "";
   const userRole = (user as any)?.Role || (user as any)?.role || "MEMBER";
 
-  const showDashboard = userRole.toUpperCase() === "ADMIN" || userRole.toUpperCase() === "FARMER" || userRole.toUpperCase() === "NHA_VUON" || userRole.toUpperCase() === "NHÀ VƯỜN";
-
   const navLinks = [
     { name: "Trang chủ", href: "/" },
     { name: "Sản phẩm", href: "/products" },
@@ -40,10 +38,6 @@ const Header = () => {
     { name: "Tin tức", href: "/news" },
     { name: "Liên hệ", href: "/contact" },
   ];
-
-  if (showDashboard) {
-    navLinks.push({ name: "Dashboard", href: "/dashboard" });
-  }
 
   const [cartCount, setCartCount] = useState(0);
 
@@ -186,10 +180,6 @@ const Header = () => {
             {/* Mobile Menu Button */}
             <button
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              onTouchEnd={(e) => {
-                e.preventDefault();
-                setIsMobileMenuOpen(!isMobileMenuOpen);
-              }}
               className="lg:hidden p-3.5 text-white hover:text-[#00ff88] active:scale-95 transition-all relative z-50 cursor-pointer flex items-center justify-center"
               aria-label="Menu"
             >
@@ -205,10 +195,6 @@ const Header = () => {
         <div
           className="fixed inset-0 bg-black/50 z-40 lg:hidden transition-opacity duration-300 opacity-100"
           onClick={() => setIsMobileMenuOpen(false)}
-          onTouchEnd={(e) => {
-            e.preventDefault();
-            setIsMobileMenuOpen(false);
-          }}
         />
       )}
 
@@ -231,17 +217,7 @@ const Header = () => {
 
         {/* Drawer Body */}
         <div className="flex-1 overflow-y-auto py-4">
-          {/* Search Bar - Mobile */}
-          <div className="px-5 pb-4">
-            <div className="relative w-full">
-              <input
-                type="text"
-                placeholder="Tìm sản phẩm..."
-                className="w-full bg-[#f4fbf7] border border-[#d1f2e0] rounded-full py-2.5 pl-5 pr-10 text-sm focus:outline-none focus:border-[#13a855] text-gray-800"
-              />
-              <Search className="absolute right-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[#13a855]" />
-            </div>
-          </div>
+
 
           {/* Links */}
           <nav className="flex flex-col space-y-1.5 px-3">
@@ -288,12 +264,9 @@ const Header = () => {
             </div>
           )}
           {!loading && !user && (
-            <div className="px-3 pt-4 mt-2 border-t border-gray-100 flex gap-2">
-              <Link href="/login" onClick={() => setIsMobileMenuOpen(false)} className="flex-1">
-                <button className="w-full py-2 border border-[#13a855] text-[#13a855] text-xs font-bold rounded-xl hover:bg-[#e8f8f0] cursor-pointer">Đăng nhập</button>
-              </Link>
-              <Link href="/dang-ky" onClick={() => setIsMobileMenuOpen(false)} className="flex-1">
-                <button className="w-full py-2 bg-[#13a855] text-white text-xs font-bold rounded-xl hover:bg-[#0f8b44] cursor-pointer">Đăng ký</button>
+            <div className="px-3 pt-4 mt-2 border-t border-gray-100">
+              <Link href="/login" onClick={() => setIsMobileMenuOpen(false)} className="block">
+                <button className="w-full py-2.5 border border-[#13a855] text-[#13a855] text-xs font-bold rounded-xl hover:bg-[#e8f8f0] cursor-pointer">Đăng nhập</button>
               </Link>
             </div>
           )}
@@ -317,7 +290,7 @@ const Header = () => {
 
       {/* Profile Drawer (Slides in from the right, takes up 1/5 of viewport on lg screens) */}
       <div
-        className={`fixed top-0 right-0 h-full w-[280px] sm:w-[320px] lg:w-[20vw] max-w-[90vw] bg-white shadow-2xl z-50 flex flex-col transition-transform duration-300 ease-in-out transform ${
+        className={`fixed inset-y-0 right-0 z-[60] flex h-full w-full max-w-full flex-col bg-white shadow-2xl transition-transform duration-300 ease-in-out sm:w-[420px] lg:w-[460px] xl:w-[500px] ${
           isProfileDrawerOpen ? "translate-x-0" : "translate-x-full"
         }`}
       >
@@ -351,17 +324,6 @@ const Header = () => {
 
           {/* Account Links */}
           <nav className="flex flex-col space-y-1">
-            {showDashboard && (
-              <Link
-                href="/dashboard"
-                onClick={() => setIsProfileDrawerOpen(false)}
-                className="flex items-center gap-3 px-4 py-3 text-sm font-bold text-[#13a855] hover:bg-[#f0f9f4] rounded-xl transition-all"
-              >
-                <LayoutDashboard className="w-4.5 h-4.5 shrink-0" />
-                <span>Trang quản trị (Dashboard)</span>
-              </Link>
-            )}
-
             <Link
               href="/settings"
               onClick={() => setIsProfileDrawerOpen(false)}

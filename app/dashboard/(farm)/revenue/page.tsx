@@ -13,6 +13,7 @@ import {
   Tag, 
   User  
 } from "lucide-react";
+import { toast } from "react-toastify";
 
 export default function RevenuePage() {
   const [timeRange, setTimeRange] = useState("monthly");
@@ -58,7 +59,7 @@ export default function RevenuePage() {
         {/* Action Controls */}
         <div className="flex items-center gap-2">
           <button 
-            onClick={() => alert("Đang xuất dữ liệu CSV...")}
+            onClick={() => toast.info("Đang xuất dữ liệu CSV...")}
             className="flex items-center gap-2 px-3.5 py-2 bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 text-xs font-semibold rounded-lg shadow-sm transition-all cursor-pointer"
           >
             <Download className="w-4 h-4 text-gray-400" />
@@ -66,7 +67,7 @@ export default function RevenuePage() {
           </button>
           
           <button 
-            onClick={() => alert("Mở bộ lọc nâng cao...")}
+            onClick={() => toast.info("Mở bộ lọc nâng cao...")}
             className="flex items-center gap-2 px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold rounded-lg shadow-sm transition-all cursor-pointer"
           >
             <Filter className="w-4 h-4" />

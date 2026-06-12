@@ -8,6 +8,7 @@ import {
   BookOpen, Sparkles, MessageSquare, Heart, Bookmark, AlertCircle
 } from "lucide-react";
 import { newsAPI } from "@/lib/_api/news";
+import { toast } from "react-toastify";
 
 interface NewsPost {
   id: string;
@@ -60,7 +61,7 @@ export default function NewsDetailClient({ id }: { id: string }) {
   const handleShare = () => {
     if (typeof window !== "undefined") {
       navigator.clipboard.writeText(window.location.href);
-      alert("Đã sao chép liên kết bài viết tin tức!");
+      toast.success("Đã sao chép liên kết bài viết tin tức!");
     }
   };
 

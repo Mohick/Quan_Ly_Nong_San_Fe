@@ -164,3 +164,92 @@ body {
     @apply font-sans;
   }
 }
+
+/* Premium React Toastify Glassmorphic Styles */
+.Toastify__toast-container {
+  padding: 16px !important;
+  width: 380px !important;
+  max-width: 100vw !important;
+}
+
+.Toastify__toast {
+  border-radius: 16px !important;
+  font-family: 'Be Vietnam Pro', var(--font-sans), sans-serif !important;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.05), 0 10px 10px -5px rgba(0, 0, 0, 0.02) !important;
+  backdrop-filter: blur(16px) !important;
+  -webkit-backdrop-filter: blur(16px) !important;
+  padding: 16px !important;
+  margin-bottom: 12px !important;
+  overflow: hidden !important;
+  border-left: 5px solid transparent !important;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+/* Light theme overrides */
+.Toastify__toast--success {
+  background: rgba(240, 253, 244, 0.92) !important;
+  color: #15803d !important;
+  border: 1px solid rgba(187, 247, 208, 0.5) !important;
+  border-left: 5px solid #16a34a !important;
+}
+.Toastify__toast--error {
+  background: rgba(254, 242, 242, 0.92) !important;
+  color: #b91c1c !important;
+  border: 1px solid rgba(254, 226, 226, 0.5) !important;
+  border-left: 5px solid #dc2626 !important;
+}
+.Toastify__toast--warning {
+  background: rgba(255, 251, 235, 0.92) !important;
+  color: #b45309 !important;
+  border: 1px solid rgba(253, 230, 138, 0.5) !important;
+  border-left: 5px solid #d97706 !important;
+}
+.Toastify__toast--info {
+  background: rgba(240, 249, 255, 0.92) !important;
+  color: #0369a1 !important;
+  border: 1px solid rgba(186, 230, 253, 0.5) !important;
+  border-left: 5px solid #0284c7 !important;
+}
+
+/* Customizing child elements */
+.Toastify__toast-body {
+  font-weight: 600 !important;
+  font-size: 0.925rem !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  display: flex !important;
+  align-items: center !important;
+}
+
+.Toastify__toast-icon {
+  width: 22px !important;
+  margin-inline-end: 12px !important;
+  flex-shrink: 0 !important;
+}
+
+.Toastify__close-button {
+  align-self: center !important;
+  opacity: 0.5 !important;
+  color: currentColor !important;
+}
+.Toastify__close-button:hover {
+  opacity: 1 !important;
+}
+
+/* Customizing progress bars to match theme */
+.Toastify__progress-bar {
+  height: 3px !important;
+}
+.Toastify__progress-bar--success {
+  background: #16a34a !important;
+}
+.Toastify__progress-bar--error {
+  background: #dc2626 !important;
+}
+.Toastify__progress-bar--warning {
+  background: #d97706 !important;
+}
+.Toastify__progress-bar--info {
+  background: #0284c7 !important;
+}
+

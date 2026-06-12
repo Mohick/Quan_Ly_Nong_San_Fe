@@ -9,6 +9,7 @@ import { getCareProcessesAPI } from "@/lib/_api/care_process";
 import { LotCard } from "@/components/lots/LotCard";
 import { LotDetail } from "@/components/lots/LotDetail";
 import { LotModal } from "@/components/lots/LotModal";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { toast } from "react-toastify";
 
 export interface CropLot {
@@ -43,6 +44,8 @@ export default function CropLotsDashboard() {
   const [lotDiaries, setLotDiaries] = useState<Record<string, any[]>>({});
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingLot, setEditingLot] = useState<CropLot | null>(null);
+  const [lotToDelete, setLotToDelete] = useState<CropLot | null>(null);
+  const [isDeletingLot, setIsDeletingLot] = useState(false);
 
   const showToast = (msg: string) => {
     toast.success(msg);
@@ -132,7 +135,7 @@ export default function CropLotsDashboard() {
       .catch((error) => {
         console.error("Lỗi khi gửi yêu cầu khởi tạo lô đất canh tác mới:", error);
         const errMsg = error.response?.data?.message || error.message || "Lỗi kết nối Backend";
-        alert("Lỗi: " + errMsg);
+        toast.error("Lỗi: " + errMsg);
       });
   };
 
@@ -161,27 +164,30 @@ export default function CropLotsDashboard() {
       .catch((error) => {
         console.error("Lỗi khi cập nhật lô đất canh tác:", error);
         const errMsg = error.response?.data?.message || error.message || "Lỗi kết nối Backend";
-        alert("Lỗi: " + errMsg);
+        toast.error("Lỗi: " + errMsg);
       });
   };
 
-  const handleDelete = (id: string) => {
-    if (confirm("Xóa lô đất canh tác này khỏi nông trại? Tất cả lịch trình liên quan sẽ bị hủy bỏ.")) {
+  const handleConfirmDelete = async () => {
+    if (!lotToDelete || isDeletingLot) return;
+
+    setIsDeletingLot(true);
+    try {
       const token = getCookie("access_token");
-      deleteLotAPI(id, token)
-        .then((res) => {
-          if (res.data && res.data.valid === false) {
-            toast.error("Xóa lô canh tác thất bại: " + (res.data.message || "Lỗi hệ thống"));
-            return;
-          }
-          setLots((prev) => prev.filter((l) => l.id !== id));
-          showToast("Đã xóa lô đất canh tác thành công!");
-        })
-        .catch((error) => {
-          console.error("Lỗi khi xóa lô đất canh tác:", error);
-          const errMsg = error.response?.data?.message || error.message || "Lỗi kết nối Backend";
-          alert("Lỗi: " + errMsg);
-        });
+      const res = await deleteLotAPI(lotToDelete.id, token);
+      if (res.data && res.data.valid === false) {
+        toast.error("Xóa lô canh tác thất bại: " + (res.data.message || "Lỗi hệ thống"));
+        return;
+      }
+      setLots((prev) => prev.filter((lot) => lot.id !== lotToDelete.id));
+      showToast("Đã xóa lô đất canh tác thành công!");
+      setLotToDelete(null);
+    } catch (error: any) {
+      console.error("Lỗi khi xóa lô đất canh tác:", error);
+      const errMsg = error.response?.data?.message || error.message || "Lỗi kết nối Backend";
+      toast.error("Lỗi: " + errMsg);
+    } finally {
+      setIsDeletingLot(false);
     }
   };
 
@@ -344,7 +350,7 @@ export default function CropLotsDashboard() {
               lot={lot}
               onDetail={() => setSelectedLot(lot)}
               onEdit={() => handleOpenEditModal(lot)}
-              onDelete={() => handleDelete(lot.id)}
+              onDelete={() => setLotToDelete(lot)}
               formatDate={formatDate}
               getStatusBadge={getStatusBadge}
             />
@@ -365,6 +371,15 @@ export default function CropLotsDashboard() {
         farmId={farmId}
         onCreate={handleCreateLot}
         onUpdate={handleUpdateLot}
+      />
+      <ConfirmDialog
+        open={Boolean(lotToDelete)}
+        title="Xóa lô canh tác?"
+        description={`Lô “${lotToDelete?.name || ""}” và các lịch trình liên quan sẽ bị xóa khỏi trang trại. Hành động này không thể hoàn tác.`}
+        confirmLabel="Xóa lô canh tác"
+        isLoading={isDeletingLot}
+        onCancel={() => setLotToDelete(null)}
+        onConfirm={handleConfirmDelete}
       />
     </div>
   );

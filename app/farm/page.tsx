@@ -177,6 +177,19 @@ export default function FarmListPage() {
                         {farm.badge}
                       </span>
                     </div>
+
+                    {/* Floating Like Button */}
+                    <button
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        handleLike(farm.id);
+                      }}
+                      className="absolute top-4 right-4 z-20 flex items-center gap-1 bg-black/40 hover:bg-black/60 text-white backdrop-blur-md px-2.5 py-1.5 rounded-full border border-white/10 active:scale-95 transition-all shadow-md cursor-pointer"
+                    >
+                      <Heart className="w-3.5 h-3.5 fill-red-500 text-red-500" />
+                      <span className="text-[10px] font-black">{farm.likes}</span>
+                    </button>
                   </div>
 
                   {/* Profile overlay details block */}
@@ -184,7 +197,7 @@ export default function FarmListPage() {
                     <div className="w-20 h-20 rounded-2xl overflow-hidden border-4 border-white bg-white shadow-md flex-shrink-0 relative -mt-10">
                       <img src={farm.avatar} alt={farm.name} className="w-full h-full object-cover" />
                     </div>
-                     <div className="pb-1.5">
+                    <div className="pb-1.5">
                       <h3 className="text-base sm:text-lg font-black text-gray-900 leading-tight group-hover:text-[#13a855] transition-colors" title={farm.name}>
                         {farm.name.length > 25 ? `${farm.name.slice(0, 25)}...` : farm.name}
                       </h3>
@@ -194,13 +207,13 @@ export default function FarmListPage() {
                       </div>
                     </div>
                   </div>
- 
+
                   {/* Body Info */}
                   <div className="px-5 sm:px-6 py-4 space-y-4 flex-grow flex flex-col justify-between">
                     <p className="text-xs text-gray-500 font-medium leading-relaxed line-clamp-3">
                       {farm.description.length > 100 ? `${farm.description.slice(0, 100)}...` : farm.description}
                     </p>
- 
+
                     <div className="space-y-4 mt-auto">
                       {/* Highlights parameters */}
                       <div className="grid grid-cols-3 gap-2.5 p-3 bg-gray-50 rounded-2xl border border-gray-100 text-center text-xs font-bold text-gray-600">
@@ -220,7 +233,7 @@ export default function FarmListPage() {
                           </span>
                         </div>
                       </div>
- 
+
                       <div className="text-xs space-y-1">
                         <span className="text-[10px] text-gray-400 font-black uppercase tracking-wider block">Các Đặc Sản Chủ Chốt</span>
                         <p className="text-gray-700 font-extrabold" title={farm.specialty}>
@@ -233,17 +246,9 @@ export default function FarmListPage() {
 
                 {/* Footer Controls */}
                 <div className="px-5 sm:px-6 py-4 border-t border-gray-100 bg-gray-50/50 flex items-center justify-between">
-                  <button
-                    onClick={() => handleLike(farm.id)}
-                    className="flex items-center gap-1.5 text-xs font-black text-red-500 hover:text-red-600 transition-colors bg-white border border-red-100 px-3.5 py-2 rounded-xl shadow-sm active:scale-97 cursor-pointer"
-                  >
-                    <Heart className="w-4 h-4 fill-current" />
-                    <span>Thích ({farm.likes})</span>
-                  </button>
-
                   <Link
                     href={`/farm/detail/?id=${farm.id}`}
-                    className="flex items-center gap-1.5 px-4 py-2 bg-[#13a855] hover:bg-[#0f8b44] text-white text-xs font-black rounded-xl shadow-md transition-all active:scale-97 cursor-pointer"
+                    className="w-full flex items-center justify-center gap-2 py-2.5 bg-[#13a855] hover:bg-[#0f8b44] text-white text-xs font-black rounded-xl shadow-md transition-all active:scale-97 cursor-pointer"
                   >
                     <span>Vào nhà vườn</span>
                     <ArrowRight className="w-4 h-4" />

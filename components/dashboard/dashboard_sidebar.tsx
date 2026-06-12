@@ -4,6 +4,7 @@ import React from "react";
 import { Bot, ChevronLeft, ChevronRight } from "lucide-react";
 import Link from "next/link";
 import { LucideIcon } from "lucide-react";
+import { toast } from "react-toastify";
 
 interface NavItem {
   name: string;
@@ -117,7 +118,7 @@ const DashboardSidebar: React.FC<DashboardSidebarProps> = ({
         {/* AI Bot Button at the bottom */}
         <div className="p-3 border-t border-gray-100">
           <button
-            onClick={() => alert("Trợ lý AI Nông Nghiệp đang khởi chạy...")}
+            onClick={() => toast.info("Trợ lý AI Nông Nghiệp đang khởi chạy...")}
             className="w-full flex items-center justify-center gap-2 px-3 py-3 bg-gradient-to-r from-purple-650 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white rounded-lg shadow-md shadow-indigo-100 text-xs font-bold transition-all cursor-pointer"
           >
             <Bot className="w-4.5 h-4.5 animate-pulse" />

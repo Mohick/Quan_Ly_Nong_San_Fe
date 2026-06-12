@@ -8,6 +8,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import axios from "axios";
+import { toast } from "react-toastify";
 import { HistoryAPI } from "@/lib/_api/history";
 import { printInvoice } from "@/utils/printInvoice";
 
@@ -115,7 +116,7 @@ export default function PurchaseHistoryComponent() {
   };
 
   const handleReorder = (order: Order) => {
-    alert(`Đã thêm toàn bộ sản phẩm của đơn hàng ${order.id} vào giỏ hàng thành công!`);
+    toast.success(`Đã thêm toàn bộ sản phẩm của đơn hàng ${order.id} vào giỏ hàng thành công!`);
   };
 
   return (

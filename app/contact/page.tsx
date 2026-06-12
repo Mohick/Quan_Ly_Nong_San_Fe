@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import { Phone, Mail, Check, ArrowRight, MessageCircle } from "lucide-react";
+import { toast } from "react-toastify";
 
 export default function ContactSupportPage() {
   const [name, setName] = useState("");
@@ -14,7 +15,7 @@ export default function ContactSupportPage() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!name || !phone || !email) {
-      alert("Vui lòng điền đầy đủ các thông tin bắt buộc!");
+      toast.error("Vui lòng điền đầy đủ các thông tin bắt buộc!");
       return;
     }
 
@@ -30,22 +31,22 @@ export default function ContactSupportPage() {
   };
 
   return (
-    <div className="min-h-[calc(100vh-80px)] bg-[#fbfcfc] font-sans text-gray-800 relative py-16 px-4 sm:px-6 lg:px-8 flex items-center justify-center">
-      <div className="max-w-6xl w-full mx-auto grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center">
+    <div className="relative min-h-[calc(100vh-80px)] overflow-x-hidden bg-[#fbfcfc] py-10 font-sans text-gray-800 sm:py-14 lg:py-16">
+      <div className="mx-auto grid w-full max-w-7xl grid-cols-1 items-center gap-10 px-4 sm:px-6 lg:px-8 xl:grid-cols-[minmax(0,1fr)_minmax(360px,0.85fr)] xl:gap-16">
         
         {/* Left Column */}
-        <div className="space-y-10 order-2 lg:order-1">
+        <div className="min-w-0 space-y-8 sm:space-y-10">
           <div className="space-y-4">
-            <h1 className="text-4xl sm:text-5xl font-black text-gray-900 tracking-tight leading-tight">
+            <h1 className="max-w-2xl break-words text-3xl font-black leading-tight tracking-tight text-gray-900 sm:text-4xl xl:text-5xl">
               Nhận tư vấn miễn phí từ các chuyên gia
             </h1>
-            <p className="text-sm sm:text-base text-gray-500 font-medium leading-relaxed max-w-lg">
+            <p className="max-w-2xl text-sm font-medium leading-relaxed text-gray-500 sm:text-base">
               Hãy để lại thông tin của bạn, đội ngũ chuyên gia của chúng tôi sẽ liên hệ để phân tích nhu cầu và đề xuất giải pháp phù hợp nhất cho doanh nghiệp của bạn.
             </p>
           </div>
 
           {/* Bullet Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4">
+          <div className="grid grid-cols-1 gap-x-8 gap-y-4 md:grid-cols-2">
             <div className="flex items-center gap-3">
               <div className="flex items-center justify-center w-5 h-5 rounded-full border border-emerald-500 text-emerald-500 shrink-0">
                 <Check className="w-3 h-3 stroke-[3]" />
@@ -127,7 +128,7 @@ export default function ContactSupportPage() {
         </div>
 
         {/* Right Column (Form Card) */}
-        <div className="bg-white border border-gray-150/70 rounded-3xl p-8 sm:p-10 shadow-sm order-1 lg:order-2">
+        <div className="min-w-0 rounded-3xl border border-gray-150/70 bg-white p-5 shadow-sm sm:p-8 lg:p-10">
           {isSubmitted ? (
             <div className="text-center py-8 space-y-4 animate-in fade-in zoom-in duration-300">
               <div className="w-12 h-12 bg-emerald-50 text-emerald-600 rounded-full flex items-center justify-center mx-auto">

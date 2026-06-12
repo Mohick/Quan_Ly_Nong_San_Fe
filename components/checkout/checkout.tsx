@@ -12,6 +12,7 @@ import { getCartAPI } from "@/components/cart/service";
 import { placeOrderAPI } from "@/lib/_api/order";
 import { getProfileAPI } from "@/lib/_api/profile";
 import { printInvoice } from "@/utils/printInvoice";
+import { toast } from "react-toastify";
 
 function getCookie(name: string): string | undefined {
   if (typeof document === "undefined") return undefined;
@@ -47,6 +48,9 @@ export default function CheckoutView() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const [createdOrder, setCreatedOrder] = useState<any>(null);
+
+  // Validation errors for required fields
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat("vi-VN", {
@@ -155,15 +159,23 @@ export default function CheckoutView() {
   // Order Calculations
   const tempTotal = orderItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
   const shippingFee = tempTotal >= 300000 || tempTotal === 0 ? 0 : 30000;
-  const promoDiscount = tempTotal * 0.1; // Default 10% code applied
-  const grandTotal = tempTotal + shippingFee - promoDiscount;
+  const grandTotal = tempTotal + shippingFee;
 
   const handleSubmitOrder = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!fullName || !phone || !address) {
-      alert("Vui lòng điền đầy đủ các thông tin giao nhận hàng!");
+
+    // Validate required fields and collect errors
+    const errors: Record<string, string> = {};
+    if (!fullName.trim()) errors.fullName = "Vui lòng nhập họ và tên người nhận";
+    if (!phone.trim()) errors.phone = "Vui lòng nhập số điện thoại";
+    if (!email.trim()) errors.email = "Vui lòng nhập địa chỉ email";
+    if (!address.trim()) errors.address = "Vui lòng nhập địa chỉ nhận hàng";
+
+    if (Object.keys(errors).length > 0) {
+      setFieldErrors(errors);
       return;
     }
+    setFieldErrors({});
 
     setIsSubmitting(true);
     try {
@@ -180,11 +192,11 @@ export default function CheckoutView() {
         setCreatedOrder(res.data.data);
         setIsSuccess(true);
       } else {
-        alert(res.data?.message || "Đặt hàng không thành công. Vui lòng thử lại!");
+        toast.error(res.data?.message || "Đặt hàng không thành công. Vui lòng thử lại!");
       }
     } catch (error: any) {
       console.error("Error submitting order:", error);
-      alert(error.response?.data?.message || "Đã xảy ra lỗi khi đặt hàng. Vui lòng kiểm tra lại kết nối!");
+      toast.error(error.response?.data?.message || "Đã xảy ra lỗi khi đặt hàng. Vui lòng kiểm tra lại kết nối!");
     } finally {
       setIsSubmitting(false);
     }
@@ -347,12 +359,15 @@ export default function CheckoutView() {
                       type="text"
                       required
                       value={fullName}
-                      onChange={(e) => setFullName(e.target.value)}
+                      onChange={(e) => { setFullName(e.target.value); setFieldErrors((prev) => { const n = { ...prev }; delete n.fullName; return n; }); }}
                       placeholder="Tên người nhận hàng..."
-                      className="w-full bg-white border border-gray-300 rounded-lg py-2.5 px-3 pl-10 text-xs sm:text-sm text-gray-800 focus:outline-none focus:border-[#13a855] transition-all font-medium placeholder-gray-400"
+                      className={`w-full bg-white border rounded-lg py-2.5 px-3 pl-10 text-xs sm:text-sm text-gray-800 focus:outline-none transition-all font-medium placeholder-gray-400 ${
+                        fieldErrors.fullName ? "border-red-400 bg-red-50/30 focus:border-red-500" : "border-gray-300 focus:border-[#13a855]"
+                      }`}
                     />
-                    <User className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                    <User className={`absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 ${fieldErrors.fullName ? "text-red-400" : "text-gray-400"}`} />
                   </div>
+                  {fieldErrors.fullName && <p className="text-[11px] text-red-500 font-bold mt-0.5">{fieldErrors.fullName}</p>}
                 </div>
 
                 {/* Phone */}
@@ -363,12 +378,15 @@ export default function CheckoutView() {
                       type="text"
                       required
                       value={phone}
-                      onChange={(e) => setPhone(e.target.value)}
+                      onChange={(e) => { setPhone(e.target.value); setFieldErrors((prev) => { const n = { ...prev }; delete n.phone; return n; }); }}
                       placeholder="Số điện thoại nhận hàng..."
-                      className="w-full bg-white border border-gray-300 rounded-lg py-2.5 px-3 pl-10 text-xs sm:text-sm text-gray-800 focus:outline-none focus:border-[#13a855] transition-all font-medium placeholder-gray-400"
+                      className={`w-full bg-white border rounded-lg py-2.5 px-3 pl-10 text-xs sm:text-sm text-gray-800 focus:outline-none transition-all font-medium placeholder-gray-400 ${
+                        fieldErrors.phone ? "border-red-400 bg-red-50/30 focus:border-red-500" : "border-gray-300 focus:border-[#13a855]"
+                      }`}
                     />
-                    <Phone className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                    <Phone className={`absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 ${fieldErrors.phone ? "text-red-400" : "text-gray-400"}`} />
                   </div>
+                  {fieldErrors.phone && <p className="text-[11px] text-red-500 font-bold mt-0.5">{fieldErrors.phone}</p>}
                 </div>
 
                 {/* Email */}
@@ -379,12 +397,15 @@ export default function CheckoutView() {
                       type="email"
                       required
                       value={email}
-                      onChange={(e) => setEmail(e.target.value)}
+                      onChange={(e) => { setEmail(e.target.value); setFieldErrors((prev) => { const n = { ...prev }; delete n.email; return n; }); }}
                       placeholder="Email xác nhận hóa đơn..."
-                      className="w-full bg-white border border-gray-300 rounded-lg py-2.5 px-3 pl-10 text-xs sm:text-sm text-gray-800 focus:outline-none focus:border-[#13a855] transition-all font-medium placeholder-gray-400"
+                      className={`w-full bg-white border rounded-lg py-2.5 px-3 pl-10 text-xs sm:text-sm text-gray-800 focus:outline-none transition-all font-medium placeholder-gray-400 ${
+                        fieldErrors.email ? "border-red-400 bg-red-50/30 focus:border-red-500" : "border-gray-300 focus:border-[#13a855]"
+                      }`}
                     />
-                    <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                    <Mail className={`absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 ${fieldErrors.email ? "text-red-400" : "text-gray-400"}`} />
                   </div>
+                  {fieldErrors.email && <p className="text-[11px] text-red-500 font-bold mt-0.5">{fieldErrors.email}</p>}
                 </div>
 
                 {/* Address */}
@@ -395,12 +416,15 @@ export default function CheckoutView() {
                       type="text"
                       required
                       value={address}
-                      onChange={(e) => setAddress(e.target.value)}
+                      onChange={(e) => { setAddress(e.target.value); setFieldErrors((prev) => { const n = { ...prev }; delete n.address; return n; }); }}
                       placeholder="Số nhà, tên đường, phường, quận..."
-                      className="w-full bg-white border border-gray-300 rounded-lg py-2.5 px-3 pl-10 text-xs sm:text-sm text-gray-800 focus:outline-none focus:border-[#13a855] transition-all font-medium placeholder-gray-400"
+                      className={`w-full bg-white border rounded-lg py-2.5 px-3 pl-10 text-xs sm:text-sm text-gray-800 focus:outline-none transition-all font-medium placeholder-gray-400 ${
+                        fieldErrors.address ? "border-red-400 bg-red-50/30 focus:border-red-500" : "border-gray-300 focus:border-[#13a855]"
+                      }`}
                     />
-                    <MapPin className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                    <MapPin className={`absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 ${fieldErrors.address ? "text-red-400" : "text-gray-400"}`} />
                   </div>
+                  {fieldErrors.address && <p className="text-[11px] text-red-500 font-bold mt-0.5">{fieldErrors.address}</p>}
                 </div>
               </div>
 
@@ -554,10 +578,6 @@ export default function CheckoutView() {
                   <span className="text-gray-800">
                     {shippingFee === 0 ? "MIỄN PHÍ" : formatPrice(shippingFee)}
                   </span>
-                </div>
-                <div className="flex justify-between text-red-500">
-                  <span>Chiết khấu mã quà (-10%)</span>
-                  <span>-{formatPrice(promoDiscount)}</span>
                 </div>
               </div>
 

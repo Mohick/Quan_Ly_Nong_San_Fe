@@ -5,6 +5,7 @@ import Link from "next/link";
 import { ShieldCheck, ArrowLeft } from "lucide-react";
 import { extractGoogleUserProfile } from "./service";
 import axios from "axios";
+import { toast } from "react-toastify";
 
 function getSafeRedirectPath(value: string | null): string {
   return value?.startsWith("/") && !value.startsWith("//") ? value : "/";
@@ -43,7 +44,7 @@ const Login = () => {
             sessionStorage.removeItem("post_login_redirect");
             window.location.href = redirectPath;
           } else {
-            alert("Đăng nhập thất bại. Không thể lấy hồ sơ người dùng.");
+            toast.error("Đăng nhập thất bại. Không thể lấy hồ sơ người dùng.");
           }
         } catch (error) {
           console.error("Login error:", error);

@@ -66,6 +66,7 @@ export default function ProductDetailView({ product }: ProductDetailViewProps) {
   const [isDiariesLoading, setIsDiariesLoading] = useState(false);
   const [diaries, setDiaries] = useState<any[]>([]);
   const [expandedDiaries, setExpandedDiaries] = useState<Record<string, boolean>>({});
+  const [selectedDiary, setSelectedDiary] = useState<any | null>(null);
 
   // Parse variants out of product.product_variants
   const rawVariants = (product as any).product_variants || (product as any).ProductVariants || [];
@@ -240,7 +241,7 @@ export default function ProductDetailView({ product }: ProductDetailViewProps) {
     setQuantity((prev) => {
       const nextVal = prev + 1;
       if (nextVal > stockLimit) {
-        alert(`Rất tiếc, số lượng sản phẩm trong kho chỉ còn tối đa ${stockLimit} ${product.unit}.`);
+        toast.warning(`Rất tiếc, số lượng sản phẩm trong kho chỉ còn tối đa ${stockLimit} ${product.unit}.`);
         return prev;
       }
       return nextVal;
@@ -263,7 +264,7 @@ export default function ProductDetailView({ product }: ProductDetailViewProps) {
     }
     const stockLimit = getStockLimit();
     if (parsedVal > stockLimit) {
-      alert(`Rất tiếc, số lượng sản phẩm trong kho chỉ còn tối đa ${stockLimit} ${product.unit}.`);
+      toast.warning(`Rất tiếc, số lượng sản phẩm trong kho chỉ còn tối đa ${stockLimit} ${product.unit}.`);
       parsedVal = stockLimit;
     }
     setQuantity(parsedVal);
@@ -717,11 +718,10 @@ export default function ProductDetailView({ product }: ProductDetailViewProps) {
                   <div className="relative space-y-4 before:absolute before:bottom-6 before:left-6 before:top-6 before:w-0.5 before:bg-emerald-200">
                     {diaries.map((diary, index) => {
                       const diaryId = diary.id || String(index);
-                      const isExpanded = !!expandedDiaries[diaryId];
                       return (
                         <article
                           key={diaryId}
-                          onClick={() => setExpandedDiaries(prev => ({ ...prev, [diaryId]: !prev[diaryId] }))}
+                          onClick={() => setSelectedDiary({ ...diary, index: index + 1 })}
                           className="group relative flex gap-4 rounded-2xl border border-emerald-100 hover:border-emerald-300 bg-[#f7fcf8] hover:bg-[#f0faf2] p-4 transition-all duration-300 hover:shadow-md sm:p-5 cursor-pointer select-none active:scale-[0.995]"
                         >
                           <div className="z-10 flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-[#0f8f4a] text-base font-black text-white shadow-sm ring-4 ring-white">
@@ -732,8 +732,8 @@ export default function ProductDetailView({ product }: ProductDetailViewProps) {
                               <h4 className="text-base font-black text-gray-900 sm:text-lg group-hover:text-[#0f8f4a] transition-colors">
                                 {diary.title || `Giai đoạn ${diary.month}`}
                               </h4>
-                              <div className={`p-1.5 rounded-full transition-all duration-300 shrink-0 ${isExpanded ? "bg-[#0f8f4a] text-white rotate-90" : "bg-emerald-50 text-[#0f8f4a] group-hover:bg-[#0f8f4a]/10"}`}>
-                                <ChevronRight className="w-4 h-4" />
+                              <div className="p-1.5 rounded-full bg-emerald-50 text-[#0f8f4a] group-hover:bg-[#0f8f4a]/10 transition-all duration-300 shrink-0">
+                                <ChevronRight className="w-4 h-4 animate-pulse" />
                               </div>
                             </div>
                             {diary.started_date && (
@@ -742,11 +742,6 @@ export default function ProductDetailView({ product }: ProductDetailViewProps) {
                                 {new Date(diary.started_date).toLocaleDateString("vi-VN")}
                                 {diary.finished_dat && ` - ${new Date(diary.finished_dat).toLocaleDateString("vi-VN")}`}
                               </span>
-                            )}
-                            {isExpanded && (
-                              <p className="mt-3 text-base leading-7 text-gray-700 animate-fade-in">
-                                {diary.description}
-                              </p>
                             )}
                           </div>
                         </article>
@@ -924,6 +919,63 @@ export default function ProductDetailView({ product }: ProductDetailViewProps) {
                 className="flex-1 py-3 bg-[#13a855] hover:bg-[#0f8b44] text-white font-extrabold rounded-xl active:scale-97 shadow-md transition-all cursor-pointer text-xs text-center"
               >
                 Xác nhận
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      {/* Cultivation Diary Detail Modal */}
+      {selectedDiary && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/55 backdrop-blur-xs animate-fade-in">
+          <div className="bg-white w-full md:w-[70%] max-w-4xl min-h-[55vh] md:min-h-[500px] rounded-2xl shadow-2xl overflow-hidden border border-gray-100 transform scale-100 transition-all animate-zoom-in flex flex-col">
+            {/* Header */}
+            <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between bg-white">
+              <div className="flex items-center gap-2.5">
+                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#0f8f4a] text-xs font-black text-white shadow-xs">
+                  {String(selectedDiary.index).padStart(2, "0")}
+                </div>
+                <h3 className="text-base font-black text-gray-900">Chi tiết nhật ký canh tác</h3>
+              </div>
+              <button
+                onClick={() => setSelectedDiary(null)}
+                className="p-1.5 hover:bg-gray-150 rounded-lg text-gray-400 hover:text-gray-600 transition-all cursor-pointer"
+              >
+                <Plus className="w-5 h-5 rotate-45" />
+              </button>
+            </div>
+
+            {/* Body */}
+            <div className="p-6 space-y-4 flex-1 overflow-y-auto">
+              <div className="space-y-2">
+                <h4 className="text-lg font-black text-gray-900">
+                  {selectedDiary.title || `Giai đoạn ${selectedDiary.month}`}
+                </h4>
+                {selectedDiary.started_date && (
+                  <span className="inline-flex items-center gap-1.5 text-xs font-bold text-amber-700 bg-amber-50 border border-amber-100 px-2.5 py-1 rounded-md">
+                    <Calendar className="h-3.5 w-3.5" />
+                    {new Date(selectedDiary.started_date).toLocaleDateString("vi-VN")}
+                    {selectedDiary.finished_dat && ` - ${new Date(selectedDiary.finished_dat).toLocaleDateString("vi-VN")}`}
+                  </span>
+                )}
+              </div>
+
+              <div className="border-t border-gray-100 pt-4">
+                <span className="block text-[10px] font-extrabold text-gray-400 uppercase tracking-wider mb-2">Nội dung nhật ký:</span>
+                <div className="bg-gray-50 rounded-xl p-4 border border-gray-100">
+                  <p className="text-sm leading-7 text-gray-700 font-medium whitespace-pre-line">
+                    {selectedDiary.description || "Chưa có mô tả chi tiết."}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Footer */}
+            <div className="px-6 py-4 border-t border-gray-100 bg-gray-50 flex justify-end">
+              <button
+                onClick={() => setSelectedDiary(null)}
+                className="px-5 py-2 bg-[#0f8f4a] hover:bg-[#0c7a3f] text-white text-xs font-black rounded-xl active:scale-97 transition-all cursor-pointer shadow-md"
+              >
+                Đóng lại
               </button>
             </div>
           </div>

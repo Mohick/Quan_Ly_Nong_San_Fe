@@ -25,9 +25,9 @@ export default function Products() {
   const [activeSort, setActiveSort] = useState("newest");
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   
-  // Pagination
+  // Pagination (client-side: 4 cột x 2 hàng = 8 sản phẩm/trang)
+  const ITEMS_PER_PAGE = 8;
   const [currentPage, setCurrentPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
 
   // Fetch products on load and page change
   useEffect(() => {
@@ -52,7 +52,6 @@ export default function Products() {
           return p;
         });
         setProducts(mappedProducts);
-        setTotalPages(res.totalPages || 1);
         console.log("Danh sách sản phẩm trang", currentPage, ":", mappedProducts);
       } catch (error) {
         console.error("Error fetching products:", error);
@@ -116,8 +115,12 @@ export default function Products() {
       return 0;
     });
 
-  // 2. Products are already paginated by the backend, we just display the filtered/sorted results of the current page
-  const paginatedProducts = filteredProducts;
+  // 2. Client-side pagination: 4 cột x 2 hàng = 8 sản phẩm mỗi trang
+  const totalPages = Math.ceil(filteredProducts.length / ITEMS_PER_PAGE) || 1;
+  const paginatedProducts = filteredProducts.slice(
+    (currentPage - 1) * ITEMS_PER_PAGE,
+    currentPage * ITEMS_PER_PAGE
+  );
 
   return (
     <div className="w-full bg-gray-50/30 min-h-screen">

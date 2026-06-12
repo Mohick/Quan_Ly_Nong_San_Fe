@@ -4,6 +4,8 @@ import React, { useState } from "react";
 import { X, Plus, Calendar, CheckCircle2 } from "lucide-react";
 import { CropLot } from "@/app/dashboard/(farm)/lots/page";
 import { createCareProcessAPI, updateCareProcessAPI, deleteCareProcessAPI, getCareProcessesAPI } from "@/lib/_api/care_process";
+import { toast } from "react-toastify";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 
 interface LotDetailProps {
   selectedLot: CropLot;
@@ -44,6 +46,8 @@ export const LotDetail: React.FC<LotDetailProps> = ({
   const [newDiaryMonth, setNewDiaryMonth] = useState<number>(1);
   const [newDiaryStartDate, setNewDiaryStartDate] = useState("");
   const [newDiaryFinishedDate, setNewDiaryFinishedDate] = useState("");
+  const [diaryToDelete, setDiaryToDelete] = useState<any | null>(null);
+  const [isDeletingDiary, setIsDeletingDiary] = useState(false);
 
   const lotId = selectedLot.id || (selectedLot as any).ID;
   const currentDiaries = lotDiaries[lotId] || [];
@@ -61,7 +65,7 @@ export const LotDetail: React.FC<LotDetailProps> = ({
   const handleDiarySubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newDiaryTitle.trim() || !newDiaryDesc.trim() || !newDiaryStartDate || !newDiaryFinishedDate) {
-      alert("Vui lòng điền đầy đủ các thông tin bắt buộc!");
+      toast.error("Vui lòng điền đầy đủ các thông tin bắt buộc!");
       return;
     }
     if (!lotId) return;
@@ -97,7 +101,7 @@ export const LotDetail: React.FC<LotDetailProps> = ({
       }
     } catch (error: any) {
       console.error("Lỗi khi tạo/sửa nhật ký chăm sóc:", error);
-      alert("Lỗi khi lưu nhật ký lên máy chủ!");
+      toast.error("Lỗi khi lưu nhật ký lên máy chủ!");
     }
 
     setNewDiaryTitle("");
@@ -109,12 +113,12 @@ export const LotDetail: React.FC<LotDetailProps> = ({
     setEditingDiary(null);
   };
 
-  const handleDiaryDelete = async (diaryId: any) => {
-    if (!lotId) return;
-    if (!confirm("Bạn có chắc chắn muốn xóa nhật ký chăm sóc này?")) return;
+  const handleDiaryDelete = async () => {
+    if (!lotId || !diaryToDelete || isDeletingDiary) return;
+    setIsDeletingDiary(true);
     const token = getCookie("access_token");
     try {
-      await deleteCareProcessAPI(diaryId, token);
+      await deleteCareProcessAPI(diaryToDelete.id, token);
       showToast("Đã xóa nhật ký chăm sóc thành công!");
       
       // Refresh list from backend directly
@@ -125,9 +129,12 @@ export const LotDetail: React.FC<LotDetailProps> = ({
           [lotId]: res.data,
         }));
       }
+      setDiaryToDelete(null);
     } catch (error) {
       console.error("Lỗi khi xóa nhật ký trên backend:", error);
-      alert("Lỗi khi xóa nhật ký trên máy chủ!");
+      toast.error("Lỗi khi xóa nhật ký trên máy chủ!");
+    } finally {
+      setIsDeletingDiary(false);
     }
   };
 
@@ -407,7 +414,7 @@ export const LotDetail: React.FC<LotDetailProps> = ({
                       </button>
                       <button
                         type="button"
-                        onClick={() => handleDiaryDelete(diary.id)}
+                        onClick={() => setDiaryToDelete(diary)}
                         className="opacity-0 group-hover:opacity-100 transition-opacity text-red-500 hover:text-red-750 text-[10px] font-bold cursor-pointer"
                       >
                         Xóa
@@ -430,6 +437,15 @@ export const LotDetail: React.FC<LotDetailProps> = ({
           )}
         </div>
       )}
+      <ConfirmDialog
+        open={Boolean(diaryToDelete)}
+        title="Xóa nhật ký chăm sóc?"
+        description={`Nhật ký “${diaryToDelete?.title || ""}” sẽ bị xóa vĩnh viễn khỏi lô canh tác này.`}
+        confirmLabel="Xóa nhật ký"
+        isLoading={isDeletingDiary}
+        onCancel={() => setDiaryToDelete(null)}
+        onConfirm={handleDiaryDelete}
+      />
     </div>
   );
 };
