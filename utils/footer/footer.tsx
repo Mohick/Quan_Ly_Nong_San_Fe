@@ -3,7 +3,7 @@
 import React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Phone, Mail, MapPin } from "lucide-react";
+import { Phone, Mail, MapPin, Facebook, Youtube, Twitter } from "lucide-react";
 
 const Footer = () => {
   const pathname = usePathname();
@@ -44,19 +44,13 @@ const Footer = () => {
             {/* Social Icons */}
             <div className="flex items-center gap-3 pt-2">
               <a href="#" className="w-9 h-9 rounded-full bg-zinc-800/40 border border-zinc-700/30 hover:bg-[#13a855] hover:border-[#13a855] hover:scale-105 active:scale-95 transition-all duration-200 flex items-center justify-center text-white">
-                <svg className="w-4.5 h-4.5 fill-current" viewBox="0 0 24 24">
-                  <path d="M9 8H7v3h2v9h4v-9h3.6l.4-3H13V6c0-.5.5-1 1-1h3V1H13c-3 0-4 2-4 4v3z" />
-                </svg>
+                <Facebook className="w-4.5 h-4.5" />
               </a>
               <a href="#" className="w-9 h-9 rounded-full bg-zinc-800/40 border border-zinc-700/30 hover:bg-[#13a855] hover:border-[#13a855] hover:scale-105 active:scale-95 transition-all duration-200 flex items-center justify-center text-white">
-                <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">
-                  <path d="M12.525.024a.066.066 0 0 0-.007.018c-.012.336-.03.73-.046 1.127-.077 1.63-.137 3.07-.144 3.187-.01.144-.084.22-.24.23a5.523 5.523 0 0 1-1.637-.156 4.757 4.757 0 0 0-1.258-.088c-1.396.096-2.585.67-3.415 1.83C5.166 7.11 4.86 8.24 4.887 9.537c.046 2.19 1.157 3.822 3.195 4.673a5.19 5.19 0 0 0 1.954.408c1.378-.027 2.493-.507 3.327-1.615.424-.564.717-1.196.883-1.89.043-.178.077-.384.108-.574.015-.098.053-.146.155-.143 1.25.043 2.5.034 3.75.028a.15.15 0 0 1 .163.125c.186.828.536 1.574 1.053 2.228a4.936 4.936 0 0 0 3.013 1.85c.162.033.24.12.24.29V10.74c0-.13-.056-.205-.183-.242a4.982 4.982 0 0 1-2.92-2.528 5.34 5.34 0 0 1-.58-2.284c-.006-.412-.008-.823-.005-1.235 0-.15-.07-.225-.218-.228-1.523-.028-3.045-.02-4.568-.02a.243.243 0 0 1-.264-.265c-.015-1.3-.01-2.602-.006-3.903v-.01c0-.1-.034-.146-.128-.15a43.5 43.5 0 0 1-2.072-.036z" />
-                </svg>
+                <Twitter className="w-4.5 h-4.5" />
               </a>
               <a href="#" className="w-9 h-9 rounded-full bg-zinc-800/40 border border-zinc-700/30 hover:bg-[#13a855] hover:border-[#13a855] hover:scale-105 active:scale-95 transition-all duration-200 flex items-center justify-center text-white">
-                <svg className="w-4.5 h-4.5 fill-current" viewBox="0 0 24 24">
-                  <path d="M23.498 6.163a3.003 3.003 0 0 0-2.11-2.11C19.518 3.545 12 3.545 12 3.545s-7.518 0-9.388.508a3.003 3.003 0 0 0-2.11 2.11C0 8.033 0 12 0 12s0 3.967.502 5.837a3.003 3.003 0 0 0 2.11 2.11c1.87.508 9.388.508 9.388.508s7.518 0 9.388-.508a3.003 3.003 0 0 0 2.11-2.11C24 15.967 24 12 24 12s0-3.967-.502-5.837zM9.545 15.568V8.432L15.818 12l-6.273 3.568z" />
-                </svg>
+                <Youtube className="w-4.5 h-4.5" />
               </a>
             </div>
           </div>
