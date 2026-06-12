@@ -150,12 +150,6 @@ const Header = () => {
               {user && (
                 <div className="flex items-center gap-2">
                   <Link
-                    href="/chat"
-                    className="relative cursor-pointer rounded-full bg-[#e8f8f0] p-3 text-[#13a855] transition-all duration-200 hover:bg-[#d4f2e1] active:scale-95"
-                  >
-                    <MessageSquare className="h-5 w-5" />
-                  </Link>
-                  <Link
                     href="/cart"
                     className="relative cursor-pointer rounded-full bg-[#e8f8f0] p-3 text-[#13a855] transition-all duration-200 hover:bg-[#d4f2e1] active:scale-95"
                   >

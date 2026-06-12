@@ -4,6 +4,7 @@ import React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Phone, Mail, MapPin } from "lucide-react";
+import { FaFacebookF, FaYoutube, FaTiktok } from "react-icons/fa";
 
 const Footer = () => {
   const pathname = usePathname();
@@ -38,25 +39,22 @@ const Footer = () => {
               </span>
             </Link>
             <p className="text-sm leading-relaxed text-zinc-400 max-w-sm">
-              Digital infrastructure for identification, authentication, traceability, and tokenization of real-world assets in agriculture, commodities, and real estate
+              Chúng tôi hướng đến kiến tạo tương lai số bằng cách ứng dụng trí tuệ nhân tạo vào hệ sinh thái công nghệ toàn diện, tạo ra giá trị thực tiễn và bền vững cho xã hội.
+            </p>
+            <p className="text-xs text-zinc-500 max-w-sm mt-2">
+              Hoạt động từ 17/02/2014 với 12 năm hoạt động trong lĩnh vực công nghệ AI & Blockchain.
             </p>
 
             {/* Social Icons */}
             <div className="flex items-center gap-3 pt-2">
               <a href="#" className="w-9 h-9 rounded-full bg-zinc-800/40 border border-zinc-700/30 hover:bg-[#13a855] hover:border-[#13a855] hover:scale-105 active:scale-95 transition-all duration-200 flex items-center justify-center text-white">
-                <svg className="w-4.5 h-4.5 fill-current" viewBox="0 0 24 24">
-                  <path d="M9 8H7v3h2v9h4v-9h3.6l.4-3H13V6c0-.5.5-1 1-1h3V1H13c-3 0-4 2-4 4v3z" />
-                </svg>
+                <FaFacebookF className="w-4 h-4" />
               </a>
               <a href="#" className="w-9 h-9 rounded-full bg-zinc-800/40 border border-zinc-700/30 hover:bg-[#13a855] hover:border-[#13a855] hover:scale-105 active:scale-95 transition-all duration-200 flex items-center justify-center text-white">
-                <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">
-                  <path d="M12.525.024a.066.066 0 0 0-.007.018c-.012.336-.03.73-.046 1.127-.077 1.63-.137 3.07-.144 3.187-.01.144-.084.22-.24.23a5.523 5.523 0 0 1-1.637-.156 4.757 4.757 0 0 0-1.258-.088c-1.396.096-2.585.67-3.415 1.83C5.166 7.11 4.86 8.24 4.887 9.537c.046 2.19 1.157 3.822 3.195 4.673a5.19 5.19 0 0 0 1.954.408c1.378-.027 2.493-.507 3.327-1.615.424-.564.717-1.196.883-1.89.043-.178.077-.384.108-.574.015-.098.053-.146.155-.143 1.25.043 2.5.034 3.75.028a.15.15 0 0 1 .163.125c.186.828.536 1.574 1.053 2.228a4.936 4.936 0 0 0 3.013 1.85c.162.033.24.12.24.29V10.74c0-.13-.056-.205-.183-.242a4.982 4.982 0 0 1-2.92-2.528 5.34 5.34 0 0 1-.58-2.284c-.006-.412-.008-.823-.005-1.235 0-.15-.07-.225-.218-.228-1.523-.028-3.045-.02-4.568-.02a.243.243 0 0 1-.264-.265c-.015-1.3-.01-2.602-.006-3.903v-.01c0-.1-.034-.146-.128-.15a43.5 43.5 0 0 1-2.072-.036z" />
-                </svg>
+                <FaTiktok className="w-4 h-4" />
               </a>
               <a href="#" className="w-9 h-9 rounded-full bg-zinc-800/40 border border-zinc-700/30 hover:bg-[#13a855] hover:border-[#13a855] hover:scale-105 active:scale-95 transition-all duration-200 flex items-center justify-center text-white">
-                <svg className="w-4.5 h-4.5 fill-current" viewBox="0 0 24 24">
-                  <path d="M23.498 6.163a3.003 3.003 0 0 0-2.11-2.11C19.518 3.545 12 3.545 12 3.545s-7.518 0-9.388.508a3.003 3.003 0 0 0-2.11 2.11C0 8.033 0 12 0 12s0 3.967.502 5.837a3.003 3.003 0 0 0 2.11 2.11c1.87.508 9.388.508 9.388.508s7.518 0 9.388-.508a3.003 3.003 0 0 0 2.11-2.11C24 15.967 24 12 24 12s0-3.967-.502-5.837zM9.545 15.568V8.432L15.818 12l-6.273 3.568z" />
-                </svg>
+                <FaYoutube className="w-4.5 h-4.5" />
               </a>
             </div>
           </div>
@@ -64,7 +62,7 @@ const Footer = () => {
           {/* Column 2: Quick Links */}
           <div className="space-y-6 lg:pl-10">
             <h3 className="font-bold text-[#00ff88] text-[15px] tracking-widest uppercase">
-              QUICK LINKS
+              LIÊN KẾT NHANH
             </h3>
             <ul className="space-y-4">
               <li>
@@ -72,7 +70,7 @@ const Footer = () => {
                   href="/nha-vuon"
                   className="text-sm text-zinc-300 hover:text-[#00ff88] transition-colors duration-200"
                 >
-                  Cultivation Area Map
+                  Bản đồ vùng canh tác
                 </Link>
               </li>
               <li>
@@ -80,7 +78,7 @@ const Footer = () => {
                   href="/tin-tuc"
                   className="text-sm text-zinc-300 hover:text-[#00ff88] transition-colors duration-200"
                 >
-                  News
+                  Tin tức nông sản
                 </Link>
               </li>
               <li>
@@ -88,7 +86,7 @@ const Footer = () => {
                   href="/privacy"
                   className="text-sm text-zinc-300 hover:text-[#00ff88] transition-colors duration-200"
                 >
-                  Privacy Policy
+                  Chính sách bảo mật
                 </Link>
               </li>
               <li>
@@ -96,7 +94,7 @@ const Footer = () => {
                   href="/terms"
                   className="text-sm text-zinc-300 hover:text-[#00ff88] transition-colors duration-200"
                 >
-                  Terms of Use
+                  Điều khoản sử dụng
                 </Link>
               </li>
             </ul>
@@ -105,23 +103,23 @@ const Footer = () => {
           {/* Column 3: Contact */}
           <div className="space-y-6">
             <h3 className="font-bold text-[#00ff88] text-[15px] tracking-widest uppercase">
-              CONTACT
+              LIÊN HỆ
             </h3>
             <div className="space-y-4 text-sm">
               <div>
                 <p className="font-extrabold text-white leading-snug">
-                  PIONE GLOBAL JOINT STOCK COMPANY
+                  Công ty Cổ phần Pione Group
                 </p>
                 <p className="text-zinc-400 text-xs mt-1">
-                  Tax Code: 0318759430
+                  Mã số thuế: 0312651550
                 </p>
                 <a
-                  href="https://www.pioneglobal.com"
+                  href="https://www.pionegroup.com"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-[#00ff88] text-xs hover:underline mt-1 inline-block"
                 >
-                  www.pioneglobal.com
+                  www.pionegroup.com
                 </a>
               </div>
 
@@ -130,19 +128,28 @@ const Footer = () => {
                   <div className="w-8 h-8 rounded-full bg-[#12281d] border border-[#13a855]/30 flex items-center justify-center text-[#00ff88] shrink-0">
                     <Phone className="w-4 h-4" />
                   </div>
-                  <span className="text-zinc-200 text-xs">(+84) 967 103 466</span>
+                  <div className="text-zinc-250 text-xs leading-normal">
+                    <span className="text-zinc-400 font-bold block sm:inline">Đường dây nóng: </span>
+                    (+84) 28 3535 5888
+                  </div>
                 </li>
                 <li className="flex items-center gap-3.5">
                   <div className="w-8 h-8 rounded-full bg-[#12281d] border border-[#13a855]/30 flex items-center justify-center text-[#00ff88] shrink-0">
                     <Phone className="w-4 h-4" />
                   </div>
-                  <span className="text-zinc-200 text-xs">(+84) 967 213 466</span>
+                  <div className="text-zinc-250 text-xs leading-normal">
+                    <span className="text-zinc-400 font-bold block sm:inline">Hỗ trợ: </span>
+                    (+84) 968 608 974
+                  </div>
                 </li>
                 <li className="flex items-center gap-3.5">
                   <div className="w-8 h-8 rounded-full bg-[#12281d] border border-[#13a855]/30 flex items-center justify-center text-[#00ff88] shrink-0">
                     <Mail className="w-4 h-4" />
                   </div>
-                  <span className="text-zinc-200 text-xs">info@pionetrace.com</span>
+                  <div className="text-zinc-250 text-xs leading-normal">
+                    <span className="text-zinc-400 font-bold block sm:inline">Email: </span>
+                    info@pionegroup.com
+                  </div>
                 </li>
               </ul>
             </div>
@@ -151,7 +158,7 @@ const Footer = () => {
           {/* Column 4: Address */}
           <div className="space-y-6">
             <h3 className="font-bold text-[#00ff88] text-[15px] tracking-widest uppercase">
-              ADDRESS
+              ĐỊA CHỈ
             </h3>
             <div className="space-y-5 text-xs">
 
@@ -162,40 +169,25 @@ const Footer = () => {
                 </div>
                 <div>
                   <p className="font-extrabold text-[#00ff88] tracking-wider uppercase mb-1">
-                    HEADQUARTERS
+                    TRỤ SỞ CHÍNH
                   </p>
                   <p className="text-zinc-300 leading-relaxed">
-                    694 Tôn Đản, Phường An Khê, TP. Đà Nẵng, Việt Nam
+                    213 Đường Tân Thắng, Phường Tân Sơn Nhì, TP. HCM, Việt Nam (trước đây: 213 Tân Thắng, Phường Sơn Kỳ, Quận Tân Phú, TP. HCM, Việt Nam)
                   </p>
                 </div>
               </div>
 
-              {/* Southern Office */}
+              {/* Representative Office */}
               <div className="flex gap-3.5">
                 <div className="w-8 h-8 rounded-full bg-[#12281d] border border-[#13a855]/30 flex items-center justify-center text-[#00ff88] shrink-0 mt-0.5">
                   <MapPin className="w-4 h-4" />
                 </div>
                 <div>
                   <p className="font-extrabold text-[#00ff88] tracking-wider uppercase mb-1">
-                    SOUTHERN OFFICE
+                    VĂN PHÒNG ĐẠI DIỆN
                   </p>
                   <p className="text-zinc-300 leading-relaxed">
-                    213 Tân Thắng, Phường Tân Sơn Nhì, TP.HCM, Việt Nam
-                  </p>
-                </div>
-              </div>
-
-              {/* Office Saint Vincent */}
-              <div className="flex gap-3.5">
-                <div className="w-8 h-8 rounded-full bg-[#12281d] border border-[#13a855]/30 flex items-center justify-center text-[#00ff88] shrink-0 mt-0.5">
-                  <MapPin className="w-4 h-4" />
-                </div>
-                <div>
-                  <p className="font-extrabold text-[#00ff88] tracking-wider uppercase mb-1">
-                    OFFICE SAINT VINCENT
-                  </p>
-                  <p className="text-zinc-300 leading-relaxed">
-                    Euro House, Richmond Hill Road, P.O. Box 2897, Kingstown, Saint Vincent and the Grenadines
+                    L17-11, Tầng 17, Tòa nhà Vincom Center, Số 72 Lê Thánh Tôn, Phường Bến Nghé, TP. HCM, Việt Nam
                   </p>
                 </div>
               </div>
@@ -207,7 +199,7 @@ const Footer = () => {
 
         {/* Copyright Footer */}
         <div className="border-t border-emerald-950 mt-8 pt-8 flex items-center justify-center text-center gap-2 text-[10px] text-zinc-500 font-medium tracking-widest uppercase">
-          <p>© {currentYear} PIONE TRACE ALL RIGHTS RESERVED.</p>
+          <p>© {currentYear} BẢN QUYỀN THUỘC VỀ PIONE TRACE. BẢO LƯU MỌI QUYỀN.</p>
         </div>
       </div>
     </footer>

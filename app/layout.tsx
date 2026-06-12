@@ -5,7 +5,7 @@ import Providers from "./providers";
 import Header from "@/utils/header/header";
 import Footer from "@/utils/footer/footer";
 import Banner from "@/components/banner/banner";
-import ScrollToTop from "@/components/scroll-to-top/scroll-to-top";
+import FloatingChatButton from "@/components/floating-chat-button/floating-chat-button";
 import { cn } from "@/lib/utils";
 
 const beVietnamPro = Be_Vietnam_Pro({
@@ -31,7 +31,7 @@ export default function RootLayout({
           <Header />
           {children}
           <Footer />
-          <ScrollToTop />
+          <FloatingChatButton />
         </Providers>
       </body>
     </html>
